@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Raphael Winkelmann &amp; Klaus Jänsch" />
+
+<meta name="date" content="2015-05-26" />
+
+<title>Version 2 of the Emu Query Language</title>
+
+
+
+
+<link href="data:text/css,body%20%7B%0A%20%20background%2Dcolor%3A%20%23fff%3B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20max%2Dwidth%3A%20700px%3B%0A%20%20overflow%3A%20visible%3B%0A%20%20padding%2Dleft%3A%202em%3B%0A%20%20padding%2Dright%3A%202em%3B%0A%20%20font%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0A%20%20font%2Dsize%3A%2014px%3B%0A%20%20line%2Dheight%3A%201%2E35%3B%0A%7D%0A%0A%23header%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0A%0A%23TOC%20%7B%0A%20%20clear%3A%20both%3B%0A%20%20margin%3A%200%200%2010px%2010px%3B%0A%20%20padding%3A%204px%3B%0A%20%20width%3A%20400px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20border%2Dradius%3A%205px%3B%0A%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20font%2Dsize%3A%2013px%3B%0A%20%20line%2Dheight%3A%201%2E3%3B%0A%7D%0A%20%20%23TOC%20%2Etoctitle%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%20%20font%2Dsize%3A%2015px%3B%0A%20%20%20%20margin%2Dleft%3A%205px%3B%0A%20%20%7D%0A%0A%20%20%23TOC%20ul%20%7B%0A%20%20%20%20padding%2Dleft%3A%2040px%3B%0A%20%20%20%20margin%2Dleft%3A%20%2D1%2E5em%3B%0A%20%20%20%20margin%2Dtop%3A%205px%3B%0A%20%20%20%20margin%2Dbottom%3A%205px%3B%0A%20%20%7D%0A%20%20%23TOC%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dleft%3A%20%2D2em%3B%0A%20%20%7D%0A%20%20%23TOC%20li%20%7B%0A%20%20%20%20line%2Dheight%3A%2016px%3B%0A%20%20%7D%0A%0Atable%20%7B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dcolor%3A%20%23DDDDDD%3B%0A%20%20border%2Dstyle%3A%20outset%3B%0A%20%20border%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0A%20%20border%2Dwidth%3A%202px%3B%0A%20%20padding%3A%205px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%20%20line%2Dheight%3A%2018px%3B%0A%20%20padding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0A%20%20border%2Dleft%2Dstyle%3A%20none%3B%0A%20%20border%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Ap%20%7B%0A%20%20margin%3A%200%2E5em%200%3B%0A%7D%0A%0Ablockquote%20%7B%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20padding%3A%200%2E25em%200%2E75em%3B%0A%7D%0A%0Ahr%20%7B%0A%20%20border%2Dstyle%3A%20solid%3B%0A%20%20border%3A%20none%3B%0A%20%20border%2Dtop%3A%201px%20solid%20%23777%3B%0A%20%20margin%3A%2028px%200%3B%0A%7D%0A%0Adl%20%7B%0A%20%20margin%2Dleft%3A%200%3B%0A%7D%0A%20%20dl%20dd%20%7B%0A%20%20%20%20margin%2Dbottom%3A%2013px%3B%0A%20%20%20%20margin%2Dleft%3A%2013px%3B%0A%20%20%7D%0A%20%20dl%20dt%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%7D%0A%0Aul%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%7D%0A%20%20ul%20li%20%7B%0A%20%20%20%20list%2Dstyle%3A%20circle%20outside%3B%0A%20%20%7D%0A%20%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dbottom%3A%200%3B%0A%20%20%7D%0A%0Apre%2C%20code%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20color%3A%20%23333%3B%0A%7D%0Apre%20%7B%0A%20%20white%2Dspace%3A%20pre%2Dwrap%3B%20%20%20%20%2F%2A%20Wrap%20long%20lines%20%2A%2F%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20margin%3A%205px%200px%2010px%200px%3B%0A%20%20padding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Acode%20%7B%0A%20%20font%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0A%20%20font%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0A%20%20padding%3A%202px%200px%3B%0A%7D%0A%0Adiv%2Efigure%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0A%20%20background%2Dcolor%3A%20%23FFFFFF%3B%0A%20%20padding%3A%202px%3B%0A%20%20border%3A%201px%20solid%20%23DDDDDD%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20margin%3A%200%205px%3B%0A%7D%0A%0Ah1%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%20%20font%2Dsize%3A%2035px%3B%0A%20%20line%2Dheight%3A%2040px%3B%0A%7D%0A%0Ah2%20%7B%0A%20%20border%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20padding%2Dbottom%3A%202px%3B%0A%20%20font%2Dsize%3A%20145%25%3B%0A%7D%0A%0Ah3%20%7B%0A%20%20border%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20font%2Dsize%3A%20120%25%3B%0A%7D%0A%0Ah4%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0A%20%20margin%2Dleft%3A%208px%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Ah5%2C%20h6%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23ccc%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Aa%20%7B%0A%20%20color%3A%20%230033dd%3B%0A%20%20text%2Ddecoration%3A%20none%3B%0A%7D%0A%20%20a%3Ahover%20%7B%0A%20%20%20%20color%3A%20%236666ff%3B%20%7D%0A%20%20a%3Avisited%20%7B%0A%20%20%20%20color%3A%20%23800080%3B%20%7D%0A%20%20a%3Avisited%3Ahover%20%7B%0A%20%20%20%20color%3A%20%23BB00BB%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%0A%2F%2A%20Class%20described%20in%20https%3A%2F%2Fbenjeffrey%2Ecom%2Fposts%2Fpandoc%2Dsyntax%2Dhighlighting%2Dcss%0A%20%20%20Colours%20from%20https%3A%2F%2Fgist%2Egithub%2Ecom%2Frobsimmons%2F1172277%20%2A%2F%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Keyword%20%2A%2F%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%2F%2A%20DataType%20%2A%2F%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%2F%2A%20DecVal%20%28decimal%20values%29%20%2A%2F%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20BaseN%20%2A%2F%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Float%20%2A%2F%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Char%20%2A%2F%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20String%20%2A%2F%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%2F%2A%20Comment%20%2A%2F%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%2F%2A%20OtherToken%20%2A%2F%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20AlertToken%20%2A%2F%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Function%20calls%20%2A%2F%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%2F%2A%20ErrorTok%20%2A%2F%0A%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div id="header">
+<h1 class="title">Version 2 of the Emu Query Language</h1>
+<h4 class="author"><em>Raphael Winkelmann &amp; Klaus Jänsch</em></h4>
+<h4 class="date"><em>2015-05-26</em></h4>
+</div>
+
+
+<div id="warning-document-still-being-written" class="section level1">
+<h1>WARNING: DOCUMENT STILL BEING WRITTEN!</h1>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This document formaly introduces and defines version 2 of the <strong>E</strong>mu <strong>Q</strong>uery <strong>L</strong>anguage (<strong>EQL</strong>).</p>
+</div>
+<div id="extended-backusnaur-form-ebnf" class="section level1">
+<h1>Extended Backus–Naur Form (EBNF)</h1>
+<p>most of the EBNF was adapted from <span class="citation">(John 2012)</span></p>
+<div id="terminal-symbols-of-eql2-operators-and-their-meaning." class="section level2">
+<h2>Terminal symbols of EQL2 (operators) and their meaning.</h2>
+</div>
+<div id="sorted-descending-by-their-bining-priority" class="section level2">
+<h2>Sorted descending by their bining priority</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Operator</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">#</td>
+<td align="left">Result modifier (projection)</td>
+</tr>
+<tr class="even">
+<td align="left">,</td>
+<td align="left">Parameter list separator</td>
+</tr>
+<tr class="odd">
+<td align="left">==</td>
+<td align="left">Equality</td>
+</tr>
+<tr class="even">
+<td align="left">!=</td>
+<td align="left">Unequality</td>
+</tr>
+<tr class="odd">
+<td align="left">=~</td>
+<td align="left">Regular expression match</td>
+</tr>
+<tr class="even">
+<td align="left">!~</td>
+<td align="left">Regular expression not match</td>
+</tr>
+<tr class="odd">
+<td align="left">=</td>
+<td align="left">Equality</td>
+</tr>
+<tr class="even">
+<td align="left">&gt;</td>
+<td align="left">Greater than</td>
+</tr>
+<tr class="odd">
+<td align="left">&gt;=</td>
+<td align="left">Equal or greater than</td>
+</tr>
+<tr class="even">
+<td align="left">&lt;</td>
+<td align="left">Less than</td>
+</tr>
+<tr class="odd">
+<td align="left">&gt;=</td>
+<td align="left">Equal or less than</td>
+</tr>
+<tr class="even">
+<td align="left">|</td>
+<td align="left">Alternatives separator</td>
+</tr>
+<tr class="odd">
+<td align="left">&amp;</td>
+<td align="left">Conjunction of equal rank</td>
+</tr>
+<tr class="even">
+<td align="left">^</td>
+<td align="left">Dominanceconjunction</td>
+</tr>
+<tr class="odd">
+<td align="left">-&gt;</td>
+<td align="left">Sequenceoperator</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="terminal-symbols-of-eql2-brackets-and-their-meaning." class="section level2">
+<h2>Terminal symbols of EQL2 (brackets) and their meaning.</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Bracket</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">’</td>
+<td align="left">Quotes literal string</td>
+</tr>
+<tr class="even">
+<td align="left">(</td>
+<td align="left">Function parameter list begin</td>
+</tr>
+<tr class="odd">
+<td align="left">)</td>
+<td align="left">Function parameter list end</td>
+</tr>
+<tr class="even">
+<td align="left">[</td>
+<td align="left">Sequence or dominance enclosing begin bracket</td>
+</tr>
+<tr class="odd">
+<td align="left">]</td>
+<td align="left">Sequence or dominance enclosing end bracketr</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="terminal-symbols-of-eql2-functions-and-their-meaning" class="section level2">
+<h2>Terminal symbols of EQL2 (functions) and their meaning</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Function</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Start</td>
+<td align="left">Start</td>
+</tr>
+<tr class="even">
+<td align="left">Medial</td>
+<td align="left">Medial</td>
+</tr>
+<tr class="odd">
+<td align="left">End</td>
+<td align="left">Final</td>
+</tr>
+<tr class="even">
+<td align="left">Num</td>
+<td align="left">Count</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="nearly-complete-formal-description-of-emu-query-language-eql2" class="section level2">
+<h2>Nearly complete formal description of EMU query language EQL2</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">X</th>
+<th align="left">Y</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">EQL</td>
+<td align="left">= KONJA | SEQA | DOMA;</td>
+</tr>
+<tr class="even">
+<td align="left">DOMA</td>
+<td align="left">=‘[’,(KONJA|DOMA|SEQA),’ˆ’,(KONJA|DOMA|SEQA),’]’; (<em>Ebenen müssen hierarchisch oder autosegmentell assoziert sein</em>)</td>
+</tr>
+<tr class="odd">
+<td align="left">SEQA</td>
+<td align="left">=‘[’,(KONJA|SEQA|DOMA),’-&gt;’,(KONJA|SEQA|DOMA),’]’; (<em>Ebenen müssen linear assoziert sein</em>)</td>
+</tr>
+<tr class="even">
+<td align="left">KONJA</td>
+<td align="left">= {‘[’},EA,{’&amp;’,EA},{’]’}; (<em>Ebenen müssen linear assoziert sein</em>)</td>
+</tr>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">= ETIKETTA | FUNKA;</td>
+</tr>
+<tr class="even">
+<td align="left">ETIKETTA</td>
+<td align="left">= [‘#’],EBENE,(‘=’ | ‘==’ | ‘!=’ | ‘=~’ | ‘!~’),ETIKETTALTERNATIVEN;</td>
+</tr>
+<tr class="odd">
+<td align="left">FUNKA</td>
+<td align="left">= POSA | NUMA;</td>
+</tr>
+<tr class="even">
+<td align="left">POSA</td>
+<td align="left">= POSFKT, ‘(’,EBENE,‘,’,EBENE,‘)’,‘=’,‘0’| ‘1’; (<em>Ebenen müssen hierarchisch oder autosegmentell assoziiert sein</em>) (<em>zweite Ebene gibt Semantik vor</em>)</td>
+</tr>
+<tr class="odd">
+<td align="left">NUMA</td>
+<td align="left">= ‘Num’,‘(’,EBENE,‘,’,EBENE,‘)’,VOP,INTPN; (<em>Ebenen müssen hierarchisch oder autosegmentell assoziiert sein</em>) (<em>erste Ebene gibt Semantik vor</em>)</td>
+</tr>
+<tr class="even">
+<td align="left">ETIKETTALTERNATIVEN</td>
+<td align="left">= ETIKETT , {‘|’,ETIKETT};</td>
+</tr>
+<tr class="odd">
+<td align="left">ETIKETT</td>
+<td align="left">= ETIKETTIERUNG | (“’“,ETIKETTIERUNG,“’“); (<em>EBENE sind Ebenen aus der Etikettierungsstruktur der Datenbank</em>) (<em>ETIKETTIERUNG ist eine freiwählbare Zeichenkette bzw. eine legal labels Klasse aus dem Etikettierungsschema.</em>)</td>
+</tr>
+</tbody>
+</table>
+<p>POSFKT = | ‘Start’|‘Medial’|‘End’; |<br />VOP = | ‘=’ | ‘==’ | ‘!=’ | ‘&gt;’ | ‘&lt;’ | ‘&lt;=’ | ‘&gt;=’; |<br />INTPN = | ‘0’ | INTP; |<br />INTP = | DIGIT-‘0’,{DIGIT}; |<br />DIGIT = | ‘0’|‘1’|‘2’|‘3’|‘4’|‘5’|‘6’|‘7’|‘8’|‘9’; |</p>
+</div>
+</div>
+<div id="limitations" class="section level1">
+<h1>Limitations</h1>
+<p>One query can only contain one result modifier ‘#’ (hashtag)</p>
+</div>
+<div id="examples" class="section level1">
+<h1>Examples</h1>
+<div id="examples-adapted-from-emuquery.pdf" class="section level2">
+<h2>examples adapted from emuquery.pdf</h2>
+<div id="simple-queries-one-argument" class="section level3">
+<h3>Simple queries (one argument)</h3>
+<ul>
+<li>All m elements on level Phonetic: <strong>[Phonetic = m]</strong></li>
+<li>m or n elements on level Phonetic: <strong>[Phonetic = m | n]</strong></li>
+<li>All elements except m oder n: <strong>[Phonetic != m | n]</strong></li>
+<li>All syllables (Assuming that no syllable x exists): <strong>[Syllable !=x ]</strong></li>
+<li>All syllables: <strong>[Syllable =~.* ]</strong></li>
+<li>All Text level elements beginning with ‘fi’: <strong>[Text=~fi.*]</strong></li>
+</ul>
+</div>
+<div id="sequence-queries--" class="section level3">
+<h3>Sequence queries <strong>-&gt;</strong></h3>
+<div id="simple-sequences" class="section level4">
+<h4>Simple sequences</h4>
+<p>Hier werden die Argumente mit <strong>-&gt;</strong> (folgt) verbunden.</p>
+<ul>
+<li>Syntax: <strong>[L = a -&gt; L = b]</strong></li>
+<li><p>Semantik: Die a Einheit von Level L kommt vor der b Einheit von Level L Bedingung: Die Argumente muessen von der gleichen, oder parallelen Ebenen sein</p></li>
+<li><p>Eine Reihenfolge von m I Segmenten auf der Phonetic-Ebene <strong>[#Phonetic = m -&gt; #Phonetic = I]</strong> [Phonetic = m -&gt; Phonetic = I] (Die Segment-Liste hat die Startzeit von m und die Endzeit von I) Wie oben – aber hier wollen wir nur den m Segment haben [#Phonetic = m -&gt; Phonetic = I] (Startzeit von m, Endzeit von m) Wie oben – aber hier wollen wir nur den I Segment [Phonetic = m -&gt; # Phonetic = I]</p></li>
+</ul>
+<p>2.2. Mehrfache Reihenfolgen Hier handelt es sich um eine Reihenfolge von Argumenten, a1, a2, a3, a4, … Das muss so geklammert werden: [[[[a1-&gt; a2] -&gt;a3]-&gt;a4] -&gt;a5] Alle Reihenfolgen von [m I n][[Phonetic = m -&gt; Phonetic = I] -&gt; Phonetic = n] alle Reihenfolgen von ‘john could lend’ (aus der Text-Ebene) [ [Text = john -&gt; Text = could ] -&gt; Text = lend] ‘the’, dann beliebige zwei Woerter, dann ‘managed’ (alle aus der Text-Ebene) [ [ [Text = the -&gt; Text != x ] -&gt; Text !=x ] -&gt; Text = managed]</p>
+<ol start="3" style="list-style-type: decimal">
+<li>Boolean &amp; Syntax: Semantik: Bedingungen: [L1=a &amp;L2=b&amp;L3=c&amp;L4=d&amp;…Ln=n] alle a Einheiten aus Level 1 die auch die b, c, d..n Eigenschaften besitzten Die Argumente muessen aus der gleichen, oder parallelen, Ebenen sein. S Silben die auch mit L+H* etikettiert worden sind [Syllable = S &amp; Pitch_Accent=L+H*] Der Text aller Funktionswoerter [Text !=x &amp; Word = F] Der Text aller Inhalts-Woerter die auch akzentuiert (S) sind (oder: alle akzentuierten Inhalts-Woerter) [Text!=x &amp; Word=C &amp; Accent=S]</li>
+<li>Domination Syntax: Semantik: Bedingung: [L1=a^ L2=b] a wird von b dominiert oder a dominiert b L1 dominiert L2 oder L2 dominiert L1 4.1 Einfache Domination Alle /p/ Phoneme in S Silben [Phoneme = p ^ Syllable = S] Alle Silben, die einen /p/ Phonem enthalten [Syllable !=x ^ Phoneme = p] oder [Phoneme = p ^ #Syllable !=x] Alle Silben, die weder /k/ noch /p/ noch /t/ enthalten [Syllable!=x ^ Phoneme != p | t | k] oder [Phoneme != p | t | k ^ # Syllable !=x ] 4.2 Mehrfache Domination Hier handelt es sich um eine Reihenfolge von Argumenten, a1, a2, a3, a4, … Das muss so geklammert werden: [[[[a1^ a2] ^a3]^a4] ^a5] H* Silben die einen /p/ Phonem enthalten, und die von den Woertern ‘price’ oder ‘space’ dominiert sind [[Pitch_Accent=H* ^ Phoneme=p] ^ Text = price|space] Das selbe – wir wollen aber die entsprechenden Woerter haben [[Pitch_Accent=H* ^ Phoneme=p] ^ #Text = price|space]</li>
+<li>Position 5.1 Einfache Verwendung Syntax: Semantik: Bedingung: Hinweis: Start(La, Lb) = 1 Lb kommt am Anfang von La vor La dominiert Lb Die einfache Verwendung erzeugt die Segment-Liste von Lb zB: Wort-anfangs-Silben [Start(Word, Syllable)=1] Wort-anfangs-phoneme [Start(Word, Phoneme)=1] Silben, die nicht am Anfang des Wortes sind [Start(Word, Syllable)=0] Es gibt auch Medial(La, Lb) und End(La, Lb) Wort-finale-silben [End(Word, Syllable)=1] usw. 5.2 Position und Boolean &amp; Syntax: Semantik: Bedingung: L = e &amp; Start(La, Lb) = 1 Die Einheit e aus Ebene L kommt am Anfang von La vor La dominiert Lb (L und Lb sind aus der selben Ebene oder sie sind parallel zueinander). Die L und Lb Ebenen, die mit &amp; verbunden sind, sind in diesen Beispielen unterstrichen zB: alle /p/ Phoneme am Anfang einer Syllable [Phoneme = p &amp; Start(Syllable, Phoneme)=1] Alle wort-finalen /m/ Phoneme [Phoneme = m &amp; End(Word, Phoneme)=1] Alle nicht-wort-finalen S-Silben die auch mit einem L+H* Tonakzent etikettiert worden sind [Syllable =S &amp; Pitch_Accent=L+H* &amp; (Word, Syllable)=0] 5.3 Position und Boolean ^ Syntax/Semantik wie bei 5.2, nur: Wenn L und Lb verschiedener Ebenen sind (L dominiert Lb, oder Lb dominiert L) muss ^ statt &amp; verwendet werden: /p/ Phoneme, die in der ersten Silbe des Wortes vorkommen [Phoneme = p ^ Start(Word, Syllable)=1] Alle Phoneme, die nicht in der letzten Silbe des Wortes vorkommen [Phoneme !=x ^ End(Word, Syllable)=0]</li>
+<li>Anzahl 6.1 Einfache Verwendung Syntax: Semantik: Bedingung: Hinweis: Position) Num(La, Lb) = n La enthaelt n Lb Einheiten La dominiert Lb. n ist eine Zahl Die einfache Verwendung erzeugt die Segment-Liste von La (nicht von Lb, wie bei 4-silbige Woerter [Num(Word, Syllable)=4] Es gibt auch &gt; (mehr als), &lt; (weniger als) != gleicht nicht Silben, die mehr als 6 Phoneme haben [Num(Syllable, Phoneme)&gt;6] usw. 6.2 Anzahl und Boolean &amp; Syntax: Semantik: Bedingung: L = e &amp; Num(La, Lb) = n Die Einheit e aus Ebene L wird von La dominiert; und La enthaelt n Lb Einheiten La dominiert Lb (L und La (nicht Lb!) sind aus der selben Ebene oder sie sind parallel zueeinander). Die L und La Ebenen, die mit &amp; verbunden sind, sind in diesen Beispielen unterstrichen Der Text aller Woerter, die aus mehr als 11 Phonemen bestehen: [Text!=x &amp; Num(Text, Phoneme) &gt; 11 ] = [Text!=x &amp; Num(Word, Phoneme) &gt; 11 ] Die H* Ton-Akzente in Silben von 5 Phonemen: [Pitch_Accent = H* &amp; Num(Syllable, Phoneme) = 5] 6.3 Anzahl und ^ Syntax/Semantik wie bei 6.2, nur: Wenn L und La verschiedener Ebenen sind (L dominiert La, oder La dominiert L) muss ^ statt &amp; verwendet werden: alle m Phoneme in 4-silbigen Woertern [Phoneme=m ^ Num(Word, Syllable)=4] alle W-Silben in Woertern von 3 oder weniger Silben [Syllable = W ^ Num(Word, Syllable) &lt; 3] Alle Woerter, die Silben mit 4 Phonemen enthalten [Text!=x ^ Num(Syllable, Phoneme) = 4]</li>
+<li>Kombinationen 7.1 ^ und -&gt; (Domination und Nachfolge) Bedingung Die Reihenfolge -&gt; darf nur parallele (oder die selben) Ebenen verbinden! (Siehe 2.) (Diese sind in den Beispielen unterstrichen) a1-&gt; a2 [[a1 ^ a2] -&gt; a3] [a1 -&gt; [a2 ^ a3]] m kommt vor I und m ist in einer S-Silbe [[Phoneme = m -&gt; Phoneme = I] ^ Syllable=S] s kommt vor p und p ist in einer W-Silbe [Phoneme = s -&gt; [Phoneme = p ^ Syllable = W]] alle S-Silben, die einen p enthalten, und die vor einer S-Silben vorkommen [[Syllable = S ^ Phoneme = p] -&gt; Syllable = S] aber jetzt wir wollen den p also: p ist in einer S-Silbe und diese S-Silbe kommt vor einer S-Silbe [[Phoneme = p ^ Syllable = S] -&gt; Syllable = S] ist verboten! weil Phoneme = p und Syllable = S nicht aus der selben/parallelen Ebene sind daher: [[Syllable = S ^ #Phoneme=p] -&gt; Syllable = S] 7.2 ^ und -&gt; und &amp; (Domination und Nachfolge und Boolean &amp;) Woerter, die mit einem Schwa beginnen: [Text!=x ^ Phoneme = @ &amp; Start(Text, Phoneme)=1] Ein wortanfangs m in einer starken Silbe, der vor einem I kommt [[Phoneme = m &amp; Start(Word, Phoneme)=1 -&gt; Phoneme=I] ^ Syllable=S] das selbe aber wir moechten dessen Text haben: [[[Phoneme = m &amp; Start(Word, Phoneme)=1 -&gt; Phoneme=I] ^ Syllable=S] ^ #Text!=x] Der Text aller dreisilbigen Woerter, die ein schwa in der ersten Silbe enthaelten; diese dreisilbigen Woerter muessen auch vor ‘the’ kommen Der Text aller dreisilbigen Woerter</li>
+<li>Text!=x &amp; Num(Text, Syllable)=3 Schwa kommt in der ersten Silbe vor</li>
+<li>Phoneme=@ ^ Start(Word, Syllable)=1 Der Text ist ‘the’</li>
+<li>Text = the [1 ^ 2][[1 ^ 2] -&gt; 3] [[Text!=x &amp; Num(Text, Syllable) =3 ^ [Phoneme=@ ^ Start(Word, Syllable)=1]] -&gt; Text=the ] Fragen</li>
+<li>m oder n Phoneme die in der Mitte des Wortes vorkommen.</li>
+<li>[H] phonetische Segmente, dann irgendein Segment, dann entweder [I] oder [U]. 3. Silben, die nicht in der Mitte des Wortes vorkommen.</li>
+<li>Der Text aller Woerter, die zwei Silben enthalten.</li>
+<li>Der Text aller akzentuierten Woerter, die ‘the’ folgen</li>
+<li>S-Silben die aus 5 Phonemen bestehen</li>
+<li>W-Silben, die ein /@/ Phonem enthalten.</li>
+<li>Der Text von Woertern, die entweder ein L* oder L+H* Ton-Akzent enthalten.</li>
+<li>H* Ton-Akzente von wortfinalen Silben, die in Woertern von drei Silben vorkommen .</li>
+<li>Alle Phoneme, die die Phonetic-Einheit [H] dominieren, die in der Silbenanfangsposition vorkommen; und die sich in akzentuierten (S) Woerten befinden. b Antworten</li>
+<li>m oder n Phoneme die in der Mitte des Wortes vorkommen. [Phoneme = m | n &amp; Medial(Word, Phoneme)=1]</li>
+<li>[H] phonetische Segmente, dann irgendein Segment, dann entweder [I] oder [U]. [ [Phonetic = H -&gt; Phonetic !=x ] -&gt; Phonetic = I | U ]</li>
+<li>Silben, die nicht in der Mitte des Wortes vorkommen. [Syllable!=x &amp; Medial(Word, Syllable)=0]</li>
+<li>Der Text aller Woerter, die zwei Silben enthalten. [Text!=x &amp; Num(Text, Syllable)=2]</li>
+<li>Der Text aller akzentuierte Woerter, die ‘the’ folgen [Text = the -&gt; #Text!=x &amp; Accent = S]</li>
+<li>S-Silben die aus 5 Phonemen bestehen [Syllable = S ^ Num(Word, Phoneme)=5]</li>
+<li>W-Silben, die ein /@/ Phonem enthalten. [Syllable = W ^ Phoneme=@]</li>
+<li>Der Text von Woertern, die entweder ein L* oder L+H* Ton-Akzent enthalten. [Text!=x ^ Pitch_Accent = L* | L+H*]</li>
+<li>H* Ton-Akzente von wortfinalen Silben, die in Woertern von drei Silben vorkommen [Pitch_Accent = H* &amp; End(Word, Syllable)=1 ^ Num(Word, Syllable) =3] .</li>
+<li>Alle Phoneme, die die Phonetic-Einheit [H] dominieren, die in der Silbenanfangsposition vorkommen; und die sich in akzentuierten (S) Woerten befinden. [[[Phoneme!=x ^ Phonetic = H] ^ Start(Word, Syllable)=1] ^ Accent = S]</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="differences-and-incompatibilities-to-legacy-emu-query-language-r-package-version-4.2" class="section level1">
+<h1>Differences and incompatibilities to legacy EMU query language (R package version 4.2)</h1>
+<div id="function-call-syntax-and-result-type" class="section level2">
+<h2>Function call syntax and result type</h2>
+<p>TODO</p>
+</div>
+<div id="bundle-utterance-names" class="section level2">
+<h2>Bundle (utterance) names</h2>
+<p>emuR package arranges bundles (utterances) in sessions. Converted legacy EMU databases have one default session ‘0000’ containing all bundles. Therefore the ‘utts’ column of all segment lists is prefixed by the session name and starts with ‘0000:’ for example ‘0000:msajc003’.</p>
+</div>
+<div id="interpretation-of-the-hash-character-in-logical-and-combined-terms" class="section level2">
+<h2>Interpretation of the hash character ‘#’ in logical AND combined terms</h2>
+<div id="emu" class="section level4">
+<h4>emu</h4>
+<pre><code>&gt; emu.query('andosl','*','[Text=spring &amp; #Accent=S]')
+moving data from Tcl to R
+Read 1 records
+segment  list from database:  andosl 
+query was:  [Text=spring &amp; #Accent=S] 
+  labels    start      end     utts
+1 spring 2288.959 2704.466 msajc094
+
+&gt; emu.query('andosl','*','[#Text=spring &amp; #Accent=S]')
+moving data from Tcl to R
+Read 1 records
+segment  list from database:  andosl 
+query was:  [#Text=spring &amp; #Accent=S] 
+  labels    start      end     utts
+1 spring 2288.959 2704.466 msajc094</code></pre>
+<p>The hash character has no effect to both queries</p>
+</div>
+<div id="emur" class="section level4">
+<h4>emuR</h4>
+<pre><code>&gt; query(andosl,&quot;[Text=spring &amp; #Accent=S]&quot;,resultType='emusegs')
+segment  list from database:  andosl 
+query was:  [Text=spring &amp; #Accent=S] 
+  labels    start      end          utts
+1      S 2288.975 2704.475 0000:msajc094</code></pre>
+<p>Returns the same segment (same item), but with the label of the hashed attribute name</p>
+<pre><code>&gt; query(andosl,&quot;[#Text=spring &amp; #Accent=S]&quot;,resultType='emusegs')
+ Error in query.database.eql.KONJA(database, qTrim) : 
+  Only one hashtag allowed in linear query term: #Text=spring &amp; #Accent=S </code></pre>
+<p>EQL2 throws an error here, because to fulfill the request it would be necessary to return each item doubled to get both Text and Accent labels</p>
+</div>
+</div>
+<div id="probable-bugs-in-legacy-emu-eql" class="section level2">
+<h2>Probable bugs in legacy EMU EQL</h2>
+<div id="alternative-labels-in-not-equal-conditional-query" class="section level3">
+<h3>Alternative labels in not equal conditional query</h3>
+<div id="legacy-emu" class="section level4">
+<h4>(legacy) emu</h4>
+<pre><code>&gt; emu.query('ae','*',&quot;[Text!=beautiful|futile ^ Phoneme=u:]&quot;)
+moving data from Tcl to R
+Read 4 records
+segment  list from database:  ae 
+query was:  [Text!=beautiful|futile ^ Phoneme=u:] 
+     labels    start      end     utts
+1       new  475.802  666.743 msajc057
+2    futile  571.999 1091.000 msajc010
+3        to 1091.000 1222.389 msajc010
+4 beautiful 2033.739 2604.489 msajc003</code></pre>
+<p>I assume that the OR operator ‘|’ is ignored in connection with the not equal operator ‘!=’</p>
+</div>
+<div id="emur-1" class="section level4">
+<h4>emuR</h4>
+<pre><code>&gt; query(ae,&quot;[Text!=beautiful|futile ^ Phoneme=u:]&quot;,resultType='emusegs')
+segment  list from database:  ae 
+query was:  [Text!=beautiful|futile ^ Phoneme=u:] 
+  labels    start      end          utts
+1     to 1091.025 1222.375 0000:msajc010
+2    new  475.825  666.725 0000:msajc057</code></pre>
+</div>
+</div>
+<div id="crashes-and-compiler-errors" class="section level3">
+<h3>Crashes and compiler errors</h3>
+<pre><code>&gt; emu.query(&quot;andosl&quot;,&quot;*&quot;,&quot;[[Syllable=W -&gt; Syllable=W] ^ [Phoneme=n-&gt; Phoneme=S]]&quot;)
+*** stack smashing detected ***: /usr/lib/R/bin/exec/R terminated
+
+ *** caught segfault ***
+address 0x726f66ff, cause 'memory not mapped'</code></pre>
+<pre><code>&gt; emu.query(&quot;andosl&quot;,&quot;*&quot;,&quot;[[Syllable=W -&gt; Syllable=W] ^ [Phoneme=n-&gt;Phoneme=S]]&quot;)
+Error in structure(.External(&quot;dotTcl&quot;, ..., PACKAGE = &quot;tcltk&quot;), class = &quot;tclObj&quot;) :
+  [tcl] Error in constructor: error compiling query: Expected closing bracket.</code></pre>
+<p>The errors are caused by missing blanks around the ‘-&gt;’ operator. This query string works well: ‘[[Syllable=W -&gt; Syllable=W] ^ [Phoneme=n -&gt; Phoneme=S]]’</p>
+<p>emuR accepts these queries without blanks.</p>
+</div>
+<div id="additional-features" class="section level3">
+<h3>Additional features</h3>
+<p>emuR accepts also the double equal character string ‘==’ as equal operator.</p>
+<p>emuR EQL2 has the capability to query labels by matching regular expressions using the ‘=~’ (match) and ‘!~’ (not match) operators. #### Example</p>
+<pre><code>&gt; query(andosl,&quot;Text=~.*tz.*&quot;,resultType='emusegs')
+segment  list from database:  andosl 
+query was:  Text=~.*tz.* 
+   labels    start      end          utts
+1 blitzed 1586.875 2112.475 0000:msadb081
+2 blitzed 1540.225 2022.475 0000:msajc081</code></pre>
+<div class="references">
+<p>John, Tina. 2012. “Emu Speech Database System.” PhD thesis, LMU-Munich.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
