@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2016-03-24" />
+<meta name="date" content="2016-03-31" />
 
 <title>The emuDB format</title>
 
@@ -69,7 +69,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title">The emuDB format</h1>
 <h3 class="subtitle"><em>The database format of the next iteration of the EMU Speech Database Management System</em></h3>
-<h4 class="date"><em>2016-03-24</em></h4>
+<h4 class="date"><em>2016-03-31</em></h4>
 
 </div>
 
@@ -118,7 +118,7 @@ dbPath =<span class="st"> </span><span class="kw">file.path</span>(<span class="
 <span class="co"># load database</span>
 dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <span class="dt">verbose =</span> F)
 <span class="kw">print</span>(dbHandle)</code></pre></div>
-<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpVtp9VT/fromScratchDB_emuDB')&quot;</code></pre>
+<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpKs3oCv/fromScratchDB_emuDB')&quot;</code></pre>
 <p>This will load the database into it’s cached form for quick access to the data. Note that if a large emuDB has never been loaded and no cache has previously been generated, this can take a while to complete. Once a cache is present only altered annotation files have to be updated which reduces load times dramatically. As you can see the <code>load_emuDB()</code> function returns a database handle. This emuDBhandle is used to reference the loaded database in most database interaction functions of the <code>emuR</code> package.</p>
 <p>Next, let us look at some actual database manipulation functions. The general function prefix naming convention of database manipulation functions for loaded databases are:</p>
 <ul>
@@ -142,8 +142,8 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <s
 <p>alternatively a summary of the emuDB also gives us this as well as additional information:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dbHandle)</code></pre></div>
 <pre><code>## Name:     fromScratchDB 
-## UUID:     73884118-e6f4-4ff8-842d-86f64a6a9a9b 
-## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpVtp9VT/fromScratchDB_emuDB 
+## UUID:     fc6c6d1d-68b6-4263-ad9b-007f97972872 
+## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpKs3oCv/fromScratchDB_emuDB 
 ## Session count: 0 
 ## Bundle count: 0 
 ## Annotation item count:  0 , links count:  0 
