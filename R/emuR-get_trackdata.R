@@ -159,14 +159,13 @@
   # check for sample rate consistancy
   uniqSessionBndls =utils::read.table(text = as.character(dplyr::distinct_(seglist, "utts")$utts), sep = ":", 
                                       col.names = c("session", "bundle"), colClasses = c("character", "character"), stringsAsFactors = F)
-  sesBndls = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM bundle WHERE ", 
-                                                            paste0("session = '", 
-                                                                   uniqSessionBndls$session, 
-                                                                   "' AND ", 
-                                                                   "name = '", 
-                                                                   uniqSessionBndls$bundle, 
-                                                                   "'", 
-                                                                   collapse = " OR ")))
+  DBI::dbGetQuery(emuDBhandle$connection,"CREATE TEMP TABLE uniq_session_bndls_tmp (session TEXT,bundle TEXT)")
+  DBI::dbWriteTable(emuDBhandle$connection, "uniq_session_bndls_tmp", uniqSessionBndls, append = T)
+  sesBndls = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT bundle.db_uuid, bundle.session, bundle.name, bundle.annotates, bundle.sample_rate, bundle.md5_annot_json ",
+                                                            "FROM uniq_session_bndls_tmp, bundle ",
+                                                            "WHERE uniq_session_bndls_tmp.session = bundle.session AND uniq_session_bndls_tmp.bundle = bundle.name"))
+  DBI::dbGetQuery(emuDBhandle$connection,"DROP TABLE uniq_session_bndls_tmp")
+  
   # remove uuid & MD5sum because we don't want to scare our users :-)
   sesBndls$db_uuid = NULL
   sesBndls$MD5annotJSON = NULL
@@ -239,12 +238,13 @@
     }
   }
   
+  prevUtt = ""
   
   # loop through bundle names
   curIndexStart = 1
   for (i in 1:length(seglist$utts)){
-    
-    splUtt = stringr::str_split(seglist$utts[i], ':')[[1]]
+    curUtt = seglist$utts[i]
+    splUtt = stringr::str_split(curUtt, ':')[[1]]
     
     # check if utts entry exists
     bndls = list_bundles(emuDBhandle)
@@ -261,8 +261,11 @@
       qr = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM bundle WHERE db_uuid='", emuDBhandle$UUID, "' AND session='",
                                                           splUtt[1], "' AND name='", splUtt[2], "'"))
       funcFormals$listOfFiles = file.path(emuDBhandle$basePath, paste0(qr$session, session.suffix), paste0(qr$name, bundle.dir.suffix), qr$annotates)
+      # only perform calculation if curUtt is not equal to preUtt
+      if(curUtt != prevUtt){
+        curDObj = do.call(onTheFlyFunctionName, funcFormals)
+      }
       
-      curDObj = do.call(onTheFlyFunctionName, funcFormals)
       if(verbose){
         utils::setTxtProgressBar(pb, i)
       }
@@ -390,7 +393,8 @@
     timeStampRowNames[curIndexStart:curIndexEnd] <- rowSeq
     curIndexStart <- curIndexEnd + 1
     
-    curDObj = NULL
+    prevUtt = curUtt
+    
   }
   
   ########################################

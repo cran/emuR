@@ -14,7 +14,7 @@ requireNamespace("RSQLite", quietly = T)
 ##' to automatically build a hierarchal structure.
 ##' 
 ##' @param dir path to directory containing the TextGridCollection (nested directory structures are permitted as the 
-##' function recusively through directories)
+##' function recursively searches through directories, generating the session names from dir. structure)
 ##' @param dbName name given to the new emuDB
 ##' @param targetDir directory where to save the new emuDB
 ##' @param tgExt extension of TextGrid files (default=TextGrid, meaning file names of the form baseName.TextGrid)
@@ -104,8 +104,6 @@ convert_TextGridCollection <- function(dir, dbName,
   # allBundles object to hold bundles without levels and links
   allBundles = list()
   
-  # create session entry
-  DBI::dbGetQuery(dbHandle$connection, paste0("INSERT INTO session VALUES('", dbHandle$UUID, "', '0000')"))
   
   # loop through fpl
   for(i in 1:dim(fpl)[1]){
@@ -127,7 +125,13 @@ convert_TextGridCollection <- function(dir, dbName,
         stop("Could not create session directory: ", sfp, " !\n")
       }
     }
-    
+
+    # create session entry if it doesn't already exist
+    sesDF = DBI::dbGetQuery(dbHandle$connection, paste0("SELECT * FROM session WHERE name = '", sesName, "'"))
+    if(nrow(sesDF) == 0){    
+      DBI::dbGetQuery(dbHandle$connection, paste0("INSERT INTO session VALUES('", dbHandle$UUID, "', '", sesName, "')"))
+    }
+
     # media file
     mfPath = fpl[i,1]
     mfBn = basename(mfPath)
@@ -185,12 +189,14 @@ convert_TextGridCollection <- function(dir, dbName,
     }
     
   }
-  # store all annotations
-  rewrite_allAnnots(dbHandle, verbose = verbose)
-  
+
   if(verbose){
     cat('\n') # hack to have newline after pb
   }
+
+  # store all annotations
+  rewrite_allAnnots(dbHandle, verbose = verbose)
+  
   
   
 }

@@ -95,6 +95,30 @@ build_levelPathes <- function(emuDBhandle){
   return(pathes)
 }
 
+# get all paths through hierarchy connecting two levels
+get_hierPathsConnectingLevels <- function(emuDBhandle, levelName1, levelName2){
+
+  allHierPaths = build_allHierarchyPaths(load_DBconfig(emuDBhandle))
+  
+  conHierPaths = list()
+  
+  
+  for(p in allHierPaths){
+    # assume levelName1 is above levelName2
+    if(p[1] == levelName1 & p[length(p)] == levelName2){
+      conHierPaths[[length(conHierPaths) + 1]] = p
+    }
+    # assume levelName2 is above levelName1
+    if(p[1] == levelName2 & p[length(p)] == levelName1){
+      conHierPaths[[length(conHierPaths) + 1]] = p
+    }
+    
+  }
+  
+  return(conHierPaths)
+}
+
+
 
 # builds "extended" link definitions
 # lists link definitionsfor every possible directed connection between levels
@@ -154,7 +178,11 @@ get_levelDefinition <- function(emuDBhandle, name){
 ## load function for _DBconfig.json file of emuDB
 load_DBconfig <- function(emuDBhandle){
   dbCfgPath = file.path(emuDBhandle$basePath, paste0(emuDBhandle$dbName, database.schema.suffix))
-  DBconfig = jsonlite::fromJSON(dbCfgPath, simplifyVector=FALSE)
+  if(file.exists(dbCfgPath)){
+    DBconfig = jsonlite::fromJSON(dbCfgPath, simplifyVector=FALSE)
+  }else{
+    stop(dbCfgPath, " does not seem to exist. This could be due to a bad 'name' entry in the DBconfig file. This field has to be the same as the name of the emuDB (directory & _DBconfig.json)")
+  }
   return(DBconfig)
 }
 
