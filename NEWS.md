@@ -1,3 +1,26 @@
+# emuR 0.1.8.9003
+
+## bug fixes
+
+* fixed problem in conversion to JSON with empty items array (object '{}' vs array '[]')
+* fixed problem of keywords "number" | "time" | "xmin" | ... in labels causing TextGrid parser to fail
+* fixed problem with to lax regex in TextGrid parser
+* fixed validation problem with missing levels regarding types
+
+## new features / performance tweaks / improvements
+
+* also allowing "time = " in TextTiers
+* "levels of type 'EVENT' are not allowed to be super levels (== parents) in a domination relationship" constraint enforced in add_linkDefinition
+* added "MEDIAFILE\_SAMPLES" as constant name to access audio samples to get\_trackdata() function
+* improved error message to include tgPath in create_DBconfigFromTextGrid function
+* no integer return value returned by create_emuRdemoData() any more! It was implicitaly returned from wrassp function call...
+* improved the slow overlap checking function in the BPF parser (is now O(n) instead of O(n^2))
+* fixed col naming problems for new (unreleased) RSQLite version
+* added export_TextGridCollection() function
+* improved doc for get_trackdata
+* constant naming of EMU-SDMS vs EMU_SDMS in various files
+* rewriting all annotation file on add\_levelDefinition, remove\_levelDefinition 
+
 # emuR 0.1.8
 
 ## bug fixes

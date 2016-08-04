@@ -1,12 +1,11 @@
 # emuR - Main package of the EMU Speech Database Management System
 
-
 [![Build Status](https://travis-ci.org/IPS-LMU/emuR.png)](https://travis-ci.org/IPS-LMU/emuR)
 [![Coverage Status](https://coveralls.io/repos/IPS-LMU/emuR/badge.svg)](https://coveralls.io/r/IPS-LMU/emuR)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/emuR)](https://cran.r-project.org/package=emuR)
 
 The emuR package provides the next iteration of the EMU Speech 
-Database Management System with database management, data 
+Database Management System (EMU-SDMS) with database management, data 
 extraction, data preparation and data visualization facilities. 
 It also contains a server that 
 is intended to host databases in the emuDB format 
@@ -24,12 +23,30 @@ this URL: [http://ips-lmu.github.io/EMU.html](http://ips-lmu.github.io/EMU.html)
 
 ## Installation
 
-* install the current [CRAN release](https://cran.r-project.org/package=emuR):
+* to install the current [CRAN release](https://cran.r-project.org/package=emuR) simply call:
 ```r
 install.packages("emuR")
 ```
 
-* Download & extract the package from GitHub. Then install it with the following command: 
+As this also installs all of the dependencies (incl. 
+the [wrassp](https://cran.r-project.org/package=wrassp) package) this is 
+the only installation step necessary to install the EMU-SDMS on your system.
+The only other requirement of the EMU-SDMS is a modern web browser (Chrome (recommended!) / Firefox / ...) which
+most people should already have on their systems.
+
+
+## Quick start
+
+* for more information see the `An introduction to the emuR package` vignette:
+```r
+vignette('emuR_intro')
+```
+
+## For Developers / Beta-Testers
+
+### Installation (two alternative methods)
+
+* either download & extract the package from GitHub. Then install it with the following command: 
 ```r
 install.packages("path/to/emuR", repos = NULL, type="source")
 ```
@@ -40,10 +57,3 @@ library(devtools)
 install_github("IPS-LMU/emuR", build_vignettes = TRUE)
 ```
 
-## Quick start
-
-
-* for more information see the `An introduction to the emuR package` vignette: 
-```r
-vignette('emuR_intro')
-```

@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2016-05-02" />
+<meta name="date" content="2016-08-03" />
 
 <title>An Introduction to the emuR package</title>
 
@@ -69,14 +69,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">An Introduction to the emuR package</h1>
 <h3 class="subtitle"><em>The Main Package of the EMU Speech Database Management System</em></h3>
-<h4 class="date"><em>2016-05-02</em></h4>
+<h4 class="date"><em>2016-08-03</em></h4>
 
 
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This document is an introduction to the <code>emuR</code> package and provides an overview of what the package is capable of and how it interacts with the other components of the EMU Speech Database Management System (EMU_SDMS). It is by no means a complete guide to the EMU_SDMS but rather tries to give an outline of what it is like working with and analyzing speech databases in the EMU_SDMS by walking you through a few typical use cases.</p>
-<p>The <code>emuR</code> package can be viewed as the main component of the EMU_SDMS as it acts as the central instance that is able to interact with every component of the system. It takes care of database managing duties by being able to interact with a speech database that is stored in the <code>emuDB</code> format (see <code>emuDB</code> vignette for further details). Further, it has easy to understand and learn yet expressive and powerful querying mechanics that allow the user to easily query the annotation structures of the database (see <code>EQL</code> vignette for further details). Finally it provides easy data extraction capabilities that extracts data (e.g. formant values) which corresponds to the result of a query.</p>
+<p>This document is an introduction to the <code>emuR</code> package and provides an overview of what the package is capable of and how it interacts with the other components of the EMU Speech Database Management System (EMU-SDMS). It is by no means a complete guide to the EMU-SDMS but rather tries to give an outline of what it is like working with and analyzing speech databases in the EMU-SDMS by walking you through a few typical use cases.</p>
+<p>The <code>emuR</code> package can be viewed as the main component of the EMU-SDMS as it acts as the central instance that is able to interact with every component of the system. It takes care of database managing duties by being able to interact with a speech database that is stored in the <code>emuDB</code> format (see <code>emuDB</code> vignette for further details). Further, it has easy to understand and learn yet expressive and powerful querying mechanics that allow the user to easily query the annotation structures of the database (see <code>EQL</code> vignette for further details). Finally it provides easy data extraction capabilities that extracts data (e.g. formant values) which corresponds to the result of a query.</p>
 <p>If a database in the <code>emuDB</code> format is present, the typical workflow in <code>emuR</code> is usually something like this:</p>
 <ol style="list-style-type: decimal">
 <li>Load database into current R session - <code>load_emuDB</code></li>
@@ -90,7 +90,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="converting-existing-databases" class="section level1">
 <h1>Converting existing databases</h1>
-<p>As most people that are starting to use the EMU_SDMS will probably already have some form of annotated data, we will initially show how to easily convert this existing data to the <code>emuDB</code> format (for a guide on how to create an <code>emuDB</code> from scratch and for information about this format see the <code>emuDB</code> vignette).</p>
+<p>As most people that are starting to use the EMU-SDMS will probably already have some form of annotated data, we will initially show how to easily convert this existing data to the <code>emuDB</code> format (for a guide on how to create an <code>emuDB</code> from scratch and for information about this format see the <code>emuDB</code> vignette).</p>
 <div id="legacy-emu-databases" class="section level2">
 <h2>legacy EMU databases</h2>
 <p>For people transitioning to <code>emuR</code> from the legacy EMU system, <code>emuR</code> provides a function for converting existing legacyEmuDBs to the new <code>emuDB</code> format. Here is an example of how to use this function:</p>
@@ -153,7 +153,7 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder, <sp
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(ae)</code></pre></div>
 <pre><code>## Name:     ae 
 ## UUID:     0fc618dc-8980-414d-8c7a-144a649ce199 
-## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpsjzKUH/emuR_demoData/ae_emuDB 
+## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpxYZ1zH/emuR_demoData/ae_emuDB 
 ## Session count: 1 
 ## Bundle count: 7 
 ## Annotation item count:  736 
@@ -206,7 +206,7 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder, <sp
 </div>
 <div id="database-annotation-visual-inspection" class="section level2">
 <h2>Database annotation / visual inspection</h2>
-<p>The EMU_SDMS has a fairly unique approach to annotating and visually inspecting databases, as it utilizes a web application called the EMU-webApp to act as its graphical user interface. To be able to transfer the necessary data to the web application let’s now serve the <code>emuDB</code> to it by using the <code>serve()</code> function:</p>
+<p>The EMU-SDMS has a fairly unique approach to annotating and visually inspecting databases, as it utilizes a web application called the EMU-webApp to act as its graphical user interface. To be able to transfer the necessary data to the web application let’s now serve the <code>emuDB</code> to it by using the <code>serve()</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">serve</span>(ae)</code></pre></div>
 <p>Executing this command will block your R console and show you the following message:</p>
 <pre><code>Navigate your browser to the EMU-webApp URL: http://ips-lmu.github.io/EMU-webApp/
@@ -485,7 +485,7 @@ meanFirstMoments</code></pre></div>
 </div>
 <div id="further-reading" class="section level1">
 <h1>Further reading</h1>
-<p>In this vignette we tried to give you a quick practical overview of what it is like working with the emuR package that is part of the EMU_SDMS. If you are new to the system we definitely also recommend that you read the <code>emuDB</code> and <code>EQL</code> vignettes that are part of the <code>emuR</code> package. These will give more insight into the structure of / how you can interact with with <code>emuDB</code>s and what the EMU Query Language offers. As the new EMU system has kept most of the concepts of the legacy EMU system in place it is definitely also worth looking at Jonathan Harrington’s Book <em>Phonetic Analysis of Speech Corpora</em> <span class="citation">(Harrington 2010)</span>.</p>
+<p>In this vignette we tried to give you a quick practical overview of what it is like working with the emuR package that is part of the EMU-SDMS. If you are new to the system we definitely also recommend that you read the <code>emuDB</code> and <code>EQL</code> vignettes that are part of the <code>emuR</code> package. These will give more insight into the structure of / how you can interact with with <code>emuDB</code>s and what the EMU Query Language offers. As the new EMU system has kept most of the concepts of the legacy EMU system in place it is definitely also worth looking at Jonathan Harrington’s Book <em>Phonetic Analysis of Speech Corpora</em> <span class="citation">(Harrington 2010)</span>.</p>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>

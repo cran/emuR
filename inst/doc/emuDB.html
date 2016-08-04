@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2016-05-02" />
+<meta name="date" content="2016-08-03" />
 
 <title>The emuDB format</title>
 
@@ -69,7 +69,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">The emuDB format</h1>
 <h3 class="subtitle"><em>The database format of the next iteration of the EMU Speech Database Management System</em></h3>
-<h4 class="date"><em>2016-05-02</em></h4>
+<h4 class="date"><em>2016-08-03</em></h4>
 
 
 
@@ -120,7 +120,7 @@ dbPath =<span class="st"> </span><span class="kw">file.path</span>(<span class="
 <span class="co"># load database</span>
 dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <span class="dt">verbose =</span> F)
 <span class="kw">print</span>(dbHandle)</code></pre></div>
-<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpsjzKUH/fromScratchDB_emuDB')&quot;</code></pre>
+<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpxYZ1zH/fromScratchDB_emuDB')&quot;</code></pre>
 <p>This will load the database into it’s cached form for quick access to the data. Note that if a large emuDB has never been loaded and no cache has previously been generated, this can take a while to complete. Once a cache is present only altered annotation files have to be updated which reduces load times dramatically. As you can see the <code>load_emuDB()</code> function returns a database handle. This emuDBhandle is used to reference the loaded database in most database interaction functions of the <code>emuR</code> package.</p>
 <p>Next, let us look at some actual database manipulation functions. The general function prefix naming convention of database manipulation functions for loaded databases are:</p>
 <ul>
@@ -144,8 +144,8 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <s
 <p>alternatively a summary of the emuDB also gives us this as well as additional information:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dbHandle)</code></pre></div>
 <pre><code>## Name:     fromScratchDB 
-## UUID:     d84eb72e-3360-4ed6-aa89-14194ff2c1c9 
-## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpsjzKUH/fromScratchDB_emuDB 
+## UUID:     3fe7ef00-6295-4715-8951-9eb72afc1323 
+## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpxYZ1zH/fromScratchDB_emuDB 
 ## Session count: 0 
 ## Bundle count: 0 
 ## Annotation item count:  0 
@@ -544,7 +544,7 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(<span clas
 <ul>
 <li><code>&quot;name&quot;</code> specifying the name of the database</li>
 <li><code>&quot;UUID&quot;</code> a unique ID given to each database</li>
-<li><code>&quot;mediafileExtension&quot;</code> the main mediafileExtension (<em>currently only uncompressed mono 16-bit <code>.wav</code> files are supported in every component of the EMU system. This is also the recommended audio format for the EMU_SDMS.</em>)</li>
+<li><code>&quot;mediafileExtension&quot;</code> the main mediafileExtension (<em>currently only uncompressed mono 16-bit <code>.wav</code> files are supported in every component of the EMU system. This is also the recommended audio format for the EMU-SDMS.</em>)</li>
 <li><code>&quot;ssffTrackDefinitions&quot;</code> an array of definitions defining the SSFF tracks of the database. Each ssffTrackDefinition consists of:</li>
 <li><code>&quot;name&quot;</code> the name of the ssffTrackDefinition</li>
 <li><code>&quot;columnName&quot;</code> the name of the column of the associated SSFF file. For more information on the columns the various function of the <code>wrassp</code> produce see the track fields of <code>wrasspOutputInfos</code> object that is part of the <code>wrassp</code> package. Further, although the SSFF file format is a binary file format it has a plain text header which means that if you open a SSFF file in the text editor of your choice you will be able to see the columns contained within it. Another way of accessing column information about a specific SSFF file is to use the <code>wrassp</code> function <code>res = read.AsspDataObj('/path/2/SSFF/file')</code> to read the file from the file system. <code>names(res)</code> will then give you the names of the columns present in this file. <em>NOTE: In the context of the SSFF file format the term column and in the context of the EMU system the term track / ssffTrack is used. They both refer to the same data.</em></li>

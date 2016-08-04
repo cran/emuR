@@ -42,8 +42,9 @@ annotJSONcharToBundleAnnotDFs <- function(annotJSONchar){
     tidyjson::enter_object("labels") %>%
     tidyjson::gather_array(column.name = "label_idx") %>%
     tidyjson::spread_values(name = tidyjson::jstring("name"), label = tidyjson::jstring("value")) %>%
-    dplyr::select_(~itemID, ~label_idx, ~name, ~label)
-  
+    dplyr::select_(~itemID, ~label_idx, ~name, ~label) %>%
+    dplyr::rename_("item_id" = "itemID")
+                 
   return(list(name = tlData$name, annotates = tlData$annotates, sampleRate = tlData$sampleRate, items = items, links = links, labels = labels))
   
 }
@@ -87,6 +88,13 @@ bundleAnnotDFsToAnnotJSONchar <- function(emuDBhandle, annotDFs){
     links = apply(annotDFs$links, 1, function(r) list(fromID = as.numeric(r[1]), toID = as.numeric(r[2])))
   }else{
     links = list()
+  }
+  
+  # reset null entries of empty items to list for correct cohesion into json
+  for(i in 1:length(levels)){
+    if(is.null(levels[[i]]$items)){
+      levels[[i]]$items = list()
+    }
   }
   
   annotJSON = list(name = annotDFs$name,
