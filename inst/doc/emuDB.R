@@ -226,11 +226,12 @@ add_linkDefinition(dbHandle, type = "ONE_TO_MANY",
 # list
 list_linkDefinitions(dbHandle)
 
-# envoke autobuild function
+# invoke autobuild function
 autobuild_linkFromTimes(dbHandle,
                        superlevelName = "Syllable",
                        sublevelName = "Phoneme",
-                       convertSuperlevel = TRUE)
+                       convertSuperlevel = TRUE,
+                       verbose = FALSE)
 
 # list
 list_levelDefinitions(dbHandle)
@@ -248,7 +249,8 @@ list_linkDefinitions(dbHandle)
 autobuild_linkFromTimes(dbHandle,
                        superlevelName = "Phoneme",
                        sublevelName = "Phonetic",
-                       convertSuperlevel = TRUE)
+                       convertSuperlevel = TRUE,
+                       verbose = FALSE)
 
 # list
 list_levelDefinitions(dbHandle)

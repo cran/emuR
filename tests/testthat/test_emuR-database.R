@@ -49,9 +49,6 @@ test_that("database functions work", {
     convLabels = DBI::dbReadTable(aeFromLegacy$connection, "labels")
     expect_equal(origLabels, convLabels)
     
-    origLinksExt = DBI::dbReadTable(ae$connection, "links_ext")
-    convLinksExt = DBI::dbReadTable(aeFromLegacy$connection, "links_ext")
-    expect_equal(origLinksExt, convLinksExt)
   })
   
   test_that("properties of ae are correct",{
@@ -80,6 +77,7 @@ test_that("database functions work", {
     t1BasePath=file.path(path2testData,'create_emuDB_test1_emuDB')
     t1=load_emuDB(t1BasePath)
     expect_that(t1$dbName,is_equivalent_to('create_emuDB_test1'))
+    t1 = NULL
     unlink(t1BasePath,recursive = T)
   })
   
@@ -176,11 +174,9 @@ test_that("database functions work", {
     orgItems=DBI::dbGetQuery(ae$connection, paste0("SELECT * FROM items WHERE db_uuid='",ae$UUID,"'"))
     orgLabels=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM labels WHERE db_uuid='",ae$UUID,"'"))
     orgLinks=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
-    orgLinksExt=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links_ext WHERE db_uuid='",ae$UUID,"'"))
     
     expect_equivalent(nrow(orgItems),736)
     expect_equivalent(nrow(orgLinks),785)
-    expect_equivalent(nrow(orgLinksExt),3950)
     # b015=get.bundle(sessionName='0000',bundleName = 'msajc015',dbUUID = .test_emu_ae_db_uuid)
     bundleAnnotDFs = load_bundleAnnotDFsDBI(ae, "0000", "msajc015")
     b015char = bundleAnnotDFsToAnnotJSONchar(ae, bundleAnnotDFs)
@@ -197,20 +193,14 @@ test_that("database functions work", {
     bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(b015mChar[1])
     remove_bundleAnnotDBI(ae, "0000", bundleName = "msajc015")
     store_bundleAnnotDFsDBI(ae, bundleAnnotDFs, "0000", "msajc015")
-    # build redundat links and calc positions
-    build_allRedundantLinks(ae, "0000", "msajc015")
-    calculate_postionsOfLinks(ae)
-    
     # store.bundle.annotation(dbUUID=.test_emu_ae_db_uuid,bundle=b015m)
     
     modItems=DBI::dbGetQuery(ae$connection, paste0("SELECT * FROM items WHERE db_uuid='",ae$UUID,"'"))
     modLabels=DBI::dbGetQuery(ae$connection, paste0("SELECT * FROM labels WHERE db_uuid='",ae$UUID,"'"))
     modLinks=DBI::dbGetQuery(ae$connection, paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
-    modLinksExt=DBI::dbGetQuery(ae$connection, paste0("SELECT * FROM links_ext WHERE db_uuid='",ae$UUID,"'"))
     
     expect_equivalent(nrow(modItems),736)
     expect_equivalent(nrow(modLinks),785)
-    expect_equivalent(nrow(modLinksExt),3950)
     
     # change only affects labels
     # items should be equal
@@ -220,7 +210,6 @@ test_that("database functions work", {
     expect_false(cmLbls1$result)
     # links are not changed, should be equal to original
     expect_equal(orgLinks,modLinks)
-    expect_equal(orgLinksExt,modLinksExt)
     
     b015m[['levels']][[7]][['items']][[10]][['sampleDur']] = 99
     # store.bundle.annotation(dbUUID=.test_emu_ae_db_uuid,bundle=b015m)
@@ -229,18 +218,13 @@ test_that("database functions work", {
     bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(b015mChar[1])
     remove_bundleAnnotDBI(ae, "0000", bundleName = "msajc015")
     store_bundleAnnotDFsDBI(ae, bundleAnnotDFs, "0000", "msajc015")
-    # build redundat links and calc positions
-    build_allRedundantLinks(ae, "0000", "msajc015")
-    calculate_postionsOfLinks(ae)
-    
+
     mod2Items=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM items WHERE db_uuid='",ae$UUID,"'"))
     mod2Labels=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM labels WHERE db_uuid='",ae$UUID,"'"))
     mod2Links=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
-    mod2LinksExt=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links_ext WHERE db_uuid='",ae$UUID,"'"))
     
     expect_equivalent(nrow(mod2Items),736)
     expect_equivalent(nrow(mod2Links),785)
-    expect_equivalent(nrow(mod2LinksExt),3950)
     #   
     #   # should all be equal to original 
     cm2=compare(orgItems,mod2Items,allowAll=TRUE)
@@ -249,8 +233,6 @@ test_that("database functions work", {
     expect_false(cmLbls2$result)
     cml2=compare(orgLinks,mod2Links,allowAll=TRUE)
     expect_true(cml2$result)
-    cmle2=compare(orgLinksExt,mod2LinksExt,allowAll=TRUE)
-    expect_true(cmle2$result)
     
     # remove link
     b015Lks=b015m[['links']]
@@ -268,19 +250,13 @@ test_that("database functions work", {
     bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(b015m2Char[1])
     remove_bundleAnnotDBI(ae, "0000", bundleName = "msajc015")
     store_bundleAnnotDFsDBI(ae, bundleAnnotDFs, "0000", "msajc015")
-    # build redundat links and calc positions
-    build_allRedundantLinks(ae, "0000", "msajc015")
-    calculate_postionsOfLinks(ae)
-    
     
     mod3Items=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM items WHERE db_uuid='",ae$UUID,"'"))
     mod3Labels=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM labels WHERE db_uuid='",ae$UUID,"'"))
     mod3Links=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
-    mod3LinksExt=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links_ext WHERE db_uuid='",ae$UUID,"'"))
     
     expect_equivalent(nrow(mod3Items),736)
     expect_equivalent(nrow(mod3Links),784)
-    #expect_equivalent(nrow(mod2LinksExt),3950)
     
     cm3=compare(mod3Items,mod2Items,allowAll=TRUE)
     expect_true(cm3$result)
@@ -288,8 +264,6 @@ test_that("database functions work", {
     expect_true(cmLbls3$result)
     cml3=compare(mod3Links,mod2Links,allowAll=TRUE)
     expect_false(cml3$result)
-    cmle3=compare(mod3LinksExt,mod2LinksExt,allowAll=TRUE)
-    expect_false(cmle3$result)
     
     # insert the link again
     # b015m3=get.bundle(dbUUID = .test_emu_ae_db_uuid,sessionName = '0000',bundleName = 'msajc015')
@@ -307,10 +281,6 @@ test_that("database functions work", {
     bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(b015m3Char[1])
     remove_bundleAnnotDBI(ae, "0000", bundleName = "msajc015")
     store_bundleAnnotDFsDBI(ae, bundleAnnotDFs, "0000", "msajc015")
-    # build redundat links and calc positions
-    build_allRedundantLinks(ae, "0000", "msajc015")
-    calculate_postionsOfLinks(ae)
-    
     
     mod4Links=DBI::dbGetQuery(ae$connection, paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
     cml3=compare(orgLinks,mod4Links,allowAll=TRUE)
@@ -329,28 +299,24 @@ test_that("database functions work", {
     bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(b015Char[1])
     remove_bundleAnnotDBI(ae, "0000", bundleName = "msajc015")
     store_bundleAnnotDFsDBI(ae, bundleAnnotDFs, "0000", "msajc015")
-    # build redundat links and calc positions
-    build_allRedundantLinks(ae, "0000", "msajc015")
-    calculate_postionsOfLinks(ae)
+
     #   
     modOrgItems=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM items WHERE db_uuid='",ae$UUID,"'"))
     modOrgLabels=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM labels WHERE db_uuid='",ae$UUID,"'"))
     modOrgLinks=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
-    modOrgLinksExt=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links_ext WHERE db_uuid='",ae$UUID,"'"))
     
     expect_equivalent(nrow(modOrgItems),736)
     expect_equivalent(nrow(modOrgLinks),785)
-    expect_equivalent(nrow(modOrgLinksExt),3950)
+    
     #   
     #   # should all be equal to original 
     cm2=compare(orgItems,modOrgItems,allowAll=TRUE)
     expect_true(cm2$result)
-    cmLbls2=compare(dplyr::arrange(orgLabels, bundle, item_id), dplyr::arrange(modOrgLabels, bundle, item_id),allowAll=TRUE)
+    cmLbls2=compare(dplyr::arrange(orgLabels, bundle, item_id), dplyr::arrange(modOrgLabels, bundle, item_id))
+    compare(orgLabels, modOrgLabels,allowAll=TRUE)
     expect_true(cmLbls2$result)
     cml2=compare(orgLinks,modOrgLinks,allowAll=TRUE)
     expect_true(cml2$result)
-    cmle2=compare(orgLinksExt,modOrgLinksExt,allowAll=TRUE)
-    expect_true(cmle2$result)
     
     b015ModInsrt=b015
     # insert segment
@@ -399,9 +365,6 @@ test_that("database functions work", {
     bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(b015ModInsrtChar[1])
     remove_bundleAnnotDBI(ae, "0000", bundleName = "msajc015")
     store_bundleAnnotDFsDBI(ae, bundleAnnotDFs, "0000", "msajc015")
-    # build redundat links and calc positions
-    build_allRedundantLinks(ae, "0000", "msajc015")
-    calculate_postionsOfLinks(ae)
     
     # read again
     # b015Read=get.bundle(sessionName='0000',bundleName = 'msajc015',dbUUID = .test_emu_ae_db_uuid)
@@ -421,7 +384,15 @@ test_that("database functions work", {
     
     
   })
+  ######################
   # cleanup
+  
+  # delete vars to be safe (& to diconnect)
+  DBI::dbDisconnect(ae$connection)
+  DBI::dbDisconnect(aeFromLegacy$connection)
+  ae = NULL
+  aeFromLegacy = NULL
+  
   unlink(file.path(path2testData, "fromLegacy"), recursive = T)
   unlink(unlink(path2db, recursive = T), recursive = T)
 })
@@ -442,21 +413,76 @@ test_that("store works correctly",{
   aeItems=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM items WHERE db_uuid='",ae$UUID,"'"))
   aeLabels=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM labels WHERE db_uuid='",ae$UUID,"'"))
   aeLinks=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links WHERE db_uuid='",ae$UUID,"'"))
-  aeLinksExt=DBI::dbGetQuery(ae$connection,paste0("SELECT * FROM links_ext WHERE db_uuid='",ae$UUID,"'"))
   
   aeStoredItems=DBI::dbGetQuery(aeStored$connection,paste0("SELECT * FROM items WHERE db_uuid='",aeStored$UUID,"'"))
   aeStoredLabels=DBI::dbGetQuery(aeStored$connection,paste0("SELECT * FROM labels WHERE db_uuid='",aeStored$UUID,"'"))
   aeStoredLinks=DBI::dbGetQuery(aeStored$connection,paste0("SELECT * FROM links WHERE db_uuid='",aeStored$UUID,"'"))
-  aeStoredLinksExt=DBI::dbGetQuery(aeStored$connection,paste0("SELECT * FROM links_ext WHERE db_uuid='",aeStored$UUID,"'"))
   
   # check that all tabels are the same
-  expect_equal(aeItems, aeStoredItems)
+  # expect_equal(aeItems, aeStoredItems) # new index on items table results in different seq. of items hence:
+  cres = compare(aeItems, aeStoredItems, allowAll = T)
+  expect_true(cres$result)
   expect_equal(aeLabels, aeStoredLabels)
   expect_equal(aeLinks, aeStoredLinks)
-  expect_equal(aeLinksExt, aeStoredLinksExt)
   
+  ####################
   # cleanup
+  
+  # delete vars to be safe (& to diconnect  ae = NULL
+  DBI::dbDisconnect(aeStored$connection)
+  DBI::dbDisconnect(ae$connection)
+  aeStored = NULL
+  ae = NULL
   unlink(file.path(path2testData, "fromStore"), recursive = T)
+  unlink(path2db, recursive = T)
 })
 
+test_that("rename works correctly",{
+  
+  # delete, copy and load
+  unlink(path2db, recursive = T)
+  unlink(file.path(path2testData, "fromStore"), recursive = T)
+  file.copy(path2orig, path2testData, recursive = T)
+  
+  rename_emuDB(path2db, "aeRename")
+  newPath = file.path(path2testData, paste0("aeRename", "_emuDB"))
+  
+  DBconfig = jsonlite::fromJSON(file.path(newPath, "aeRename_DBconfig.json"), simplifyVector=FALSE)
+  expect_equal(DBconfig$name, "aeRename")
+  
+  expect_true("aeRename_emuDB" %in% list.files(path2testData))
+  expect_true("aeRename_emuDBcache.sqlite" %in% list.files(newPath))
+  
+  # cleanup
+  unlink(newPath, recursive = T)
+})
+
+test_that("load of read only emuDB works",{
+  skip_on_cran() # probably won't work on windows (because of mode) so skip on cran
+  skip_on_os("windows")
+  
+  # delete, copy and load
+  unlink(path2db, recursive = T)
+  unlink(file.path(path2testData, "fromStore"), recursive = T)
+  file.copy(path2orig, path2testData, recursive = T)
+  
+  # change emuDB folder to r-x only for everyone
+  Sys.chmod(path2db, mode = "555")
+  ae = load_emuDB(path2db, inMemoryCache = internalVars$testingVars$inMemoryCache, verbose = F)
+  sl = query(ae, "Phonetic == n")
+  expect_true("emuRsegs" %in% class(sl))
+  Sys.chmod(path2db, mode = "755") # change back
+  
+  # change emuDBcache.sqlite to 
+  Sys.chmod(file.path(path2db, "ae_emuDBcache.sqlite"), mode = "555")
+  ae = load_emuDB(path2db, inMemoryCache = internalVars$testingVars$inMemoryCache, verbose = F)
+  sl = query(ae, "Phonetic == n")
+  expect_true("emuRsegs" %in% class(sl))
+  Sys.chmod(path2db, mode = "755") # change back
+  
+  # cleanup
+  DBI::dbDisconnect(ae$connection)
+  ae = NULL
+  unlink(path2db, recursive = T)
+})
 

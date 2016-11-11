@@ -17,7 +17,7 @@ This document is an introduction to the `emuR` package and provides an overview 
   
 The `emuR` package can be viewed as the main component of the EMU-SDMS as it acts as the central instance that is able to interact with every component of the system. It takes care of database managing duties by being able to interact with a speech database that is stored in the `emuDB` format (see `emuDB` vignette for further details). Further, it has easy to understand and learn yet expressive and powerful querying mechanics that allow the user to easily query the annotation structures of the database (see `EQL` vignette for further details). Finally it provides easy data extraction capabilities that extracts data (e.g. formant values) which corresponds to the result of a query.
   
-If a database in the `emuDB` format is present, the typical workflow in `emuR` is usually something like this:
+If a database in the `emuDB` format is present, the typical work-flow in `emuR` is usually something like this:
   
 1. Load database into current R session - `load_emuDB`
 2. Database annotation / visual inspection - `serve` and connect the EMU-webApp to the local server
@@ -251,15 +251,19 @@ class(td)
 As we are dealing with a `data.table` / `data.frame` we can now simply use a package like `ggplot2` to visualize our F1/F2 distribution:
 
 ```{r, fig.height = 5, fig.width = 5}
-# load package
-library(ggplot2)
+# check if ggplot2 package is available (install separately with 
+# install.packages("ggplot2") if not available on your system)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  # load package
+  library(ggplot2)
 
-# scatter plot of F1 and F2 values using ggplot
-ggplot(td, aes(x=T2, y=T1, label=td$labels)) + 
-  geom_text(aes(colour=factor(labels))) + 
-  scale_y_reverse() + scale_x_reverse() + 
-  labs(x = "F2(Hz)", y = "F1(Hz)") +
-  guides(colour=FALSE)
+  # scatter plot of F1 and F2 values using ggplot
+  ggplot(td, aes(x=T2, y=T1, label=td$labels)) + 
+    geom_text(aes(colour=factor(labels))) + 
+    scale_y_reverse() + scale_x_reverse() + 
+    labs(x = "F2(Hz)", y = "F1(Hz)") +
+    guides(colour=FALSE)
+}
 ```
 
 ## 3.) What words do the phonetic segments that carry the labels s, z, S or Z in the 'ae' emuDB occur in and what is their preceding phonetic context?
@@ -332,7 +336,7 @@ using either `requery_hier()` or `requery_seq()` to be "in sync" with each other
 
 ## 4.) Do the sibilant Phonetic segments that carry the labels s; z; S or Z in the 'ae' emuDB differ with respect to their first spectral moment?
 
-Once again let's query the `emuDB` for the segments we are interested in (this time using the new regex operand:=~):
+Once again let's query the `emuDB` for the segments we are interested in (this time using the new RegEx operand:=~):
 
 ```{r}
 sibil = query(ae,"Phonetic=~'[szSZ]'")

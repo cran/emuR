@@ -42,13 +42,13 @@ query(ae, "[#Phonetic == @ -> Phonetic == n]")
 query(ae, "[Phonetic == @ -> #Phonetic == n]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[[Phonetic == @ -> Phonetic == n ] -> Phonetic =~ s]")
+query(ae, "[[Phonetic == @ -> Phonetic == n ] -> Phonetic == s]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
 query(ae, "[[Text == to -> Text == offer ] -> Text == any]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[[[Text =~ offer -> Text =~ .*] -> Text =~ .* ] -> Text == resistance]")
+query(ae, "[[[Text == offer -> Text =~ .*] -> Text =~ .* ] -> Text == resistance]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
 query(ae, "[Text == always & Word == C]")
@@ -79,19 +79,19 @@ query(ae, "[[#Phonetic =~ .* ^ Syllable == S] ^ Text == amongst | beautiful]")
 query(ae, "[[Phonetic =~ .* ^ Syllable == S] ^ #Text == amongst | beautiful]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[Start(Word, Syllable) == 1]")
+query(ae, "[Start(Word, Syllable) == TRUE]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[Start(Word, Phoneme) == 1]")
+query(ae, "[Start(Word, Phoneme) == TRUE]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[Start(Word, Syllable) == 0]")
+query(ae, "[Start(Word, Syllable) == FALSE]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[End(Word, Syllable) == 1]")
+query(ae, "[End(Word, Syllable) == TRUE]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
-query(ae, "[Medial(Word, Syllable) == 1]")
+query(ae, "[Medial(Word, Syllable) == TRUE]")
 
 ## ----results='hide', message=FALSE, warning=FALSE------------------------
 query(ae, "[Phoneme == n & Start(Syllable, Phoneme) == 1]")

@@ -18,7 +18,7 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
     stop("Argument hlbFilepath must not be NULL\n")
   }
   
-  # read
+  # read file contents
   if(is.null(encoding)){
     lines = try(readLines(hlbFilePath))
   }else{
@@ -54,6 +54,7 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
   for(lnr in 3:lineCount){
     line=lines[[lnr]]
     if(line==''){
+      # empty line marks beginning of new level 
       if(!is.null(currentTierName)){
         # look for already existing (labfile) tier
         tierExists=FALSE
@@ -152,21 +153,13 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
         # Add label of tier name
         attrs[[length(attrs)+1]]=list(name=currentTierName,value=label)
         
-        # add optional other labels
-        if(lineTokenCount>=3){  
+        # add optional other attribute labels
+        if(lineTokenCount>=3){
+          attrIdx=length(attrs)+1
           for(ti in 3:lineTokenCount){
-            attrDefCnt=length(currentLevelDef[['attributeDefinitions']])
-            
-            # ALC db has not the same sequence of attributes in .tpl and .hlb files
-            # set the label key/values according to the order in HLB file 
-            for(attrIdx in 1:attrDefCnt){
-              ldAttrDef=currentLevelDef[['attributeDefinitions']][[attrIdx]]
-              if(ldAttrDef[['name']]==attrDefSeq[ti-2]){
-                l=lineTokens[[ti]]
-                attrs[[attrIdx]]=list(name=ldAttrDef[['name']],value=l)
-              }
-            }
-            
+            attrNm=attrDefSeq[ti-2]
+            attrs[[attrIdx]]=list(name=attrNm,value=lineTokens[[ti]])
+            attrIdx=attrIdx+1
           }
         }
         id=as.integer(firstTk)
@@ -190,11 +183,11 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
               
               ldAttrDef=NULL
               if(tk!=currentTierName){
-                # ALC db has not the same sequence of attributes in .tpl and .hlb files
+                # ALC db does not have the same sequence of attributes in .tpl and .hlb files
                 for(attrDef in td[['attributeDefinitions']]){
                   if(attrDef[['name']]==tk){
                     ldAttrDef=attrDef
-                    # create sequnece order of label names (keys) from HLB file 
+                    # create sequence order of label names (keys) from HLB file 
                     attrDefSeq=c(attrDefSeq,tk)
                     break
                   } 

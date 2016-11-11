@@ -1,10 +1,43 @@
-# emuR 0.1.8.9003
+# emuR 0.2.0
+
+## bug fixes
+
+* fixed bad DBconfig gen. on add_perspective
+* fixed list\_linkDefinitions() returning strings as factors
+* fixed bad error message when passing in ITEM levels to autobuild\_linkFromTimes()
+* fixed incorrect handling of DBconfig when writeToFS was set to FALSE (writeToFS is now called rewriteAllAnnots)
+
+## new features / performance tweaks / improvements
+
+* rewrite of query engine to not require links_ext table any more (== redundant links)
+* calcTimes parameter added to query() / requery\_seq() / requery\_hier() to make calculating times optional (extreme performance boost if no times have to be calculated)
+* rewrite of annotJSONcharToBundleAnnotDFs() for faster loads emuDBs containing large annotJSONs
+* replaced tidyjson as annot.json parser with own solution at tidyjson didn't scale well on larger annotation files
+* added verbose parameter to export\_TextGridCollection()
+* improved pre-check of dir exists in export\_TextGridCollection()
+* added new replace\_itemLabels function
+* improved export\_TextGridCollection() doc
+* improved replace_itemLables() speed
+* implemented rename\_emuDB() (\#116)
+* implemented duplicate\_level() (\#113)
+* implemented linkDuplicates parameter in duplicate\_level()
+* autobuild\_linkFromTimes() speed improvements
+* FUNCQ queries (start(),end(), medial()) now additionally support TRUE & FALSE and T & F values (vs. 0 & 1) 
+* added attrDefNames column to list\_levelDefinitions() output
+* can now deal with read only emuDBs by copying the cache to tempdir() and making it writable for the user
+* added start\_item\_seq\_idx and end\_item\_seq\_idx to emuRsegs object
+* added start\_item\_seq\_idx and end\_item\_seq\_idx type values to all intermediate result tables
+* added optional function to reduce hierarchical query results to left and right most children only (large performance gain on calcTimes = T)
+* rewriting annot.json files now updates MD5 sums as well (avoids unnecessary reload on next load\_emuDB)
+* rewriting annot.json files now writes all (including empty / missing) attributeDef. labels
+
+# emuR 0.1.9
 
 ## bug fixes
 
 * fixed problem in conversion to JSON with empty items array (object '{}' vs array '[]')
 * fixed problem of keywords "number" | "time" | "xmin" | ... in labels causing TextGrid parser to fail
-* fixed problem with to lax regex in TextGrid parser
+* fixed problem with to lax RegEx in TextGrid parser
 * fixed validation problem with missing levels regarding types
 
 ## new features / performance tweaks / improvements
@@ -13,7 +46,7 @@
 * "levels of type 'EVENT' are not allowed to be super levels (== parents) in a domination relationship" constraint enforced in add_linkDefinition
 * added "MEDIAFILE\_SAMPLES" as constant name to access audio samples to get\_trackdata() function
 * improved error message to include tgPath in create_DBconfigFromTextGrid function
-* no integer return value returned by create_emuRdemoData() any more! It was implicitaly returned from wrassp function call...
+* no integer return value returned by create_emuRdemoData() any more! It was implicitly returned from wrassp function call...
 * improved the slow overlap checking function in the BPF parser (is now O(n) instead of O(n^2))
 * fixed col naming problems for new (unreleased) RSQLite version
 * added export_TextGridCollection() function
@@ -70,7 +103,7 @@ of either -> or ^ operand (e.g. query (ae ,  "[[[Phonetic = n -> Phonetic =z] ->
 
 # emuR 0.1.2.9000
 
-* multiple check fixes on various plattforms
+* multiple check fixes on various platforms
 
 # emuR 0.1.1.9000
 

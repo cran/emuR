@@ -8,16 +8,15 @@
 ##' can lead to information loss. So use with caution and at own risk as reimporting the exported
 ##' data will mean that not all information can be recreated!
 ##' The main compromises are:
-##' 
 ##' \itemize{
-##'   \item {If in a MANY_TO_MANY relationship between two levels, annotation items 
-##'   are merged (two items from the parent level are linked to a single item on the child level) the 
+##'   \item If a MANY_TO_MANY relationship between two levels is present and 
+##'   two items from the parent level are linked to a single item on the child level, the 
 ##'   parent items are merged into a single annotation item and their labels are 
 ##'   concatenated using the '->' symbol. An example would be: the annotation items containing the labels 'd' and 'b' of the 
 ##'   Phoneme level are linked to 'db' on the Phonetic level. The generated Phoneme tier then has a segment with the 
-##'   start and end times of the 'db' item and contains the labels 'db' (see for example 0000_ses/msajc010_bndl of ae_emuDB).}
-##'   \item {As annotations can contain gaps (e.g. incomplete hierarchies or orphaned items) and do not have to start at
-##'   time 0 and be the length of the audio file this export routine pads these gaps with empty segments.}
+##'   start and end times of the 'db' item and contains the labels 'db' (see for example the bundle 0000_ses/msajc010_bndl of the ae_emuDB).
+##'   \item As annotations can contain gaps (e.g. incomplete hierarchies or orphaned items) and do not have to start at
+##'   time 0 and be the length of the audio file this export routine pads these gaps with empty segments.
 ##' }
 ##' 
 ##' @param emuDBhandle emuDB handle object (see \link{load_emuDB})
@@ -26,6 +25,7 @@
 ##' @param bundlePattern A regular expression pattern matching bundle names to be exported from the database
 ##' @param attributeDefinitionNames list of names of attributeDefinitions that are to be 
 ##' exported as tiers. If set to NULL (the default) all attribute definitions will be exported as separate tiers.
+##' @param verbose Show progress bars and further information
 ##' @export
 ##' @seealso \code{\link{load_emuDB}}
 ##' @keywords emuDB database query Emu EQL 
@@ -37,13 +37,12 @@
 ##' # (see ?load_emuDB for more information)
 ##' 
 ##' ## Export all levels
-##' 
+##' export_TextGridCollection(ae, "/path/2/targetDir")
 ##' 
 ##' }
 ##' 
 export_TextGridCollection <- function(emuDBhandle, targetDir, sessionPattern = '.*', bundlePattern = '.*', 
-                                      attributeDefinitionNames = NULL) {
-  
+                                      attributeDefinitionNames = NULL, verbose = TRUE) {
   
   dbConfig = load_DBconfig(emuDBhandle)
   
@@ -57,26 +56,41 @@ export_TextGridCollection <- function(emuDBhandle, targetDir, sessionPattern = '
     allAttrNames = attributeDefinitionNames
   }
   
+  # create target dir
+  if(!dir.exists(targetDir)){
+    if(verbose){
+      cat("targetDir DOESN'T exist! Creating new dir...\n")
+    }
+    dir.create(targetDir)
+  }else{
+    if(verbose){
+      cat("targetDir exists! Using specified dir...\n")
+    }
+  }
+  
   # extract all items as giant seglist
+  if(verbose){
+    cat("Querying all annotation items... (this may take a while!)\n")
+  }
+  
   slAll = NULL
   for(i in 1:length(allAttrNames)){
     sl = query(emuDBhandle, paste0(allAttrNames[i], "=~ .*"))
-    slAll = rbind(slAll, sl)
+    slAll = dplyr::bind_rows(slAll, sl)
   }
+  
   # convert times to seconds
   slAll$start = slAll$start / 1000
   slAll$end = slAll$end / 1000
   
-  # create target dir
-  if(dir.exists(targetDir)){
-    stop(paste0("targetDir: ", targetDir, " already exists!"))
-  }else{
-    dir.create(targetDir)
-  }
-  
   # extract rel.  bundles
   bndls = list_bundles(emuDBhandle)
   bndls = bndls[grepl(sessionPattern, bndls$session) & grepl(bundlePattern, bndls$name),]
+  
+  if(verbose){
+    cat('\n  INFO: exporting', nrow(bndls), 'bundles\n')
+    pb <- utils::txtProgressBar(min = 0, max = nrow(bndls), style = 3)
+  }
   
   # loop through bundles and write to TextGrids & copy wav
   for(i in 1:nrow(bndls)){
@@ -115,8 +129,8 @@ export_TextGridCollection <- function(emuDBhandle, targetDir, sessionPattern = '
       
       emptyRow = data.frame(labels = "", start = -1, end = -1, 
                             utts = "", db_uuid = "", session = "", bundle = "", 
-                            startItemID = "", endItemID = "", level = "", 
-                            type = "", sampleStart = "", sampleEnd = "", sampleRate = "", stringsAsFactors = F)
+                            start_item_id = "", end_item_id = "", level = "", start_item_seq_idx = "", end_item_seq_idx = "",
+                            type = "", sample_start = "", sample_end = "", sample_rate = "", stringsAsFactors = F)
       # tier header
       if(all(slTier$end == 0)){
         tierType = "TextTier"
@@ -148,8 +162,8 @@ export_TextGridCollection <- function(emuDBhandle, targetDir, sessionPattern = '
           # preallocate data.frame
           slTierTmp = data.frame(labels = character(slTierTmpNrow), start = integer(slTierTmpNrow), end = integer(slTierTmpNrow), 
                                  utts = character(slTierTmpNrow), db_uuid = character(slTierTmpNrow), session = character(slTierTmpNrow), bundle = character(slTierTmpNrow), 
-                                 startItemID = character(slTierTmpNrow), endItemID = character(slTierTmpNrow), level = character(slTierTmpNrow), 
-                                 type = character(slTierTmpNrow), sampleStart = integer(slTierTmpNrow), sampleEnd = integer(slTierTmpNrow), sampleRate = integer(slTierTmpNrow), stringsAsFactors = F)
+                                 start_item_id = character(slTierTmpNrow), end_item_id = character(slTierTmpNrow), level = character(slTierTmpNrow), start_item_seq_idx = integer(slTierTmpNrow), end_item_seq_idx = integer(slTierTmpNrow),
+                                 type = character(slTierTmpNrow), sampleStart = integer(slTierTmpNrow), sample_end = integer(slTierTmpNrow), sample_rate = integer(slTierTmpNrow), stringsAsFactors = F)
           
           slTierTmp[1,] = slTier[1,]
           curRowIdx = 2
@@ -213,7 +227,19 @@ export_TextGridCollection <- function(emuDBhandle, targetDir, sessionPattern = '
       }
       write(tierItems, tgPath, append=TRUE)
     }
+    
+    # increase pb
+    if(verbose){
+      utils::setTxtProgressBar(pb, i)
+    }
+    
   }
+  
+  # close progress bar if open
+  if(exists('pb')){
+    close(pb)
+  }
+  
   
 }
 

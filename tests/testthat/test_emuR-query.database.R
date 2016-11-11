@@ -65,8 +65,8 @@ test_that("Load example database ae",{
     expect_that(r1[1,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[1,'session'],is_identical_to('0000'))
     expect_that(r1[1,'bundle'],is_identical_to('msajc012'))  
-    expect_that(r1[1,'startItemID'], equals(121))  
-    expect_that(r1[1,'endItemID'], equals(123))
+    expect_that(r1[1,'start_item_id'], equals(121))  
+    expect_that(r1[1,'end_item_id'], equals(123))
     
     sl1=query(ae,"[[[Phoneme='tS' ^ Phonetic='t'] -> Phoneme=I] -> Phoneme=l]",resultType='emusegs')
     expect_that(nrow(sl1),equals(1))
@@ -81,14 +81,14 @@ test_that("Load example database ae",{
     expect_that(r1[1,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[1,'session'],is_identical_to('0000'))
     expect_that(r1[1,'bundle'],is_identical_to('msajc015'))  
-    expect_that(r1[1,'startItemID'], equals(131))
-    expect_that(r1[1,'endItemID'], equals(132))
+    expect_that(r1[1,'start_item_id'], equals(131))
+    expect_that(r1[1,'end_item_id'], equals(132))
     
     expect_that(r1[2,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[2,'session'],is_identical_to('0000'))
     expect_that(r1[2,'bundle'],is_identical_to('msajc015'))  
-    expect_that(r1[2,'startItemID'], equals(141))
-    expect_that(r1[2,'endItemID'], equals(142))
+    expect_that(r1[2,'start_item_id'], equals(141))
+    expect_that(r1[2,'end_item_id'], equals(142))
     # 
   })
   # 
@@ -114,19 +114,19 @@ test_that("Load example database ae",{
     expect_that(r1[1,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[1,'session'],is_identical_to('0000'))
     expect_that(r1[1,'bundle'],is_identical_to('msajc003'))  
-    expect_that(r1[1,'startItemID'],equals(128))
+    expect_that(r1[1,'start_item_id'],equals(128))
     expect_that(r1[2,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[2,'session'],is_identical_to('0000'))
     expect_that(r1[2,'bundle'],is_identical_to('msajc012'))  
-    expect_that(r1[2,'startItemID'],equals(124))
+    expect_that(r1[2,'start_item_id'],equals(124))
     expect_that(r1[3,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[3,'session'],is_identical_to('0000'))
     expect_that(r1[3,'bundle'],is_identical_to('msajc015'))  
-    expect_that(r1[3,'startItemID'],equals(164))
+    expect_that(r1[3,'start_item_id'],equals(164))
     expect_that(r1[4,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r1[4,'session'],is_identical_to('0000'))
     expect_that(r1[4,'bundle'],is_identical_to('msajc015'))  
-    expect_that(r1[4,'startItemID'],equals(177))
+    expect_that(r1[4,'start_item_id'],equals(177))
     
     r2=query(ae,"Phoneme = p & Start(Word, Phoneme)=0",resultType=NULL)
     
@@ -134,15 +134,15 @@ test_that("Load example database ae",{
     expect_that(r2[1,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r2[1,'session'],is_identical_to('0000'))
     expect_that(r2[1,'bundle'],is_identical_to('msajc015'))  
-    expect_that(r2[1,'startItemID'],equals(147))
+    expect_that(r2[1,'start_item_id'],equals(147))
     expect_that(r2[2,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r2[2,'session'],is_identical_to('0000'))
     expect_that(r2[2,'bundle'],is_identical_to('msajc022'))  
-    expect_that(r2[2,'startItemID'],equals(122))
+    expect_that(r2[2,'start_item_id'],equals(122))
     expect_that(r2[3,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r2[3,'session'],is_identical_to('0000'))
     expect_that(r2[3,'bundle'],is_identical_to('msajc057'))  
-    expect_that(r2[3,'startItemID'],equals(136))
+    expect_that(r2[3,'start_item_id'],equals(136))
     
     # and some bundle pattern tests
     r3=query(ae,"Phoneme = p & Start(Word, Phoneme)=0",bundlePattern='msajc0..',resultType=NULL)
@@ -151,25 +151,25 @@ test_that("Load example database ae",{
     expect_that(r3[1,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r3[1,'session'],is_identical_to('0000'))
     expect_that(r3[1,'bundle'],is_identical_to('msajc015'))  
-    expect_that(r3[1,'startItemID'],equals(147))
+    expect_that(r3[1,'start_item_id'],equals(147))
     expect_that(r3[2,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r3[2,'session'],is_identical_to('0000'))
     expect_that(r3[2,'bundle'],is_identical_to('msajc022'))
-    expect_that(r3[2,'startItemID'],equals(122))
+    expect_that(r3[2,'start_item_id'],equals(122))
     expect_that(r3[3,'db_uuid'],is_identical_to(.test_emu_ae_db_uuid))  
     expect_that(r3[3,'session'],is_identical_to('0000'))
     expect_that(r3[3,'bundle'],is_identical_to('msajc057'))  
-    expect_that(r3[3,'startItemID'],equals(136))
+    expect_that(r3[3,'start_item_id'],equals(136))
     
     r4=query(ae,"Phoneme = p & Start(Word, Phoneme)=0",bundlePattern='msajc02.',resultType=NULL)
     
     expect_that(nrow(r4),equals(1))
-    expect_that(r4[1,'startItemID'],equals(122))
+    expect_that(r4[1,'start_item_id'],equals(122))
     
     r5=query(ae,"Phoneme = p & Start(Word, Phoneme)=0",bundlePattern='.*7',resultType=NULL)
     
     expect_that(nrow(r5),equals(1))
-    expect_that(r5[1,'startItemID'],equals(136))
+    expect_that(r5[1,'start_item_id'],equals(136))
     
     
   })
@@ -178,8 +178,8 @@ test_that("Load example database ae",{
     r1=query(ae,"Phoneme = n & End(Word, Phoneme)=1",resultType=NULL)
     
     expect_that(nrow(r1),equals(2))
-    expect_that(r1[1,'startItemID'],equals(103))
-    expect_that(r1[2,'startItemID'],equals(158))
+    expect_that(r1[1,'start_item_id'],equals(103))
+    expect_that(r1[2,'start_item_id'],equals(158))
     
   })
   
@@ -237,10 +237,10 @@ test_that("Load example database ae",{
     # reprduce the original query
     sl=query(ae,tslQuery,resultType='emusegs')
     sr=.aeSampleRate
-    halfSampleTime=1/sr/2
+    doubleSampleTime=2/sr
     # we have to accept numeric deviations caused by double precision calculations
-    # therefore add the machine epsilon to the tolerance of a half sample 
-    tolSec=halfSampleTime+.Machine[['double.eps']]
+    # therefore add the machine epsilon to the tolerance of two sample 
+    tolSec=doubleSampleTime+.Machine[['double.eps']]
     tolMs=tolSec*1000
     # compare legacy emu generated and new seglist
     eq=equal.emusegs(sl,tsl,tolerance =tolMs,uttsPrefix2='0000:')
@@ -257,8 +257,10 @@ test_that("Load example database ae",{
   test_that("additional queries (simple and complex) work for more thorough query testing",{
     skip_on_cran()
     # SQ
-    sl = query(ae, "Phonetic == m")
+    qs = "Phonetic == m"
+    sl = query(ae, qs)
     expect_equal(nrow(sl), 7)
+    expect_equal(attributes(sl)$query, qs)
     sl = query(ae, "[Phonetic == m]")
     expect_equal(nrow(sl), 7)
     expect_equal(attr(sl, "query"), "[Phonetic == m]")
@@ -278,8 +280,10 @@ test_that("Load example database ae",{
     expect_equal(nrow(sl), 3)
     sl = query(ae, "[Text=to -> #Text=~.*]")
     expect_equal(nrow(sl), 3)
-    sl = query(ae, "[Phonetic == m -> Phonetic == I]") 
+    qs = "[Phonetic == m -> Phonetic == I]"
+    sl = query(ae, qs)
     expect_equal(nrow(sl), 0)
+    expect_equal(attributes(sl)$query, qs)
     sl = query(ae, "[#Phonetic == m -> Phonetic == I]")
     expect_equal(nrow(sl), 0)
     sl = query(ae, "[Phonetic == m -> #Phonetic == I]")
@@ -320,7 +324,7 @@ test_that("Load example database ae",{
     sl = query(ae, "[Syllable =~ .* ^ Phoneme != p | t | k]")
     expect_equal(nrow(sl), 83)
     sl = query(ae, "[#Syllable =~ .* ^ Phoneme != p | t | k]")
-    expect_equal(nrow(sl), 195)
+    expect_equal(nrow(sl), 83)
     sl = query(ae, "[Syllable =~ .* ^ #Phoneme != p | t | k]")
     expect_equal(nrow(sl), 195)
     
@@ -378,7 +382,7 @@ test_that("Load example database ae",{
     sl = query(ae, "[Phoneme == m ^ Num(Word, Syllable) == 3]")
     expect_equal(nrow(sl), 2)
     sl = query(ae, "[Syllable = W ^ Num(Word, Syllable) < 3]")
-    expect_equal(nrow(sl), 46)
+    expect_equal(nrow(sl), 28)
     sl = query(ae, "[Text =~ .* ^ Num(Syllable, Phoneme) == 4]")
     expect_equal(nrow(sl), 7)
     
@@ -435,4 +439,31 @@ test_that("Load example database ae",{
     expect_equal(sl$labels[1], "")
   })
   
+  # 
+  test_that("timeRefSegmentLevel works correctly",{
+    skip_on_cran()
+    sl = query(ae, "[Syllable == W]")
+    sl = query(ae, "[Syllable == W]", timeRefSegmentLevel = "Phonetic")
+    duplicate_level(ae, "Phonetic", "Phonetic2", verbose = F)
+    expect_error(query(ae, "[Syllable == W]"), regexp = "The level is linked")
+    expect_error(query(ae, "[Syllable == W]", timeRefSegmentLevel = "badLevelName"), regexp = "Cannot resolve time information for result level")
+    query(ae, "[Syllable == W]", timeRefSegmentLevel = "Phonetic2")
+  })
+
+  # 
+  test_that("calcTimes works correctly",{
+    skip_on_cran()
+    sl = query(ae, "[Syllable == W]", calcTimes = F)
+  })
+
+  test_that("correct times are calculated for Intonational",{
+    skip_on_cran()
+    sl = query(ae, "Intonational == L%", timeRefSegmentLevel = "Phonetic")
+    all(round(sl$start, 3) == round(c(256.925, 571.925, 379.525, 425.375, 299.975, 513.925, 475.775), 3))
+    all(round(sl$end, 3) == round(c(2604.425, 2753.975, 2692.325, 3456.825, 2469.525, 2554.175, 2794.925), 3))
+  })
+  # clean up (also disconnect)
+  DBI::dbDisconnect(ae$connection)
+  ae = NULL
+  unlink(.test_emu_ae_db_dir, recursive = T)
 })

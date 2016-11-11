@@ -19,7 +19,7 @@ This document introduces and defines version 2 of the **E**mu **Q**uery **L**ang
 
 To revise what was already mentioned in the `emuR_intro` as well as the `emuDB` vignette: The annotation structure of an `emuDB` can be thought of as a graph. Each annotation consist of annotational units (called ITEMs) that are grouped together in an ordered array. Each ITEM can be linked to other ITEMs of other levels if an according linkDefinition is present in the `emuDB`. An exemplary excerpt of such an annotation can be seen below.
 
-![Alt text](pics/msajc003.svg)
+![Example of simple hierarchy](pics/msajc003.svg)
 
 As it is not the focus of this vignette: one thing to note about the `query()` function are the parameters `bundlePattern` and `sessionPattern`. These can be used to restrict which session and bundle the query will be run against. They both expect a regular expression string to restrict the sessions or bundles one wishes to query.
 
@@ -85,7 +85,10 @@ query(ae, "[Text !~ a.*]")
 ```
 
 
-**INFO: The above examples use three operators that are new to the EQL as of version 2. One beeing the "==" equal operator that has the same meaning as the "=" operator of the EQL1 (which is also still available) while providing a cleaner more precise syntax. The other two being the "=~" and "!~" which are the new matching and non-matching regular expression operators.**
+**INFO: The above examples use three operators that are new to the EQL as of version 2. One being the "==" equal operator that has the same meaning as the "=" operator of the EQL1 (which is also still available) while providing a cleaner more precise syntax. The other two being the "=~" and "!~" which are the new matching and non-matching regular expression operators. **
+
+**If you wish to use parenthesis, blanks or characters that represent operands used by the EQL (see EBNF) as part of a label matching string (the string on the right hand side of one of the operands mentioned above), you must place this string in additional single quotation marks to escape these characters. For example searching for the items containing the labels `O_&quot` on the Phonetic level could not be written as `"[Phonetic == O_&quot]"` but would have to be written as `"[Phonetic == 'O_&quot']"`. Note that reversing the single vs. double quotation mark order is currently not supported i.e. '[Phonetic == "O_&quot"]' won't lead to the desired behavior. Only use double quotation marks for the outer wrapping of the query string to avoid this issue.**
+
 
 ## Sequence queries using the "->" sequence operator
 
@@ -107,7 +110,7 @@ query(ae, "[Phonetic == @ -> Phonetic == n]")
 query(ae, "[#Phonetic == @ -> Phonetic == n]")
 ```
 
-- **Q**: *Same as the first question but this time we are only interested in the ITEMs containing the label "I".*
+- **Q**: *Same as the first question but this time we are only interested in the ITEMs containing the label "n".*
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
 # NOTE: all row entries in the resulting segment list have the start time of "n", the end time of "n" and their labels will also be "n"
@@ -123,7 +126,7 @@ Example **Q** & **A**'s:
 - **Q**: *What is the query to retrieve all sequences of ITEMs containing the labels "@", "n" and "s" on the "Phonetic" level?*
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[[Phonetic == @ -> Phonetic == n ] -> Phonetic =~ s]")
+query(ae, "[[Phonetic == @ -> Phonetic == n ] -> Phonetic == s]")
 ```
 
 - **Q**: *What is the query to retrieve all sequences of ITEMs containing the labels "to", "offer" and "any" on the "Text" level?*
@@ -135,7 +138,7 @@ query(ae, "[[Text == to -> Text == offer ] -> Text == any]")
 - **Q**: *What is the query to retrieve all sequences of ITEMs containing labels "offer" followed by two arbitrary labels followed by "resistance"?*
 - **A**: ``
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[[[Text =~ offer -> Text =~ .*] -> Text =~ .* ] -> Text == resistance]")
+query(ae, "[[[Text == offer -> Text =~ .*] -> Text =~ .* ] -> Text == resistance]")
 ```
 
 **INFO: As the EQL1 didn't have a regular expression operator, users often resorted to using queries such as "[Phonetic != XXX]" (where XXX is a label that was not part of the label set of the "Phonetic" level) to match every label on the "Phonetic" level. Although this is still possible in the EQL2, we strongly recommend using regular expressions as they provide a much clearer and preciser syntax and are less error prone.**
@@ -143,7 +146,13 @@ query(ae, "[[[Text =~ offer -> Text =~ .*] -> Text =~ .* ] -> Text == resistance
 
 ## Conjunction operator &
 
-The syntax of a query string using the conjunction operator can schematically be written as: `"[L == A & L == B & L == C & L == D & ... & L == N]"` where all "A" ITEMs on level "L" also have the properties "B", "C", "D", ..., "N". Same as with the sequence operator all expressions must be on the same level (parallel attributeDefinitions of the same level may also be chosen).
+The syntax of a query string using the conjunction operator can schematically be written as: `"[L == A & L_a2 == B & L_a3 == C & L_a4 == D & ... & L_an == N]"` where ITEMs on level "L" have the label "A" (technically belonging to the first attribute of that level i.e. L_a1, which per default has the same name as it's level) also have the attributes "B", "C", "D", ..., "N". Same as with the sequence operator all expressions must be on the same level (i.e. parallel attributesDefinitions of the same level indicated by the `a2 - an` may to be chosen).
+
+The conjunction operator is used to combine query conditions on the same level. This makes sense in two cases:
+
+1. to combine different attributes of the same level: `"[phonetic == l & sonorant == T]"` when 'sonorant' is an additional attribute of level 'phonetic'.
+2. To combine a basic queries with a function (see sections Position and Count below): `"[phonetic == l & Start(word, phonetic) == 1]"`
+
 
 Example **Q** & **A**'s:
 
@@ -225,40 +234,43 @@ The EQL has three function terms to specify where in a dominance relationship a 
 
 ### Simple usage of Start(), End() and Medial()
 
-A schematic representation of a query string representing a simple usage of the "Start()", "End()" and "Medial()" function would be: `"POSFCT(L1, L2) == 1"`. In this representation "POSFCT" is a placeholder for one of the three function where the level "L1" has to dominate level "L2". The "== 1" part of the query string indicates that if a match is found (match is `TRUE` or "== 1") then the according ITEM of the level "L2" is returned. If this expression is set to "== 0" (`FALSE`), all the ITEMs that do not match the condition of "L2" will be returned. For a visualization of what is returned by the various options of the three functions see the illustration below.
+A schematic representation of a query string representing a simple usage of the `Start()`, `End()` and `Medial()` function would be: `"POSFCT(L1, L2) == 1"` or `"POSFCT(L1, L2) == TRUE"`. In this representation "POSFCT" is a placeholder for one of the three function where the level "L1" has to dominate level "L2". The "== 1" / "== TRUE" part of the query string indicates that if a match is found (match is `TRUE` or "== 1") then the according ITEM of the level "L2" is returned. If this expression is set to "== 0" / "== FALSE" (`FALSE`), all the ITEMs that do not match the condition of "L2" will be returned. For a visualization of what is returned by the various options of the three functions see the illustration below.
 
-![Alt text](pics/positionSimple.svg)
+![Illustration of what is returned by the `Start()`, `Medial()` and `End()` functions](pics/positionSimple.svg)
+
+**INFO: As using 1 and 0 for `TRUE` and `FALSE` is not that intuitive to most R users, the EQL version 2 optionally allows for the values TRUE / T and FALSE / F to be used instead of 1 and 0. This syntax should be more familiar to most R users.**
+
 
 Example **Q** & **A**'s:
 
 - **Q**: *What is the query to retrieve all word-initial syllables?*
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[Start(Word, Syllable) == 1]")
+query(ae, "[Start(Word, Syllable) == TRUE]")
 ```
 
 - **Q**: *What is the query to retrieve all word-initial phonemes?*
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[Start(Word, Phoneme) == 1]")
+query(ae, "[Start(Word, Phoneme) == TRUE]")
 ```
 
 - **Q**: *What is the query to retrieve all non-word-initial syllables?* 
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[Start(Word, Syllable) == 0]")
+query(ae, "[Start(Word, Syllable) == FALSE]")
 ```
 
 - **Q**: *What is the query to retrieve all word-final syllables?* 
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[End(Word, Syllable) == 1]")
+query(ae, "[End(Word, Syllable) == TRUE]")
 ```
 
 - **Q**: *What is the query to retrieve all word-medial syllables?* 
 - **A**:
 ```{r results='hide', message=FALSE, warning=FALSE}
-query(ae, "[Medial(Word, Syllable) == 1]")
+query(ae, "[Medial(Word, Syllable) == TRUE]")
 ```
 
     
@@ -728,7 +740,7 @@ The terminal symbols described below are ordered descending by their binding pri
 +-----------------------------------------------------------------------------------+-------------------------------------+-----------------------------------------------+
 | `FUNCQ = POSQ | NUMQ;`                                                            | **fun**ction **q**uery              |                                               |
 +-----------------------------------------------------------------------------------+-------------------------------------+-----------------------------------------------+
-| `POSQ = POSFCT, "(", LEVEL, ",", LEVEL, ")", "=", "0" | "1";`                     | **position** **q**uery              | levels must be hierarchically associated;     |
+| `POSQ = POSFCT, "(", LEVEL, ",", LEVEL, ")", "=", "0" | "1" | "TRUE" | "FALSE";`  | **position** **q**uery              | levels must be hierarchically associated;     |
 |                                                                                   |                                     | second level determines semantic              |
 +-----------------------------------------------------------------------------------+-------------------------------------+-----------------------------------------------+
 | `NUMQ = "Num", "(", LEVEL, ",", LEVEL, ")", COP, INTPN;`                          | **number**  **q**uery               | levels must be hierarchically associated;     |

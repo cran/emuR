@@ -81,15 +81,19 @@ td = get_trackdata(ae, sl,
 class(td)
 
 ## ---- fig.height = 5, fig.width = 5--------------------------------------
-# load package
-library(ggplot2)
+# check if ggplot2 package is available (install separately with 
+# install.packages("ggplot2") if not available on your system)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  # load package
+  library(ggplot2)
 
-# scatter plot of F1 and F2 values using ggplot
-ggplot(td, aes(x=T2, y=T1, label=td$labels)) + 
-  geom_text(aes(colour=factor(labels))) + 
-  scale_y_reverse() + scale_x_reverse() + 
-  labs(x = "F2(Hz)", y = "F1(Hz)") +
-  guides(colour=FALSE)
+  # scatter plot of F1 and F2 values using ggplot
+  ggplot(td, aes(x=T2, y=T1, label=td$labels)) + 
+    geom_text(aes(colour=factor(labels))) + 
+    scale_y_reverse() + scale_x_reverse() + 
+    labs(x = "F2(Hz)", y = "F1(Hz)") +
+    guides(colour=FALSE)
+}
 
 ## ------------------------------------------------------------------------
 sibil = query(ae,"Phonetic==s|z|S|Z")
