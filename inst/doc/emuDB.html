@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2016-11-11" />
+<meta name="date" content="2016-12-19" />
 
 <title>The emuDB format</title>
 
@@ -69,7 +69,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">The emuDB format</h1>
 <h3 class="subtitle"><em>The database format of the next iteration of the EMU Speech Database Management System</em></h3>
-<h4 class="date"><em>2016-11-11</em></h4>
+<h4 class="date"><em>2016-12-19</em></h4>
 
 
 
@@ -120,7 +120,7 @@ dbPath =<span class="st"> </span><span class="kw">file.path</span>(<span class="
 <span class="co"># load database</span>
 dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <span class="dt">verbose =</span> F)
 <span class="kw">print</span>(dbHandle)</code></pre></div>
-<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpYebD2j/fromScratchDB_emuDB')&quot;</code></pre>
+<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/Rtmpd5cMy8/fromScratchDB_emuDB')&quot;</code></pre>
 <p>This will load the database into it’s cached form for quick access to the data. Note that if a large emuDB has never been loaded and no cache has previously been generated, this can take a while to complete. Once a cache is present only altered annotation files have to be updated which reduces load times dramatically. As you can see the <code>load_emuDB()</code> function returns a database handle. This emuDBhandle is used to reference the loaded database in most database interaction functions of the <code>emuR</code> package.</p>
 <p>Next, let us look at some actual database manipulation functions. The general function prefix naming convention of database manipulation functions for loaded databases are:</p>
 <ul>
@@ -144,8 +144,8 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <s
 <p>alternatively a summary of the emuDB also gives us this as well as additional information:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dbHandle)</code></pre></div>
 <pre><code>## Name:     fromScratchDB 
-## UUID:     cbf5f7e7-04dc-4f2e-8adf-7b1f6f85afef 
-## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpYebD2j/fromScratchDB_emuDB 
+## UUID:     48d4da20-48d4-4b4c-a351-6ae54075951d 
+## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/Rtmpd5cMy8/fromScratchDB_emuDB 
 ## Session count: 0 
 ## Bundle count: 0 
 ## Annotation item count:  0 
@@ -607,6 +607,10 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(<span clas
 <li><code>&quot;assign&quot;</code> array of configuration options to assign one ssffTrack to another effectively creating a visual overlay of one track over another. Each array element consists of:</li>
 <li><code>&quot;signalCanvasName&quot;</code> name of signal specified in the <code>&quot;order&quot;</code> array</li>
 <li><code>&quot;ssffTrackName&quot;</code> name of ssffTrack to overlay onto <code>&quot;signalCanvasName&quot;</code></li>
+<li><code>&quot;minMaxValLims&quot;</code> array of configuration options to limit the y-axis range that is displayed for a specified SSFF track</li>
+<li><code>&quot;ssffTrackName&quot;</code>: name specifying which ssffTrack should be limited</li>
+<li><code>&quot;minVal&quot;</code>: minimum value which defines the lower y-axis limit</li>
+<li><code>&quot;maxVal&quot;</code>: maximum value which defines the lower y-axis limit</li>
 <li><code>&quot;contourLims&quot;</code> array containing contour limit values that specify an index range that is to be displayed. As a track / column can contain multi-dimensional data (e.g. 4 formant values per time stamp / 256 DFT values per time stamp / …) it is possible to specify an index range that specifies which values should be displayed (e.g. display formant 2 through 4).</li>
 <li><code>&quot;ssffTrackName&quot;</code> name specifying which ssffTrack should be limited</li>
 <li><code>&quot;minContourIdx&quot;</code> minimum contour index to display (starts at index 0)</li>

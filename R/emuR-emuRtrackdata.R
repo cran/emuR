@@ -1,19 +1,15 @@
-requireNamespace("data.table", quietly = T)
-requireNamespace("dplyr", quietly = T)
-
 ##' create emuRtrackdata object
 ##' 
 ##' Joins \code{\link{emuRsegs}} and \code{\link{trackdata}} objects
 ##' to create an \code{\link{emuRtrackdata}} object that is a sub-class of
-##' a \code{\link{data.table}} (and \code{\link{data.frame}}) object. This object 
+##' a \code{data.table} (and \code{\link{data.frame}}) object. This object 
 ##' can be viewed as a flat version of a \code{\link{trackdata}} object that also 
 ##' contains all the information of a \code{\link{emuRsegs}} object. It is meant to
 ##' ease integration with other packages as it is based on the well known 
-##' \code{\link{data.table}} and \code{\link{data.frame}} objects.
+##' \code{data.table} and \code{\link{data.frame}} objects.
 ##' @param sl seglist of class \code{\link{emuRsegs}}
 ##' @param td \code{\link{trackdata}} object generated from sl
 ##' @return emuRtrackdata object
-##' @import data.table
 ##' @export
 ##' @examples
 ##' \dontrun{
@@ -59,7 +55,7 @@ create_emuRtrackdata <- function(sl, td){
   start.time = rep(start(td), nframes)
   n.time = times - start.time
   rownames(td$data) = NULL
-  res = data.table(sl_rowIdx = inds, expSl, times_rel = n.time, times_orig = times, td$data)
+  res = data.table::data.table(sl_rowIdx = inds, expSl, times_rel = n.time, times_orig = times, td$data)
   class(res) <- c("emuRtrackdata", class(res))
   return(res)
 }

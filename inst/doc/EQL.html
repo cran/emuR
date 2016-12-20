@@ -11,9 +11,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2016-11-11" />
+<meta name="date" content="2016-12-19" />
 
-<title>EQL</title>
+<title>EQL - Version 2 of the Emu Query Language</title>
 
 
 
@@ -67,9 +67,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<h1 class="title toc-ignore">EQL</h1>
-<h3 class="subtitle"><em>Version 2 of the Emu Query Language</em></h3>
-<h4 class="date"><em>2016-11-11</em></h4>
+<h1 class="title toc-ignore">EQL - Version 2 of the Emu Query Language</h1>
+<h4 class="date"><em>2016-12-19</em></h4>
 
 
 
@@ -161,7 +160,7 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <p>The general strategy to constructing a query string that retrieves subsequent sequences of labels is to nest multiple sequences while paying close attention to the correct placement of the parentheses. An abstracted version of such a query string for the subsequent sequence of arguments A1, A2, A3, A4 would be: <code>&quot;[[[[A1 -&gt; A2] -&gt; A3] -&gt; A4] -&gt; A5]&quot;</code> where each argument (e.g. “A1”) represents an equality / inequality / matching / non-matching expression on the same level (alternatively parallel attributeDefinitions of the same level may also be chosen).</p>
 <p>Example <strong>Q</strong> &amp; <strong>A</strong>’s:</p>
 <ul>
-<li><strong>Q</strong>: <em>What is the query to retrieve all sequences of ITEMs containing the labels <a href="mailto:%22@%22">&quot;@&quot;</a>, “n” and “s” on the “Phonetic” level?</em></li>
+<li><strong>Q</strong>: <em>What is the query to retrieve all sequences of ITEMs containing the labels “@”, “n” and “s” on the “Phonetic” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic == @ -&gt; Phonetic == n ] -&gt; Phonetic == s]&quot;</span>)</code></pre></div>

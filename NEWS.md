@@ -1,3 +1,19 @@
+# emuR 0.2.1
+
+## new features / performance tweaks / improvements
+* requery\_hier() and requery\_seq() now implement `timeRefSegmentLevel` parameter
+
+## bug fixes
+
+* fixed requery\_hier() bug of requery on same attribute definition
+* fixed requery\_hier() bug of requery on same level but different attribute definition
+
+
+## new features / performance tweaks / improvements
+
+* added new `EMUwebAppConfig -> perspectives -> signalCanvases -> minMaxValLims` config option to emuDB vignette
+* requery_hier + requery_seq now implement the same timeRefSegmentLevel parameter as query (#135)
+
 # emuR 0.2.0
 
 ## bug fixes
