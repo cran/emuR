@@ -4,18 +4,20 @@
 \alias{AddListRenameRemoveAttributeDefinitions}
 \alias{add_attributeDefinition}
 \alias{list_attributeDefinitions}
-\alias{remove_attributeDefinition}
 \alias{rename_attributeDefinition}
+\alias{remove_attributeDefinition}
 \title{Add / List / Rename / Remove attribute definition to / of / from emuDB}
 \usage{
 add_attributeDefinition(emuDBhandle, levelName, name, type = "STRING",
-  verbose = T)
+  rewriteAllAnnots = TRUE, verbose = TRUE)
 
 list_attributeDefinitions(emuDBhandle, levelName)
 
-rename_attributeDefinition(emuDBhandle, origAttrDef, newAttrDef, verbose = T)
+rename_attributeDefinition(emuDBhandle, origAttrDef, newAttrDef,
+  verbose = TRUE)
 
-remove_attributeDefinition(emuDBhandle, levelName, name, verbose = T)
+remove_attributeDefinition(emuDBhandle, levelName, name, force = FALSE,
+  rewriteAllAnnots = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{emuDBhandle}{emuDB handle as returned by \code{\link{load_emuDB}}}
@@ -26,11 +28,15 @@ remove_attributeDefinition(emuDBhandle, levelName, name, verbose = T)
 
 \item{type}{type of attributeDefinition (currently only "STRING")}
 
+\item{rewriteAllAnnots}{should changes be written to file system (_annot.json files) (intended for expert use only)}
+
 \item{verbose}{if set to \code{TRUE}, more status messages are printed}
 
 \item{origAttrDef}{name of level/attribute definition in emuDB that is to be changed}
 
 \item{newAttrDef}{new name that shall be assigned to the level/attribute definition}
+
+\item{force}{delete all attribute definitions in annotations (== label entries)}
 }
 \description{
 Add / List / Rename / Remove database operation functions for attribute
@@ -84,4 +90,3 @@ remove_attributeDefinition(emuDBhandle = ae,
 \keyword{Emu}
 \keyword{database}
 \keyword{emuDB}
-

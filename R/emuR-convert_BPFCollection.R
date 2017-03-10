@@ -1,9 +1,7 @@
-requireNamespace("RSQLite", quietly = T)
-
 ##' Convert a Bas Partitur File Collection (audio and BAS Partitur files) to an emuDB
 ##' 
 ##' Converts a Bas Partitur File Collection to an emuDB. Expects a collection of the following form:
-##' One master directory <targetDir> containing any number of file pairs (= bundles). A file pair 
+##' One master directory <sourceDir> containing any number of file pairs (= bundles). A file pair 
 ##' consists of an audio file with the extension <audioExt> and a BPF file with the extension <bpfExt>. 
 ##' Apart from extensions, the names of corresponding audio and BPF files must be identical. Each BPF 
 ##' file is converted into an emuDB annot file. An emuDB config file matching the data base is created 
@@ -64,34 +62,7 @@ convert_BPFCollection <- function(sourceDir,
                                   unifyLevels = NULL,
                                   verbose = TRUE)
 {
-  # ---------------------------------------------------------------------------
-  # ------------------------ Standard BPF levels ------------------------------
-  # ---------------------------------------------------------------------------
-  
-  # To add a new level type to the BPF format:
-  
-  # - add new level name (three character string) to STANDARD_LEVELS
-  # - add its class (integer in range 1-5) to STANDARD_LEVEL_CLASSES
-  # - the order of both vectors must match (i.e. if you add the name at position 10, add the class at position 10 as well)
-  
-  # If you do not wish to extend the format directly in the source code, use newLevels and newLevelClasses arguments.
-  STANDARD_LEVELS = c(
-    "KAN", "KAS", "PTR", "ORT", "TRL", "TR2", "SUP", "DAS", "PRS", "NOI", 
-    "POS", "LMA", "TRS", "TRW", "PRO", "SYN", "FUN", "LEX", "TLN",
-    "IPA", "GES", "USH", "USM", "OCC",
-    "PRM", "LBG", "LBP",
-    "SAP", "MAU", "WOR", "PHO", "MAS", "USP", "TRN",
-    "PRB"
-  )
-  
-  STANDARD_LEVEL_CLASSES = c(
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    2, 2, 2, 2, 2,
-    3, 3, 3,
-    4, 4, 4, 4, 4, 4, 4,
-    5
-  )
+
   
   # ---------------------------------------------------------------------------
   # -------------------------- Get directories --------------------------------
@@ -115,7 +86,7 @@ convert_BPFCollection <- function(sourceDir,
                                        basePath = basePath,
                                        newLevels = newLevels,
                                        newLevelClasses = newLevelClasses,
-                                       standardLevels = STANDARD_LEVELS,
+                                       standardLevels = BPF_STANDARD_LEVELS,
                                        verbose = verbose,
                                        refLevel = refLevel,
                                        audioExt = audioExt,
@@ -125,8 +96,8 @@ convert_BPFCollection <- function(sourceDir,
   # ---------------- Combine standard and new level classes -------------------
   # ---------------------------------------------------------------------------
   
-  levelClasses = as.list(STANDARD_LEVEL_CLASSES)
-  names(levelClasses) = STANDARD_LEVELS
+  levelClasses = as.list(BPF_STANDARD_LEVEL_CLASSES)
+  names(levelClasses) = BPF_STANDARD_LEVELS
   levelClasses[newLevels] = newLevelClasses
   
   # ---------------------------------------------------------------------------
@@ -303,10 +274,10 @@ convert_BPFCollection <- function(sourceDir,
   }
   
   # ---------------------------------------------------------------------------
-  # ----- Link from Utterance level to refLevel and levels above refLevel -----
+  # ------ Link from bundle level to refLevel and levels above refLevel -------
   # ---------------------------------------------------------------------------
   
-  if(length(linkTracker) > 0)
+  if(!is.null(refLevel))
   {
     linkTracker = link_bpfUtteranceLevel(dbHandle, linkTracker = linkTracker,
                                          refLevel = refLevel)
@@ -984,7 +955,7 @@ merge_bpfLinkTypes <- function(linkTracker)
 ###############################################################################
 ###############################################################################
 
-## Create links from the utterance level to the next highest level(s)
+## Create links from the bundle level to the next highest level(s)
 ## 
 ## @param emuDBhandle
 ## @param linkTracker
@@ -996,7 +967,7 @@ link_bpfUtteranceLevel <- function(emuDBhandle, linkTracker,
                                    refLevel)
 {
   # ---------------------------------------------------------------------------
-  # --- Get list of levels that should be linked to from the Utterance level --
+  # --- Get list of levels that should be linked to from the bundle level --
   # ---------------------------------------------------------------------------
   
   # (contains refLevel and any levels that are hierarchically higher than refLevel)
@@ -1007,7 +978,7 @@ link_bpfUtteranceLevel <- function(emuDBhandle, linkTracker,
   for(level in underUtterance)
   {
     # -------------------------------------------------------------------------
-    # --------- Create links from Utterance to current level in temp DB -------
+    # ---------- Create links from bundle to current level in temp DB ---------
     # -------------------------------------------------------------------------
     
     nbItems = link_bpfUtteranceLevelToCurrentLevel(emuDBhandle, currentLevel = level)
@@ -1017,7 +988,7 @@ link_bpfUtteranceLevel <- function(emuDBhandle, linkTracker,
     # -------------------------------------------------------------------------
     
     # Check whether there is one item of this specific level per bundle, or more than one.
-    # This determines whether the links from 'Utterance' are ONE_TO_ONE or ONE_TO_MANY.
+    # This determines whether the links from 'bundle' are ONE_TO_ONE or ONE_TO_MANY.
     
     queryTxt = paste0("SELECT DISTINCT db_uuid, session, bundle FROM items WHERE level = '", level, "'")
     distinctUuidSessionBundle = DBI::dbGetQuery(emuDBhandle$connection, queryTxt)
@@ -1037,7 +1008,7 @@ link_bpfUtteranceLevel <- function(emuDBhandle, linkTracker,
     # -------------------------- Update link tracker --------------------------
     # -------------------------------------------------------------------------
     
-    linkTracker[[length(linkTracker) + 1L]] = list(fromkey = "Utterance", 
+    linkTracker[[length(linkTracker) + 1L]] = list(fromkey = "bundle", 
                                                    tokey = level, 
                                                    type = linkType)
   }
@@ -1066,6 +1037,8 @@ get_bpfLevelsUnderUtterance <- function(linkTracker,
                                         refLevel)
 {
   underUtterance = list(refLevel)
+  
+  if(length(linkTracker) == 0) { return(underUtterance)}
   
   for(idx in 1:length(linkTracker))
   {
@@ -1105,8 +1078,8 @@ link_bpfUtteranceLevelToCurrentLevel <- function(emuDBhandle, currentLevel)
     bundle = uuidSessionBundleItemID[idx,][["bundle"]]
     itemID = uuidSessionBundleItemID[idx,][["item_id"]]
     
-    # Link all items to their corresponding Utterance item 
-    # (same UUID, session & bundle, Utterance item_id is always 1).
+    # Link all items to their corresponding bundle item 
+    # (same UUID, session & bundle, item_id is always 1).
     queryTxt = paste0("INSERT INTO links VALUES('", db_uuid, "', '", session, "', '", bundle, "', 1, ", itemID, ", NULL)")
     DBI::dbGetQuery(emuDBhandle$connection, queryTxt)
   }
@@ -1232,8 +1205,14 @@ get_bpfLevelDefinitions <- function(levelTracker)
       
       for(label in levelTracker[[levelIdx]][["labels"]])
       {
+        description = ""
+        if(label != "bundle")
+        {
+          description = "Imported from BPF collection"
+        }
         attrDefList[[length(attrDefList) + 1L]] = list(name = label, 
-                                                       type = "STRING")
+                                                       type = "STRING",
+                                                       description = description)
       }
       
       levelDefinitions[[length(levelDefinitions) + 1L]] = list(name = levelTracker[[levelIdx]][["key"]],
@@ -1348,7 +1327,33 @@ display_bpfSemicolonWarnings <- function(warningsTracker)
   }
 }
 
-# FOR DEVELOPMENT
-# library(testthat)
-# test_file("tests/testthat/test_aaa_initData.R")
-# test_file("tests/testthat/test_emuR-convert_BPFCollection.R")
+
+# ---------------------------------------------------------------------------
+# ------------------------ Standard BPF levels ------------------------------
+# ---------------------------------------------------------------------------
+
+# To add a new level type to the BPF format:
+
+# - add new level name (three character string) to BPF_STANDARD_LEVELS
+# - add its class (integer in range 1-5) to BPF_STANDARD_LEVEL_CLASSES
+# - the order of both vectors must match (i.e. if you add the name at position 10, add the class at position 10 as well)
+
+# If you do not wish to extend the format directly in the source code, use newLevels and newLevelClasses arguments.
+
+BPF_STANDARD_LEVELS = c(
+  "KAN", "KAS", "PTR", "ORT", "TRL", "TR2", "SUP", "DAS", "PRS", "NOI", 
+  "POS", "LMA", "TRS", "TRW", "PRO", "SYN", "FUN", "LEX", "TLN",
+  "IPA", "GES", "USH", "USM", "OCC",
+  "PRM", "LBG", "LBP",
+  "SAP", "MAU", "WOR", "PHO", "MAS", "USP", "TRN",
+  "PRB"
+)
+
+BPF_STANDARD_LEVEL_CLASSES = c(
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+  1, 1, 1, 1, 1, 1, 1, 1, 1,
+  2, 2, 2, 2, 2,
+  3, 3, 3,
+  4, 4, 4, 4, 4, 4, 4,
+  5
+)

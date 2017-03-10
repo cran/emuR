@@ -97,7 +97,7 @@ build_levelPathes <- function(emuDBhandle){
 
 # get all paths through hierarchy connecting two levels
 get_hierPathsConnectingLevels <- function(emuDBhandle, levelName1, levelName2){
-
+  
   allHierPaths = build_allHierarchyPaths(load_DBconfig(emuDBhandle))
   
   conHierPaths = list()
@@ -223,6 +223,8 @@ store_DBconfig <- function(emuDBhandle, dbConfig, basePath = NULL){
 ##' @param emuDBhandle emuDB handle as returned by \code{\link{load_emuDB}}
 ##' @param name name of level definition
 ##' @param type type of level definition ("SEGMENT","EVENT","ITEM")
+##' @param rewriteAllAnnots should changes be written to file system (_annot.json files) (intended for expert use only)
+##' @param force delete all items incl. links pointing to those items from the levels
 ##' @param verbose Show progress bars and further information
 ##' @keywords emuDB database schema Emu
 ##' @name AddListRemoveLevelDefinitions
@@ -252,7 +254,7 @@ NULL
 ##' @rdname AddListRemoveLevelDefinitions
 ##' @export
 add_levelDefinition<-function(emuDBhandle, name,
-                              type, verbose = T){
+                              type, rewriteAllAnnots = TRUE, verbose = TRUE){
   allowedTypes = c('ITEM', 'SEGMENT', 'EVENT')
   # precheck type 
   if(!(type %in% allowedTypes)){
@@ -272,8 +274,9 @@ add_levelDefinition<-function(emuDBhandle, name,
   
   store_DBconfig(emuDBhandle, dbConfig)
   
-  rewrite_allAnnots(emuDBhandle, verbose = verbose)
-  
+  if(rewriteAllAnnots){
+    rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  }
   invisible(NULL)
 }
 
@@ -294,13 +297,17 @@ list_levelDefinitions <- function(emuDBhandle){
                                attrDefNames = paste0(sapply(ld$attributeDefinitions, function(ad) paste0(ad$name, ";")), collapse = " "),
                                stringsAsFactors = FALSE))
   }
+  # NULL out 
+  if(nrow(df) == 0){
+    df = NULL
+  }
   return(df)
 }
 
 
 ##' @rdname AddListRemoveLevelDefinitions
 ##' @export
-remove_levelDefinition<-function(emuDBhandle, name, verbose = T){
+remove_levelDefinition<-function(emuDBhandle, name, rewriteAllAnnots = TRUE, force = FALSE, verbose = TRUE){
   
   dbConfig = load_DBconfig(emuDBhandle)
   # check if level definition (name)exists 
@@ -315,12 +322,37 @@ remove_levelDefinition<-function(emuDBhandle, name, verbose = T){
     }
   }
   
-  # check if level is empty
-  itemsDf = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM items i WHERE \
+  if(!force){
+    # check if level is empty
+    itemsDf = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM items i WHERE \
                         i.db_uuid='", emuDBhandle$UUID, "' AND i.level='", name, "'"))
-  itemsCnt = nrow(itemsDf)
-  if(itemsCnt > 0){
-    stop("Level is not empty. Remove items first to delete level ", name)
+    itemsCnt = nrow(itemsDf)
+    if(itemsCnt > 0){
+      stop("Level is not empty. Remove items first to delete level ", name)
+    }
+  }else{
+    
+    if(verbose){
+      answ <- readline(prompt="Are you sure you wish to remove all annotational items that are associated with this levelDefinition (y/n): ")
+      
+      if(!answ %in% c("y", "Y")){
+        stop("removal of linkDefinition incl. associated links aborted")
+      }
+    }
+    
+    # delete all labels
+    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM labels ",
+                                                   "WHERE EXISTS( ",
+                                                   "SELECT * FROM items i ",
+                                                   "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
+                                                   "AND i.session = labels.session AND i.bundle = labels.bundle AND i.item_id = labels.item_id ",
+                                                   "AND i.level='", name, "' ",
+                                                   ")"
+    ))
+    
+    # delete all items
+    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM items ",
+                                                   "WHERE items.db_uuid='", emuDBhandle$UUID, "' AND items.level='", name, "'"))
   }
   
   # do removal
@@ -334,7 +366,9 @@ remove_levelDefinition<-function(emuDBhandle, name, verbose = T){
   
   store_DBconfig(emuDBhandle, dbConfig)
   
-  rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  if(rewriteAllAnnots){
+    rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  }
   
   return(invisible(NULL))
 }
@@ -371,6 +405,8 @@ remove_levelDefinition<-function(emuDBhandle, name, verbose = T){
 ##' @param type type of attributeDefinition (currently only "STRING")
 ##' @param origAttrDef name of level/attribute definition in emuDB that is to be changed
 ##' @param newAttrDef new name that shall be assigned to the level/attribute definition
+##' @param rewriteAllAnnots should changes be written to file system (_annot.json files) (intended for expert use only)
+##' @param force delete all attribute definitions in annotations (== label entries)
 ##' @param verbose if set to \code{TRUE}, more status messages are printed
 ##' @keywords emuDB database DBconfig Emu 
 ##' @name AddListRenameRemoveAttributeDefinitions
@@ -404,7 +440,22 @@ NULL
 ##' @rdname AddListRenameRemoveAttributeDefinitions
 ##' @export
 add_attributeDefinition <- function(emuDBhandle, levelName, 
-                                    name, type = "STRING", verbose=T){
+                                    name, type = "STRING", 
+                                    rewriteAllAnnots = TRUE, verbose = TRUE){
+  
+  internal_add_attributeDefinition(emuDBhandle, levelName, 
+                                   name, type = "STRING", 
+                                   rewriteAllAnnots = TRUE, verbose = verbose)
+  
+  
+}
+
+internal_add_attributeDefinition <- function(emuDBhandle, levelName, 
+                                             name, 
+                                             type = "STRING", 
+                                             rewriteAllAnnots = TRUE, 
+                                             verbose = TRUE, 
+                                             insertLabels = TRUE){
   if(type != "STRING"){
     stop("Currently only attributeDefinition of type 'STRING' allowed")
   }
@@ -413,29 +464,41 @@ add_attributeDefinition <- function(emuDBhandle, levelName,
   
   df = list_attributeDefinitions(emuDBhandle, levelName)
   
-  
+  labelIdx = -1
   if(!(name %in% df$name)){
     for(i in 1:length(dbConfig$levelDefinitions)){
       if(dbConfig$levelDefinitions[[i]]$name == levelName){
-        dbConfig$levelDefinitions[[i]]$attributeDefinitions[[length(dbConfig$levelDefinitions[[i]]$attributeDefinitions) + 1]] = list(name = name, type = type)
+        labelIdx = length(dbConfig$levelDefinitions[[i]]$attributeDefinitions) + 1
+        dbConfig$levelDefinitions[[i]]$attributeDefinitions[[labelIdx]] = list(name = name, type = type)
         break
       }
     }
   }else{
     stop(paste0("attributeDefinition with name '", name, "' already present in level '", levelName, "'"))
   }
-
+  
+  # add to labels table
+  if(insertLabels){
+    DBI::dbGetQuery(emuDBhandle$connection, paste0("INSERT INTO labels ",
+                                                   "SELECT db_uuid, session , bundle, item_id, ", labelIdx, " AS label_idx, '", name, "' AS name, '' AS label ",
+                                                   "FROM labels ",
+                                                   "WHERE name = '", levelName, "' AND label_idx = 1 "))
+  }
   # store changes
   store_DBconfig(emuDBhandle, dbConfig)
-  rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  
+  if(rewriteAllAnnots){
+    rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  }
   
 }
+
 
 
 ##' @rdname AddListRenameRemoveAttributeDefinitions
 ##' @export
 list_attributeDefinitions <- function(emuDBhandle, levelName){
-
+  
   ld = get_levelDefinition(emuDBhandle, levelName)
   
   if(length(ld$attributeDefinitions) > 1){
@@ -465,7 +528,7 @@ list_attributeDefinitions <- function(emuDBhandle, levelName){
 
 ##' @rdname AddListRenameRemoveAttributeDefinitions
 ##' @export
-rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, verbose=T) {
+rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, verbose = TRUE) {
   
   #############################
   # check input parameters
@@ -600,7 +663,9 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
 remove_attributeDefinition <- function(emuDBhandle, 
                                        levelName, 
                                        name,
-                                       verbose=T){
+                                       force = FALSE,
+                                       rewriteAllAnnots = TRUE,
+                                       verbose = TRUE){
   
   if(levelName == name){
     stop("Can not remove primary attributeDefinition (attributeDefinition with same name as level)")
@@ -610,37 +675,59 @@ remove_attributeDefinition <- function(emuDBhandle,
   
   ld = get_levelDefinition(emuDBhandle, levelName)
   
-  # check if instances are present
-  qRes = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM items AS it, labels AS lb WHERE ",
-                                                   "it.db_uuid = lb.db_uuid AND ", 
-                                                   "it.session = lb.session AND ", 
-                                                   "it.bundle = lb.bundle AND ",
-                                                   "it.item_id = lb.item_id AND ",
-                                                   "it.level = '", levelName, "' AND ",
-                                                   "lb.name = '", name, "'"))
-  
-  if(nrow(qRes) > 0){
-    stop("Can not remove attributeDefinition if there are labels present")
+  if(!force){
+    # check if instances are present
+    qRes = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM items AS it, labels AS lb WHERE ",
+                                                          "it.db_uuid = lb.db_uuid AND ", 
+                                                          "it.session = lb.session AND ", 
+                                                          "it.bundle = lb.bundle AND ",
+                                                          "it.item_id = lb.item_id AND ",
+                                                          "it.level = '", levelName, "' AND ",
+                                                          "lb.name = '", name, "'"))
+    if(nrow(qRes) > 0){
+      stop("Can not remove attributeDefinition if there are labels present")
+    }
   }else{
-    levDefIdx = NULL
-    for(i in 1:length(dbConfig$levelDefinitions)){
-      if(dbConfig$levelDefinitions[[i]]$name == levelName){
-        levDefIdx = i
-        break
+    if(verbose){
+      answ <- readline(prompt = "Are you sure you wish to remove all labels that are associated with this attributeDefinition (y/n): ")
+      
+      if(!answ %in% c("y", "Y")){
+        stop("removal of attributeDefinition aborted")
       }
     }
+    # delete all labels
+    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM labels ",
+                                                   "WHERE EXISTS( ",
+                                                   "SELECT * FROM items i ",
+                                                   "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
+                                                   "AND i.session = labels.session AND i.bundle = labels.bundle AND i.item_id = labels.item_id ",
+                                                   "AND i.level='", levelName, "' AND labels.name ='", name, "' ",
+                                                   ")"
+    ))
     
-    for(i in 1:length(dbConfig$levelDefinitions[[levDefIdx]]$attributeDefinitions)){
-      if(dbConfig$levelDefinitions[[levDefIdx]]$attributeDefinitions[[i]]$name == name){
-        dbConfig$levelDefinitions[[levDefIdx]]$attributeDefinitions[[i]] = NULL
-        break
-      }
-    }  
+    
+  }
+  
+  levDefIdx = NULL
+  for(i in 1:length(dbConfig$levelDefinitions)){
+    if(dbConfig$levelDefinitions[[i]]$name == levelName){
+      levDefIdx = i
+      break
+    }
+  }
+  
+  for(i in 1:length(dbConfig$levelDefinitions[[levDefIdx]]$attributeDefinitions)){
+    if(dbConfig$levelDefinitions[[levDefIdx]]$attributeDefinitions[[i]]$name == name){
+      dbConfig$levelDefinitions[[levDefIdx]]$attributeDefinitions[[i]] = NULL
+      break
+    }
   }
   
   # store changes
   store_DBconfig(emuDBhandle, dbConfig)
-  rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  if(rewriteAllAnnots){
+    rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  }
 }
 
 ###################################################
@@ -868,7 +955,7 @@ add_attrDefLabelGroup <- function(emuDBhandle,
 list_attrDefLabelGroups <- function(emuDBhandle,
                                     levelName,
                                     attributeDefinitionName){
-
+  
   ld = get_levelDefinition(emuDBhandle, levelName)
   
   df = data.frame(name = character(), 
@@ -946,6 +1033,8 @@ remove_attrDefLabelGroup <- function(emuDBhandle,
 ##' @param type type of linkDefinition (either \code{"ONE_TO_MANY"}, \code{"MANY_TO_MANY"} or \code{"ONE_TO_ONE"})
 ##' @param superlevelName name of super-level of linkDefinition
 ##' @param sublevelName name of sub-level of linkDefinition
+##' @param force delete all links belonging to the linkDefinition (\strong{USE WITH CAUTION! VERY INVASIVE AKTION!})
+##' @param verbose be verbose. Ask to delete links if \code{force} is \code{TRUE}.
 ##' @name AddListRemoveLinkDefinition
 ##' @examples 
 ##' \dontrun{
@@ -1039,7 +1128,10 @@ list_linkDefinitions <- function(emuDBhandle){
                               sublevelName = ld$sublevelName,
                               stringsAsFactors = F))
   }
-  
+  # NULL out df
+  if(nrow(df) == 0){
+    df = NULL
+  }
   return(df)
   
 }
@@ -1049,7 +1141,9 @@ list_linkDefinitions <- function(emuDBhandle){
 ##' @export
 remove_linkDefinition <- function(emuDBhandle, 
                                   superlevelName,
-                                  sublevelName){
+                                  sublevelName,
+                                  force = FALSE,
+                                  verbose = TRUE){
   
   dbConfig = load_DBconfig(emuDBhandle)
   curLds = list_linkDefinitions(emuDBhandle)
@@ -1059,23 +1153,48 @@ remove_linkDefinition <- function(emuDBhandle,
     stop("No linkDefinition found for superlevelName '", superlevelName, 
          "' and sublevelName '", sublevelName, "'")
   }
-  # check if links are present
-  res = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM ",
-                                                  "links ",
-                                                  "INNER JOIN (SELECT * FROM items WHERE level = '", superlevelName, "' AND db_uuid = '", dbConfig$UUID, "') as superItems", 
-                                                  "    ON links.from_id = superItems.item_id ",
-                                                  "       AND links.db_uuid = superItems.db_uuid ",
-                                                  "       AND links.session = superItems.session ",
-                                                  "       AND links.bundle = superItems.bundle ",
-                                                  "INNER JOIN (SELECT * FROM items WHERE level = '", sublevelName, "' AND db_uuid = '", dbConfig$UUID, "') as subItems", 
-                                                  "    ON links.to_id = subItems.item_id ",
-                                                  "       AND links.db_uuid = subItems.db_uuid ",
-                                                  "       AND links.session = subItems.session ",
-                                                  "       AND links.bundle = subItems.bundle ",
-                                                  "WHERE links.db_uuid = '", emuDBhandle$UUID, "'"))
-  
-  if(nrow(res) != 0){
-    stop("linkDefinition can not be remove as there are links present")
+  if(!force){
+    # check if links are present
+    res = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM ",
+                                                         "links ",
+                                                         "INNER JOIN (SELECT * FROM items WHERE level = '", superlevelName, "' AND db_uuid = '", dbConfig$UUID, "') as superItems", 
+                                                         "    ON links.from_id = superItems.item_id ",
+                                                         "       AND links.db_uuid = superItems.db_uuid ",
+                                                         "       AND links.session = superItems.session ",
+                                                         "       AND links.bundle = superItems.bundle ",
+                                                         "INNER JOIN (SELECT * FROM items WHERE level = '", sublevelName, "' AND db_uuid = '", dbConfig$UUID, "') as subItems", 
+                                                         "    ON links.to_id = subItems.item_id ",
+                                                         "       AND links.db_uuid = subItems.db_uuid ",
+                                                         "       AND links.session = subItems.session ",
+                                                         "       AND links.bundle = subItems.bundle ",
+                                                         "WHERE links.db_uuid = '", emuDBhandle$UUID, "'"))
+    
+    if(nrow(res) != 0){
+      stop("linkDefinition can not be remove as there are links present")
+    }
+  }else{
+    
+    if(verbose){
+      answ <- readline(prompt="Are you sure you wish to remove all links that are associated with this linkDefinition (y/n): ")
+      
+      if(!answ %in% c("y", "Y")){
+        stop("removal of linkDefinition incl. associated links aborted")
+      }
+    }
+    # delete all links belonging to linkDef
+    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM links ",
+                                                   "WHERE EXISTS( ",
+                                                   "SELECT * FROM items i_from, items i_to ",
+                                                   "WHERE i_from.db_uuid='", emuDBhandle$UUID, "' ",
+                                                   "AND i_from.session = links.session AND i_from.bundle = links.bundle AND i_from.item_id = links.from_id ",
+                                                   "AND i_from.level='", superlevelName, "' ",
+                                                   "AND i_to.db_uuid='", emuDBhandle$UUID, "' ",
+                                                   "AND i_to.session = links.session AND i_to.bundle = links.bundle AND i_to.item_id = links.to_id ",
+                                                   "AND i_to.level='", sublevelName, "' ",
+                                                   ")"
+    ))
+    
+    
   }
   
   for(i in 1:length(dbConfig$linkDefinitions)){
@@ -1087,6 +1206,9 @@ remove_linkDefinition <- function(emuDBhandle,
   
   # store changes
   store_DBconfig(emuDBhandle, dbConfig)
+  if(force){
+    rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  }
   
 }
 

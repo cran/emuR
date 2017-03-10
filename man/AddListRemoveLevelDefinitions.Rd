@@ -7,11 +7,13 @@
 \alias{remove_levelDefinition}
 \title{Add / List / Remove level definition to / of / from emuDB}
 \usage{
-add_levelDefinition(emuDBhandle, name, type, verbose = T)
+add_levelDefinition(emuDBhandle, name, type, rewriteAllAnnots = TRUE,
+  verbose = TRUE)
 
 list_levelDefinitions(emuDBhandle)
 
-remove_levelDefinition(emuDBhandle, name, verbose = T)
+remove_levelDefinition(emuDBhandle, name, rewriteAllAnnots = TRUE,
+  force = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{emuDBhandle}{emuDB handle as returned by \code{\link{load_emuDB}}}
@@ -20,7 +22,11 @@ remove_levelDefinition(emuDBhandle, name, verbose = T)
 
 \item{type}{type of level definition ("SEGMENT","EVENT","ITEM")}
 
+\item{rewriteAllAnnots}{should changes be written to file system (_annot.json files) (intended for expert use only)}
+
 \item{verbose}{Show progress bars and further information}
+
+\item{force}{delete all items incl. links pointing to those items from the levels}
 }
 \description{
 Add / List / Remove database operation functions for level definitions. 
@@ -61,4 +67,3 @@ remove_levelDefinitions(emuDBhandle = ae,
 \keyword{database}
 \keyword{emuDB}
 \keyword{schema}
-
