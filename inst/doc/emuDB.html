@@ -4,14 +4,14 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2017-03-10" />
+<meta name="date" content="2017-07-03" />
 
 <title>The emuDB format</title>
 
@@ -69,7 +69,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">The emuDB format</h1>
 <h3 class="subtitle"><em>The database format of the next iteration of the EMU Speech Database Management System</em></h3>
-<h4 class="date"><em>2017-03-10</em></h4>
+<h4 class="date"><em>2017-07-03</em></h4>
 
 
 
@@ -120,7 +120,7 @@ dbPath =<span class="st"> </span><span class="kw">file.path</span>(<span class="
 <span class="co"># load database</span>
 dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <span class="dt">verbose =</span> F)
 <span class="kw">print</span>(dbHandle)</code></pre></div>
-<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpU4HtHv/fromScratchDB_emuDB')&quot;</code></pre>
+<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = 'fromScratchDB', basePath = '/private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/Rtmpeax1P9/fromScratchDB_emuDB')&quot;</code></pre>
 <p>This will load the database into it’s cached form for quick access to the data. Note that if a large emuDB has never been loaded and no cache has previously been generated, this can take a while to complete. Once a cache is present only altered annotation files have to be updated which reduces load times dramatically. As you can see the <code>load_emuDB()</code> function returns a database handle. This emuDBhandle is used to reference the loaded database in most database interaction functions of the <code>emuR</code> package.</p>
 <p>Next, let us look at some actual database manipulation functions. The general function prefix naming convention of database manipulation functions for loaded databases are:</p>
 <ul>
@@ -144,8 +144,8 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <s
 <p>alternatively a summary of the emuDB also gives us this as well as additional information:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dbHandle)</code></pre></div>
 <pre><code>## Name:     fromScratchDB 
-## UUID:     e283c540-4687-40f5-a762-1e0aa4f0ba4d 
-## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/RtmpU4HtHv/fromScratchDB_emuDB 
+## UUID:     33ddb858-244b-4aa4-8328-a0f66cc06dac 
+## Directory:    /private/var/folders/ll/pw5k9y6x64q5xqys350rz2ph0000gn/T/Rtmpeax1P9/fromScratchDB_emuDB 
 ## Session count: 0 
 ## Bundle count: 0 
 ## Annotation item count:  0 
@@ -730,7 +730,7 @@ dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(<span clas
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

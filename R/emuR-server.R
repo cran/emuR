@@ -31,7 +31,7 @@ setServerHandle <- function(sh) {
 ##' Disconnect and stop:
 ##' \itemize{
 ##' \item Disconnect and stop the server with the 'Clear' button of the webapp or the reload button of your browser.
-##' \item The server can also be interrupted with Ctrl-C if something wents wrong.
+##' \item The server can also be interrupted with Ctrl-C if something went wrong.
 ##' \item To serve only a subset of sessions or bundles use the parameters \code{sessionPattern} and/or \code{bundlePattern}.
 ##' }
 ##' 
@@ -388,7 +388,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
             json = jsonlite::toJSON(bundleData, auto_unbox = TRUE, force = TRUE, pretty = TRUE)
             
             # use try mainly for permission problems on file system
-            res=tryCatch(writeLines(json, annotFilePath), error=function(e) e)
+            res=tryCatch(writeLines(json, annotFilePath, useBytes = TRUE), error=function(e) e)
             if(inherits(res,'error')){
               err=res
             }else{

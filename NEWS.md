@@ -1,3 +1,23 @@
+# emuR 0.2.3
+
+## new features / performance tweaks / improvements
+
+* tweaked `runBASwebservice_maus()`; improved performance for presegmented bundles
+* performance bump for `fapply()` by preallocating result matrix
+* performance bump for `trapply()` by preallocating result matrix
+* performance bump for `mel.spectral()` by preallocating result matrix
+* performance bump for `bark.spectral()` by preallocating result matrix
+* updated DBI calls to comply with the latest best practices (using `DBI::dbExecute()` instead of `DBI::dbGetQuery()` for non-`SELECT` queries)
+* BPF collection exporter documented and now public
+
+## bug fixes
+
+* `export_TextGridCollection()` now handles partial includes of bundle and session names correctly (issue \#147)
+* added missing check if `anagestConfig` is defined to `rename_attributeDefinition()`
+* setting useBytes to T to avoid reencoding under windows
+* fixed bug in `add_ssffTrackDefinition()` that was trying to access `fp` which was renamed in a refactor to `filesDf`
+* fixed export to autodetect S3 methods (cbind & rbind for trackdata)
+
 # emuR 0.2.2
 
 ## new features / performance tweaks / improvements

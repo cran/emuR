@@ -113,7 +113,7 @@ import_mediaFiles<-function(emuDBhandle,dir,targetSessionName='0000', verbose=TR
     # write to file
     annotJSONchar = jsonlite::toJSON(b, auto_unbox = T, pretty = T)
     newAnnotFileFullPath=file.path(bundleDir, paste0(bundleName, bundle.annotation.suffix, ".json"))
-    writeLines(annotJSONchar, newAnnotFileFullPath)
+    writeLines(annotJSONchar, newAnnotFileFullPath, useBytes = TRUE)
     
     # calculate MD5 sum of bundle annotJSON
     MD5annotJSON = tools::md5sum(newAnnotFileFullPath)
@@ -216,7 +216,7 @@ add_files <- function(emuDBhandle, dir, fileExtension, targetSessionName='0000')
 ##' more information on the structural elements of an emuDB 
 ##' see \code{vignette{emuDB}}.
 ##' @param emuDBhandle emuDB handle as returned by \code{\link{load_emuDB}}
-##' @param fileExtension file extention of files
+##' @param fileExtension file extension of files
 ##' @param sessionPattern A (RegEx) pattern matching sessions to be searched from the database
 ##' @param bundlePattern A (RegEx) pattern matching bundles to be searched from the database
 ##' @return file paths as character vector

@@ -193,7 +193,7 @@ store_DBconfig <- function(emuDBhandle, dbConfig, basePath = NULL){
   }
   dbCfgPath = file.path(basePath, paste0(emuDBhandle$dbName, database.schema.suffix))
   json = jsonlite::toJSON(dbConfig, auto_unbox = TRUE, force = TRUE, pretty = TRUE)
-  writeLines(json, dbCfgPath)
+  writeLines(json, dbCfgPath, useBytes = TRUE)
 }
 
 
@@ -341,7 +341,7 @@ remove_levelDefinition<-function(emuDBhandle, name, rewriteAllAnnots = TRUE, for
     }
     
     # delete all labels
-    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM labels ",
+    DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM labels ",
                                                    "WHERE EXISTS( ",
                                                    "SELECT * FROM items i ",
                                                    "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
@@ -351,7 +351,7 @@ remove_levelDefinition<-function(emuDBhandle, name, rewriteAllAnnots = TRUE, for
     ))
     
     # delete all items
-    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM items ",
+    DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM items ",
                                                    "WHERE items.db_uuid='", emuDBhandle$UUID, "' AND items.level='", name, "'"))
   }
   
@@ -479,7 +479,7 @@ internal_add_attributeDefinition <- function(emuDBhandle, levelName,
   
   # add to labels table
   if(insertLabels){
-    DBI::dbGetQuery(emuDBhandle$connection, paste0("INSERT INTO labels ",
+    DBI::dbExecute(emuDBhandle$connection, paste0("INSERT INTO labels ",
                                                    "SELECT db_uuid, session , bundle, item_id, ", labelIdx, " AS label_idx, '", name, "' AS name, '' AS label ",
                                                    "FROM labels ",
                                                    "WHERE name = '", levelName, "' AND label_idx = 1 "))
@@ -532,7 +532,6 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
   
   #############################
   # check input parameters
-  
   if(class(origAttrDef) != "character" | class(newAttrDef) != "character" | length(origAttrDef) != 1 | length(newAttrDef) != 1){
     stop("origAttrDef and newAttrDef have to be character vectors with only one item!")  
   }
@@ -590,10 +589,11 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
     function (lvlDef) {
       # If lvlDef references the level to be renamed in its anagest config,
       # adjust that
-      if (lvlDef$anagestConfig$autoLinkLevelName == origAttrDef) {
-        lvlDef$anagestConfig$autoLinkLevelName = newAttrDef
+      if(!is.null(lvlDef$anagestConfig)){
+        if (lvlDef$anagestConfig$autoLinkLevelName == origAttrDef) {
+          lvlDef$anagestConfig$autoLinkLevelName = newAttrDef
+        }
       }
-      
       # If lvlDef *is* the level to be renamed, adjust that
       if (lvlDef$name == origAttrDef) {
         lvlDef$name = newAttrDef
@@ -626,7 +626,7 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
   }
   
   # create temp index
-  DBI::dbGetQuery(emuDBhandle$connection, paste0("CREATE INDEX IF NOT EXISTS level_rename_tmp_idx ON items(db_uuid, level)"))
+  DBI::dbExecute(emuDBhandle$connection, paste0("CREATE INDEX IF NOT EXISTS level_rename_tmp_idx ON items(db_uuid, level)"))
   
   
   if(verbose){
@@ -636,11 +636,11 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
   # transaction start
   DBI::dbBegin(emuDBhandle$connection)
   
-  DBI::dbGetQuery(emuDBhandle$connection, paste0("UPDATE items SET level = '", newAttrDef, "' ",
+  DBI::dbExecute(emuDBhandle$connection, paste0("UPDATE items SET level = '", newAttrDef, "' ",
                                                  "WHERE db_uuid='", emuDBhandle$UUID, "' ",
                                                  "AND level = '", origAttrDef, "'"))
   
-  DBI::dbGetQuery(emuDBhandle$connection, paste0("UPDATE labels SET name = '", newAttrDef, "' ",
+  DBI::dbExecute(emuDBhandle$connection, paste0("UPDATE labels SET name = '", newAttrDef, "' ",
                                                  "WHERE db_uuid='", emuDBhandle$UUID, "' ",
                                                  "AND name = '", origAttrDef, "'"))
   
@@ -651,7 +651,7 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
     cat("\n  INFO: removing temporary index...\n")
   }  
   # remove temp index
-  DBI::dbGetQuery(emuDBhandle$connection, paste0("DROP INDEX IF EXISTS level_rename_tmp_idx"))
+  DBI::dbExecute(emuDBhandle$connection, paste0("DROP INDEX IF EXISTS level_rename_tmp_idx"))
   
   store_DBconfig(emuDBhandle, dbConfig)
   rewrite_allAnnots(emuDBhandle, verbose = verbose)
@@ -696,7 +696,7 @@ remove_attributeDefinition <- function(emuDBhandle,
       }
     }
     # delete all labels
-    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM labels ",
+    DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM labels ",
                                                    "WHERE EXISTS( ",
                                                    "SELECT * FROM items i ",
                                                    "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
@@ -1182,7 +1182,7 @@ remove_linkDefinition <- function(emuDBhandle,
       }
     }
     # delete all links belonging to linkDef
-    DBI::dbGetQuery(emuDBhandle$connection, paste0("DELETE FROM links ",
+    DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM links ",
                                                    "WHERE EXISTS( ",
                                                    "SELECT * FROM items i_from, items i_to ",
                                                    "WHERE i_from.db_uuid='", emuDBhandle$UUID, "' ",
@@ -1340,10 +1340,10 @@ add_ssffTrackDefinition <- function(emuDBhandle, name,
     filesDf = list_files(emuDBhandle, fileExtension)
     ans = 'y'
     if(nrow(filesDf) != 0){
-      fp = paste(emuDBhandle$basePath, paste0(fp$session, session.suffix), paste0(fp$bundle, bundle.dir.suffix), fp$file, sep = .Platform$file.sep)
+      fp = paste(emuDBhandle$basePath, paste0(filesDf$session, session.suffix), paste0(filesDf$bundle, bundle.dir.suffix), filesDf$file, sep = .Platform$file.sep)
       if(interactive){
         ans = readline(paste0("There are files present in '",emuDBhandle$dbName,"' that have the file extention '", 
-                              fileExtension, "' Continuing will overwrite these files! Do you wish to proceed? (y/n) "))
+                              fileExtension, "'! Continuing will overwrite these files! Do you wish to proceed? (y/n) "))
       }
     }else{
       if(ans == 'y'){

@@ -152,6 +152,7 @@ bas_run_maus_dbi <- function(handle,
         {
           trn_items_bundle = trn_items[trn_items$bundle == bundle &
                                          trn_items$session == session,]
+          
           if (nrow(trn_items_bundle) == 0)
           {
             close(kancon)
@@ -160,36 +161,45 @@ bas_run_maus_dbi <- function(handle,
           
           if (nrow(trn_items_bundle) > 0)
           {
-            for (turn_idx in 1:nrow(trn_items_bundle))
+            linked_kan_items = requery_hier(
+              handle,
+              trn_items_bundle,
+              canoAttributeDefinitionName,
+              calcTimes = F,
+              collapse = T
+            )
+            
+            linked_trn_items = requery_hier(
+              handle,
+              linked_kan_items,
+              chunkLevel,
+              calcTimes = T,
+              collapse = T
+            )
+            
+            if(nrow(linked_kan_items) != nrow(linked_trn_items))
             {
-              turn_item_id = trn_items_bundle[turn_idx, "start_item_id"]
-              turn_start = trn_items_bundle[turn_idx, "sample_start"]
-              turn_end = trn_items_bundle[turn_idx, "sample_end"]
+              stop("Something has gone wrong in the turn query...")
+            }
+            
+            for(trn_idx in 1:nrow(linked_trn_items))
+            {
+              turn_start = linked_trn_items[trn_idx, "sample_start"]
+              turn_end = linked_trn_items[trn_idx, "sample_end"]
+              item_id_start = linked_kan_items[trn_idx, "start_item_id"]
+              item_id_end = linked_kan_items[trn_idx, "end_item_id"]
+              bas_id_start = item_id_to_bas_id[[toString(item_id_start)]]
+              bas_id_end = item_id_to_bas_id[[toString(item_id_end)]]
               
-              linked_ids = requery_hier(
-                handle,
-                trn_items_bundle[turn_idx,],
-                canoAttributeDefinitionName,
-                calcTimes = F,
-                collapse = F
-              )$start_item_id
+              trnline = paste(
+                "TRN:",
+                turn_start,
+                turn_end - turn_start,
+                paste0(bas_id_start:bas_id_end, collapse = ","),
+                "_"
+              )
               
-              if (length(linked_ids) > 0)
-              {
-                bas_ids = sapply(linked_ids, function(x)
-                  item_id_to_bas_id[[toString(x)]])
-                
-                
-                trnline = paste(
-                  "TRN:",
-                  turn_start,
-                  turn_end - turn_start,
-                  paste0(bas_ids, collapse = ","),
-                  "_"
-                )
-                
-                write(trnline, kancon)
-              }
+              write(trnline, kancon)
             }
           }
         }
@@ -291,7 +301,6 @@ bas_run_maus_dbi <- function(handle,
   bas_new_canvas(handle, perspective, mausLevel)
   add_linkDefinition(handle, "ONE_TO_MANY", canoLevel, mausLevel)
   
-  
   mausDescription = bas_paste_description("Phonetic segmentation by MAUS", canoAttributeDefinitionName, service, params)
   set_attributeDescription(handle, mausLevel, mausAttributeDefinitionName, mausDescription)
   
@@ -321,7 +330,7 @@ bas_run_minni_dbi <- function(handle,
   
   minniLevel = minniAttributeDefinitionName
   bas_check_this_is_a_new_label(handle, minniAttributeDefinitionName)
-
+  
   if(!is.null(rootLevel))
   {
     if (is.null(get_levelDefinition(handle, rootLevel)))
@@ -2017,7 +2026,7 @@ bas_add_item <- function(handle,
     ")"
   )
   
-  DBI::dbGetQuery(handle$connection, queryTxt)
+  DBI::dbExecute(handle$connection, queryTxt)
 }
 
 bas_add_label <- function(handle,
@@ -2046,7 +2055,7 @@ bas_add_label <- function(handle,
     "')"
   )
   
-  DBI::dbGetQuery(handle$connection, queryTxt)
+  DBI::dbExecute(handle$connection, queryTxt)
 }
 
 bas_add_link <- function(handle,
@@ -2068,7 +2077,7 @@ bas_add_link <- function(handle,
     to_id,
     ", NULL)"
   )
-  DBI::dbGetQuery(handle$connection, queryTxt)
+  DBI::dbExecute(handle$connection, queryTxt)
 }
 
 bas_get_signal_path <- function(handle, session, bundle, basePath)
@@ -2214,7 +2223,7 @@ bas_link_exists_in_bundle <-
       "AND name=='",
       subLevel,
       "')"
-      )
+    )
     return(DBI::dbGetQuery(handle$connection, queryTxt)[1, 1] > 0)
   }
 
@@ -2291,7 +2300,7 @@ bas_segment_to_item_level_dbi <-
       "'"
     )
     
-    DBI::dbGetQuery(handle$connection, queryTxt)
+    DBI::dbExecute(handle$connection, queryTxt)
   }
 
 bas_check_this_is_a_new_label <- function(handle, label)
@@ -2434,10 +2443,9 @@ bas_curl <- function(service, params)
 bas_paste_description <-
   function(description, source, service, params)
   {
-    # TODO: replace BASWebServicesTest with BASWebServices when Thomas (Kisler) says its okay
     version = RCurl::getURL(
       paste0(
-        "https://clarin.phonetik.uni-muenchen.de/BASWebServicesTest/services/runGetVersion?service=",
+        "https://clarin.phonetik.uni-muenchen.de/BASWebServices/services/runGetVersion?service=",
         service
       ),
       .opts = RCurl::curlOptions(connecttimeout = 10, timeout = 30)
