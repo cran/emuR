@@ -66,7 +66,7 @@ parse_TextGridDBI <- function(emuDBhandle, TextGridPath=NULL, sampleRate, encodi
   currentTierSize=NULL
   
   # read TextGrid
-  tg = try(readLines(TextGridPath))
+  tg = try(readr::read_lines(TextGridPath))
   if(class(tg) == "try-error") {
     stop("read.TextGrid: cannot read from file ", TextGridPath)
   }
@@ -316,15 +316,16 @@ parse_TextGridDBI <- function(emuDBhandle, TextGridPath=NULL, sampleRate, encodi
 
 #############################
 TextGridToBundleAnnotDFs <- function(tgPath, sampleRate, name, annotates){
-  
+
   FILE_TYPE_KEY="File type"
   OBJECT_CLASS_KEY="Object class"
   
-  tgChar = enc2utf8(readChar(tgPath, file.info(tgPath)$size)) # wrapped in enc2utf8 as readChar respects the system default (windows iso 88591)
+  #tgChar = enc2utf8(readChar(tgPath, file.info(tgPath)$size)) # wrapped in enc2utf8 as readChar respects the system default (windows iso 88591)
+  tgChar = readr::read_file(tgPath)
   lines = unlist(strsplit(tgChar, "\n"))
   
   if(!grepl(paste0("^", FILE_TYPE_KEY), lines[1]) & !grepl(paste0("^", OBJECT_CLASS_KEY), lines[2])){
-    stop("First two lines of TextGrid file do not match: ", FILE_TYPE_KEY, "; and: ", OBJECT_CLASS_KEY, ". Only long form TextGrids are currently supported. Problem file is: ", tgPath)
+    stop("First two lines of TextGrid file do not match: ", FILE_TYPE_KEY, "; and: ", OBJECT_CLASS_KEY, ". Only UTF-8 long form TextGrids are currently supported. Problem file is: ", tgPath)
   }
   
   

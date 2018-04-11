@@ -115,7 +115,7 @@ database.DDL.emuDB_links_to_id_idx = 'CREATE INDEX IF NOT EXISTS links_to_id_idx
 initialize_emuDbDBI <- function(emuDBhandle, createTables=TRUE, createIndices=TRUE){
   # check of old tables are present and rename them
   if(DBI::dbExistsTable(emuDBhandle$connection, "emuDB")){
-    cat("INFO: Depricated cache tables found. Deleting these and recreating SQL cache that adheres to new DB schema definition.\n")
+    cat("INFO: Deprecated cache tables found. Deleting these and recreating SQL cache that adheres to new DB schema definition.\n")
     allTableNames = DBI::dbListTables(emuDBhandle$connection)
     DBI::dbExecute(emuDBhandle$connection, paste0("DROP TABLE IF EXISTS ", "items"))
     DBI::dbExecute(emuDBhandle$connection, paste0("DROP TABLE IF EXISTS ", "labels"))
@@ -128,7 +128,7 @@ initialize_emuDbDBI <- function(emuDBhandle, createTables=TRUE, createIndices=TR
     DBI::dbExecute(emuDBhandle$connection, paste0("DROP TABLE IF EXISTS ", "session"))
     DBI::dbExecute(emuDBhandle$connection, paste0("DROP TABLE IF EXISTS ", "emuDB"))
   }else if(DBI::dbExistsTable(emuDBhandle$connection, "links_ext")){
-    cat("INFO: Found depricated links_ext table. Deleting this table as it is not needed any longer.\n")
+    cat("INFO: Found deprecated links_ext table. Deleting this table as it is not needed any longer.\n")
     DBI::dbExecute(emuDBhandle$connection, paste0("DROP TABLE IF EXISTS ", "links_ext"))
   }
   
@@ -384,6 +384,7 @@ rename_emuDB <- function(databaseDir, newName){
 ##' }
 ##' 
 list_sessions <- function(emuDBhandle){
+  check_emuDBhandle(emuDBhandle, checkCache = F)
   sesPattern = paste0("^.*", session.suffix ,"$")
   sesDirs = dir(emuDBhandle$basePath, pattern = sesPattern)
   sesDirs = gsub(paste0(session.suffix, "$"), "", sesDirs)
@@ -411,6 +412,7 @@ list_sessions <- function(emuDBhandle){
 ##' }
 ##' 
 list_bundles <- function(emuDBhandle, session=NULL){
+  check_emuDBhandle(emuDBhandle, checkCache = F)
   sesDf = list_sessions(emuDBhandle)
   if(!is.null(session)){
     sesDf = dplyr::filter_(sesDf, ~(name == session))
@@ -432,7 +434,7 @@ list_bundles <- function(emuDBhandle, session=NULL){
 
 
 rewrite_allAnnots <- function(emuDBhandle, verbose=TRUE){
-  
+
   bndls = list_bundles(emuDBhandle)
   
   # check if any bundles exist
@@ -464,8 +466,7 @@ rewrite_allAnnots <- function(emuDBhandle, verbose=TRUE){
     
     # (re-)calculate md5 sums 
     newMD5sum = tools::md5sum(annotFilePath)
-    DBI::dbExecute(emuDBhandle$connection, paste0("UPDATE bundle SET md5_annot_json = '", newMD5sum, "' WHERE db_uuid ='", emuDBhandle$UUID, "' AND session='", bndl$session, "' AND name='", bndl$name, "'"))
-    
+    res = DBI::dbExecute(emuDBhandle$connection, paste0("UPDATE bundle SET md5_annot_json = '", newMD5sum, "' WHERE db_uuid ='", emuDBhandle$UUID, "' AND session='", bndl$session, "' AND name='", bndl$name, "'"))
     
     progress=progress+1L
     if(verbose){
@@ -785,8 +786,8 @@ load_emuDB <- function(databaseDir, inMemoryCache = FALSE, connection = NULL, ve
       names(newMD5annotJSON) = NULL
       
       # read annotJSON as charac 
-      annotJSONchar = enc2utf8(readChar(annotFilePath, file.info(annotFilePath)$size)) # wrapped in enc2utf8 as readChar respects the system default (windows iso 88591)
-      
+      #annotJSONchar = enc2utf8(readChar(annotFilePath, file.info(annotFilePath)$size)) # wrapped in enc2utf8 as readChar respects the system default (windows iso 88591)
+      annotJSONchar = readr::read_file(annotFilePath)
       # convert to bundleAnnotDFs
       bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(annotJSONchar)
       # add to bundle table

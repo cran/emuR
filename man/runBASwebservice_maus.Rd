@@ -7,7 +7,7 @@
 runBASwebservice_maus(handle, canoAttributeDefinitionName, language,
   mausAttributeDefinitionName = "MAU", chunkLevel = NULL,
   turnChunkLevelIntoItemLevel = TRUE, params = NULL,
-  perspective = "default", resume = FALSE, verbose = TRUE)
+  perspective = "default", patience = 0, resume = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{handle}{emuDB handle}
@@ -29,7 +29,7 @@ of MAUS. The chunk segmentation level must be a segment level, and it must link 
 
 \item{turnChunkLevelIntoItemLevel}{if TRUE, and if a chunk level is provided, the chunk level is converted into an ITEM level after segmentation}
 
-\item{params}{named list of parameters to be passed on to the webservice. It is your own reponsibility to
+\item{params}{named list of parameters to be passed on to the webservice. It is your own responsibility to
 ensure that these parameters are compatible with the webservice API
 (see \url{https://clarin.phonetik.uni-muenchen.de/BASWebServices/services/help}).
 Some options accepted by the API (e.g. output format) cannot be set when calling a webservice from within emuR,
@@ -37,6 +37,9 @@ and will be overridden.}
 
 \item{perspective}{the webApp perspective that the new level will be added to.
 If NULL, the new level is not added to any perspectives.}
+
+\item{patience}{If a web service call fails, it is repeated a further n times, with n being the value of patience.
+Must be set to a value between 0 and 3.}
 
 \item{resume}{If a previous call to this function has failed (and you think you have fixed the issue
 that caused the error), you can set resume=TRUE to recover any progress made up to that point. This

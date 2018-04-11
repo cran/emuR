@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2017-07-03" />
+<meta name="date" content="2018-04-11" />
 
 <title>EQL - Version 2 of the Emu Query Language</title>
 
@@ -19,46 +19,256 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
 
 </head>
 
@@ -68,7 +278,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">EQL - Version 2 of the Emu Query Language</h1>
-<h4 class="date"><em>2017-07-03</em></h4>
+<h4 class="date"><em>2018-04-11</em></h4>
 
 
 
@@ -84,18 +294,18 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="examples" class="section level1">
 <h1>Examples</h1>
-<p>We will now jump right in by giving you a bunch of examples of query strings that where adapted from <span class="citation">(Harrington and Cassidy 2002, <span class="citation">Cassidy and Harrington (2011)</span>)</span>. To have some data we can play with let us create a demo database and then load it into our current R session:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># load the package</span>
-<span class="kw">library</span>(emuR)
-
-<span class="co"># create demo data in folder provided by the tempdir() function</span>
-<span class="kw">create_emuRdemoData</span>(<span class="dt">dir =</span> <span class="kw">tempdir</span>())
-
-<span class="co"># get the path to emuDB called 'ae' that is part of the demo data</span>
-path2folder =<span class="st"> </span><span class="kw">file.path</span>(<span class="kw">tempdir</span>(), <span class="st">&quot;emuR_demoData&quot;</span>, <span class="st">&quot;ae_emuDB&quot;</span>)
-
-<span class="co"># load emuDB into current R session</span>
-ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</code></pre></div>
+<p>We will now jump right in by giving you a bunch of examples of query strings that where adapted from <span class="citation">(Harrington and Cassidy 2002, <span class="citation">@cassidy_harrington:2001</span>)</span>. To have some data we can play with let us create a demo database and then load it into our current R session:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># load the package</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">library</span>(emuR)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="co"># create demo data in folder provided by the tempdir() function</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">create_emuRdemoData</span>(<span class="dt">dir =</span> <span class="kw">tempdir</span>())</a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co"># get the path to emuDB called 'ae' that is part of the demo data</span></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">path2folder =<span class="st"> </span><span class="kw">file.path</span>(<span class="kw">tempdir</span>(), <span class="st">&quot;emuR_demoData&quot;</span>, <span class="st">&quot;ae_emuDB&quot;</span>)</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="co"># load emuDB into current R session</span></a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</a></code></pre></div>
 <div id="simple-equality-inequality-matching-non-matching-queries-single-argument" class="section level2">
 <h2>Simple equality / inequality / matching / non-matching queries (single argument)</h2>
 <p>The syntax of a simple equality / inequality / matching / non-matching query is <code>&quot;[L OPERATOR A]&quot;</code> where “L” specifies a level (or alternatively the name of a parallel attributeDefinitions), “OPERATOR” is one of the following operators: “==” (equality); “!=” (inequality); “=~” (matching) or “!~” (non-matching) and “A” is an expression specifying the labels of the ITEMs of “L”.</p>
@@ -104,32 +314,32 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs containing the label “m” in the “Phonetic” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == m]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == m]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs containing the label “m” or “n” in the “Phonetic” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == m | n]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == m | n]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs that don’t contain the label “m” or “n”?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic != m | n]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic != m | n]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs in the “Syllable” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .*]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .*]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs in the “Text” level beginning with ‘a’?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ a.*]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ a.*]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs in the “Text” level that don’t begin with ‘a’?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text !~ a.*]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text !~ a.*]&quot;</span>)</a></code></pre></div>
 <p><strong>INFO: The above examples use three operators that are new to the EQL as of version 2. One being the “==” equal operator that has the same meaning as the “=” operator of the EQL1 (which is also still available) while providing a cleaner more precise syntax. The other two being the “=~” and “!~” which are the new matching and non-matching regular expression operators. </strong></p>
 <p><strong>If you wish to use parenthesis, blanks or characters that represent operands used by the EQL (see EBNF) as part of a label matching string (the string on the right hand side of one of the operands mentioned above), you must place this string in additional single quotation marks to escape these characters. For example searching for the items containing the labels <code>O_&amp;quot</code> on the Phonetic level could not be written as <code>&quot;[Phonetic == O_&amp;quot]&quot;</code> but would have to be written as <code>&quot;[Phonetic == 'O_&amp;quot']&quot;</code>. Note that reversing the single vs. double quotation mark order is currently not supported i.e. ‘[Phonetic == “O_&amp;quot”]’ won’t lead to the desired behavior. Only use double quotation marks for the outer wrapping of the query string to avoid this issue.</strong></p>
 </div>
@@ -141,20 +351,20 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all sequences of ITEMs containing the label “@” followed by ITEMs containing the label “n” on the “Phonetic” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># NOTE: all row entries in the resulting segment list have the start time of &quot;@&quot;, the end time of &quot;n&quot; and their labels will be &quot;@-&gt;n&quot;</span>
-<span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == @ -&gt; Phonetic == n]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co"># </span><span class="al">NOTE</span><span class="co">: all row entries in the resulting segment list have the start time of &quot;@&quot;, the end time of &quot;n&quot; and their labels will be &quot;@-&gt;n&quot;</span></a>
+<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == @ -&gt; Phonetic == n]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>Same as the question above but this time we are only interested in the ITEMs containing the label “@” of the sequences.</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># NOTE: all row entries in the resulting segment list have the start time of &quot;@&quot;, the end time of &quot;@&quot; and their labels will also be &quot;@&quot;</span>
-<span class="kw">query</span>(ae, <span class="st">&quot;[#Phonetic == @ -&gt; Phonetic == n]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="co"># </span><span class="al">NOTE</span><span class="co">: all row entries in the resulting segment list have the start time of &quot;@&quot;, the end time of &quot;@&quot; and their labels will also be &quot;@&quot;</span></a>
+<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="kw">query</span>(ae, <span class="st">&quot;[#Phonetic == @ -&gt; Phonetic == n]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>Same as the first question but this time we are only interested in the ITEMs containing the label “n”.</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># NOTE: all row entries in the resulting segment list have the start time of &quot;n&quot;, the end time of &quot;n&quot; and their labels will also be &quot;n&quot;</span>
-<span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == @ -&gt; #Phonetic == n]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="co"># </span><span class="al">NOTE</span><span class="co">: all row entries in the resulting segment list have the start time of &quot;n&quot;, the end time of &quot;n&quot; and their labels will also be &quot;n&quot;</span></a>
+<a class="sourceLine" id="cb10-2" data-line-number="2"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic == @ -&gt; #Phonetic == n]&quot;</span>)</a></code></pre></div>
 <div id="subsequent-sequence-queries-using-nesting-of-the---sequence-operator" class="section level3">
 <h3>Subsequent sequence queries using nesting of the “-&gt;” sequence operator</h3>
 <p>The general strategy to constructing a query string that retrieves subsequent sequences of labels is to nest multiple sequences while paying close attention to the correct placement of the parentheses. An abstracted version of such a query string for the subsequent sequence of arguments A1, A2, A3, A4 would be: <code>&quot;[[[[A1 -&gt; A2] -&gt; A3] -&gt; A4] -&gt; A5]&quot;</code> where each argument (e.g. “A1”) represents an equality / inequality / matching / non-matching expression on the same level (alternatively parallel attributeDefinitions of the same level may also be chosen).</p>
@@ -163,17 +373,17 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all sequences of ITEMs containing the labels “@”, “n” and “s” on the “Phonetic” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic == @ -&gt; Phonetic == n ] -&gt; Phonetic == s]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic == @ -&gt; Phonetic == n ] -&gt; Phonetic == s]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all sequences of ITEMs containing the labels “to”, “offer” and “any” on the “Text” level?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Text == to -&gt; Text == offer ] -&gt; Text == any]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Text == to -&gt; Text == offer ] -&gt; Text == any]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all sequences of ITEMs containing labels “offer” followed by two arbitrary labels followed by “resistance”?</em></li>
 <li><strong>A</strong>: ``</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[[Text == offer -&gt; Text =~ .*] -&gt; Text =~ .* ] -&gt; Text == resistance]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[[Text == offer -&gt; Text =~ .*] -&gt; Text =~ .* ] -&gt; Text == resistance]&quot;</span>)</a></code></pre></div>
 <p><strong>INFO: As the EQL1 didn’t have a regular expression operator, users often resorted to using queries such as “[Phonetic != XXX]” (where XXX is a label that was not part of the label set of the “Phonetic” level) to match every label on the “Phonetic” level. Although this is still possible in the EQL2, we strongly recommend using regular expressions as they provide a much clearer and preciser syntax and are less error prone.</strong></p>
 </div>
 </div>
@@ -190,17 +400,17 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs containing the label “always” on the “Text” level which also have the label “C” on a parallel attributeDefintion called “Word”?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text == always &amp; Word == C]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text == always &amp; Word == C]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs of the attributeDefintion “Text” of the level “Word” that where also labeled to be function words (labeled “F” in the “Word” level)?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Word == F]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Word == F]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs of the attributeDefintion “Text” of the level “Word” that where also labeled to be content words (labeled “C” in the “Word” level) and labeled to be accentuated (labeled “S” in the attributeDefintion “Accent” of the same level)?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Word == C &amp; Accent == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Word == C &amp; Accent == S]&quot;</span>)</a></code></pre></div>
 </div>
 <div id="domination-operator-hierarchical-queries" class="section level2">
 <h2>Domination operator ^ (== hierarchical queries)</h2>
@@ -212,21 +422,21 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs containing the label “p” in the “Phoneme” level that occur in strong syllables (i.e. dominated by / linked to ITEMs of the level “Syllable” that contain the label “S”)?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == p ^ Syllable == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == p ^ Syllable == S]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all syllable ITEMs which contain a phoneme ITEM labeled “p”?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .* ^ Phoneme == p]&quot;</span>)
-<span class="co"># or</span>
-<span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == p ^ #Syllable =~ .*]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .* ^ Phoneme == p]&quot;</span>)</a>
+<a class="sourceLine" id="cb18-2" data-line-number="2"><span class="co"># or</span></a>
+<a class="sourceLine" id="cb18-3" data-line-number="3"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == p ^ #Syllable =~ .*]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all syllable ITEMs which neither contain a phoneme ITEM labeled “k” nor “p” nor “t”?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .* ^ Phoneme != p | t | k]&quot;</span>)
-<span class="co"># or</span>
-<span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme != p | t | k ^ #Syllable =~ .*]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .* ^ Phoneme != p | t | k]&quot;</span>)</a>
+<a class="sourceLine" id="cb19-2" data-line-number="2"><span class="co"># or</span></a>
+<a class="sourceLine" id="cb19-3" data-line-number="3"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme != p | t | k ^ #Syllable =~ .*]&quot;</span>)</a></code></pre></div>
 <p><strong>INFO: Even though the domination operator is not directional, what you place to the left and to the right of the operator does have an impact on the result. If no result modifier (the hash tag “#”) is used the query engine will automatically assume that the expression to the left of the operator specifies what is to be returned. This means that the schematic query string: <code>&quot;[L1 == A ^ L2 == B]&quot;</code> is semantically equal to the query string: <code>&quot;[#L1 == A ^ L2 == B]&quot;</code>. As it is more explicit to mark the desired result we recommend you always use the result modifier where possible.</strong></p>
 </div>
 <div id="multiple-domination" class="section level3">
@@ -237,12 +447,12 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all ITEMs on the “Phonetic” level that are part of a strong syllable (labeled “S”) and belong to the words “amongst” or “beautiful”?</em></li>
 <li><strong>A</strong>: <code>&quot;</code></li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[#Phonetic =~ .* ^ Syllable == S] ^ Text == amongst | beautiful]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[#Phonetic =~ .* ^ Syllable == S] ^ Text == amongst | beautiful]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>The same as the question above but this time we want the Text ITEMs.</em></li>
 <li><strong>A</strong>: <code>&quot;[[Pitch_Accent == H* ^ Phoneme == p] ^ #Text == price | space]&quot;</code></li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic =~ .* ^ Syllable == S] ^ #Text == amongst | beautiful]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic =~ .* ^ Syllable == S] ^ #Text == amongst | beautiful]&quot;</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="position" class="section level2">
@@ -261,27 +471,27 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all word-initial syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Start(Word, Syllable) == TRUE]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Start(Word, Syllable) == TRUE]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all word-initial phonemes?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Start(Word, Phoneme) == TRUE]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Start(Word, Phoneme) == TRUE]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all non-word-initial syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Start(Word, Syllable) == FALSE]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Start(Word, Syllable) == FALSE]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all word-final syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[End(Word, Syllable) == TRUE]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[End(Word, Syllable) == TRUE]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all word-medial syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Medial(Word, Syllable) == TRUE]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Medial(Word, Syllable) == TRUE]&quot;</span>)</a></code></pre></div>
 </div>
 <div id="position-and-boolean" class="section level3">
 <h3>Position and Boolean &amp;</h3>
@@ -291,17 +501,17 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all “n” phonemes at the beginning of a syllable?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == n &amp; Start(Syllable, Phoneme) == 1]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == n &amp; Start(Syllable, Phoneme) == 1]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all word-final “m” phonemes?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == m &amp; End(Word, Phoneme) == 1]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == m &amp; End(Word, Phoneme) == 1]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all non-word-final “S” syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == S &amp; End(Word, Syllable) == 0]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == S &amp; End(Word, Syllable) == 0]&quot;</span>)</a></code></pre></div>
 </div>
 <div id="position-and-boolean-1" class="section level3">
 <h3>Position and Boolean ^</h3>
@@ -311,12 +521,12 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all “p” phonemes, which occur in the first syllable of the word?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == p ^ Start(Word, Syllable) == 1]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == p ^ Start(Word, Syllable) == 1]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all phonemes, which do not occur in the last syllable of the word?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme =~ .* ^ End(Word, Syllable) == 0]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme =~ .* ^ End(Word, Syllable) == 0]&quot;</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="count" class="section level2">
@@ -327,12 +537,12 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all words that contain four syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Num(Word, Syllable) == 4]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Num(Word, Syllable) == 4]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all syllables that contain more than six phonemes?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Num(Syllable, Phoneme) &gt; 6]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Num(Syllable, Phoneme) &gt; 6]&quot;</span>)</a></code></pre></div>
 <div id="count-and-boolean" class="section level3">
 <h3>Count and Boolean &amp;</h3>
 <p>A schematic representation of a query string combining the count and the boolean operators would be: <code>&quot;[L == E &amp; Num(L1, L2) == N]&quot;</code> where ITEMs “E” on level “L” are dominated by “L1” and “L1” contains “N” number of “L2” Items. Further “L1” dominates “L2” under the condition that “L” and “L1” (not “L2”) refer to the same level (parallel attributeDefinitions of the same level may also be chosen).</p>
@@ -341,14 +551,14 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve the “Text” of all words, which consist of more than 5 phonemes?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Num(Text, Phoneme) &gt; 5 ]&quot;</span>)
-<span class="co"># or</span>
-<span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Num(Word, Phoneme) &gt; 5]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Num(Text, Phoneme) &gt; 5 ]&quot;</span>)</a>
+<a class="sourceLine" id="cb34-2" data-line-number="2"><span class="co"># or</span></a>
+<a class="sourceLine" id="cb34-3" data-line-number="3"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Num(Word, Phoneme) &gt; 5]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all strong syllables that contain 5 phonemes?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == S &amp; Num(Syllable, Phoneme) == 5]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == S &amp; Num(Syllable, Phoneme) == 5]&quot;</span>)</a></code></pre></div>
 </div>
 <div id="count-and" class="section level3">
 <h3>Count and ^</h3>
@@ -358,17 +568,17 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all “m” phonemes in 3-syllable words?</em></li>
 <li><strong>A</strong>: ``</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == m ^ Num(Word, Syllable) == 3]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == m ^ Num(Word, Syllable) == 3]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all “W”-Syllables in words of 3 or less syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable = W ^ Num(Word, Syllable) &lt; 3]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable = W ^ Num(Word, Syllable) &lt; 3]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all words, which contain syllable, which contain 4 phonemes</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* ^ Num(Syllable, Phoneme) == 4]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* ^ Num(Syllable, Phoneme) == 4]&quot;</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="combinations" class="section level2">
@@ -381,22 +591,22 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all “m” preceding “p” and “m” is part of a “S”-syllable?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phoneme == m -&gt; Phoneme =~ p] ^ Syllable == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phoneme == m -&gt; Phoneme =~ p] ^ Syllable == S]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all “s” preceding “t” and “t” is part of a “W”-syllable?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == s -&gt; [Phoneme == t ^ Syllable == W]]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == s -&gt; [Phoneme == t ^ Syllable == W]]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all “S”-syllables, which contain phoneme “s” and precede a “S”-syllable?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[#Syllable == S ^ Phoneme == s] -&gt; Syllable == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[#Syllable == S ^ Phoneme == s] -&gt; Syllable == S]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>Same question as the question above but this time we want all “s” ITEMs where “s” is part of a “S”-syllable and this “S”-syllable precedes a “S”-syllable.</em></li>
 <li><strong>A</strong>: <code>&quot;[[Phoneme == s ^ Syllable == S] -&gt; Syllable == S]&quot;</code> this will cause an error as <code>Phoneme == s</code> and <code>Syllable == S</code> are not on the same level. Therefore the correct answer is:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Syllable == S ^ #Phoneme == s] -&gt; Syllable == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Syllable == S ^ #Phoneme == s] -&gt; Syllable == S]&quot;</span>)</a></code></pre></div>
 </div>
 <div id="and---and-domination-and-sequence-and-boolean" class="section level3">
 <h3>^ and -&gt; and &amp; (Domination and Sequence and Boolean &amp;)</h3>
@@ -405,23 +615,23 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve the “Text” of all words, beginning with a schwa?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* ^ Phoneme == @ &amp; Start(Text, Phoneme) == 1]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* ^ Phoneme == @ &amp; Start(Text, Phoneme) == 1]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all word-initial “m” ITEMs in a strong syllable, which precedes “o:”?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phoneme == m &amp; Start(Word, Phoneme) == 1 -&gt; Phoneme == o:] ^ Syllable == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phoneme == m &amp; Start(Word, Phoneme) == 1 -&gt; Phoneme == o:] ^ Syllable == S]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>Same question as the question above but this time we want the text.</em><br />
 </li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[[Phoneme == m &amp; Start(Word, Phoneme) == 1 -&gt; Phoneme == o:] ^ Syllable == S] ^ #Text =~ .*]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[[Phoneme == m &amp; Start(Word, Phoneme) == 1 -&gt; Phoneme == o:] ^ Syllable == S] ^ #Text =~ .*]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve the text of all three-syllable words that also precede the word “the”, which contain a schwa in the first syllable?</em></li>
 <li><strong>A</strong>: As this is a large multi part question, let’s break it down: - 1.) The text of all three-syllable words : <code>&quot;[Text =~ .* &amp; Num(Text, Syllable) == 3]&quot;</code> - 2.) A schwa occurs in the first syllable: <code>&quot;[Phoneme == @ ^ Start(Word, Syllable) == 1]&quot;</code> - 3.) The text is “the”: <code>&quot;[Text == the]&quot;</code> - Let’s now combined all three by saying <code>&quot;[1. ^ 2.]&quot;</code> and these are followed by three (<code>&quot;[1. ^ 2.] -&gt; 3.]&quot;</code>):</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Text =~ .* &amp; Num(Text, Syllable) == 3 ^ [Phoneme == @ ^ Start(Word, Syllable) == 1]] -&gt; Text == his]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Text =~ .* &amp; Num(Text, Syllable) == 3 ^ [Phoneme == @ ^ Start(Word, Syllable) == 1]] -&gt; Text == his]&quot;</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="a-few-more-q-as-because-practice-makes-perfect" class="section level2">
@@ -430,57 +640,57 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <li><strong>Q</strong>: <em>What is the query to retrieve all “m” or “n” phonemes, which occur in the word-medial position?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == m | n &amp; Medial(Word, Phoneme) == 1]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phoneme == m | n &amp; Medial(Word, Phoneme) == 1]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all “H” phonetic segments, next an arbitrary segment, next either “I” or “U”?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic == H -&gt; Phonetic =~ .*] -&gt; Phonetic == I | U ]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[Phonetic == H -&gt; Phonetic =~ .*] -&gt; Phonetic == I | U ]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all syllables, which do not occur in the word-medial position?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .* &amp; Medial(Word, Syllable) == 0]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable =~ .* &amp; Medial(Word, Syllable) == 0]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve the text of all words, which contain two syllables?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Num(Text, Syllable) == 2]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text =~ .* &amp; Num(Text, Syllable) == 2]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve the text of all accentuated words following “the”?</em>.<br />
 </li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Text == the -&gt; #Text =~ .* &amp; Accent == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb51-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Text == the -&gt; #Text =~ .* &amp; Accent == S]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all “S” (strong) syllables consisting of 5 phonemes?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable = S ^ Num(Word, Phoneme) == 5]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable = S ^ Num(Word, Phoneme) == 5]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all “W” (weak) syllables, which contain a “@” phoneme?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == W ^ Phoneme == @]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb53-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == W ^ Phoneme == @]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all phonetic ITEMs, which belong to a weak syllable?</em><br />
 </li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic =~ .* ^ #Syllable == W]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Phonetic =~ .* ^ #Syllable == W]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve weak syllables of word-final syllables, which occur in three-syllable words?</em></li>
 <li><strong>A</strong>: ``</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == W &amp; End(Word, Syllable) == 1 ^ Num(Word, Syllable) == 3]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb55-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[Syllable == W &amp; End(Word, Syllable) == 1 ^ Num(Word, Syllable) == 3]&quot;</span>)</a></code></pre></div>
 <ul>
 <li><strong>Q</strong>: <em>What is the query to retrieve all phonemes, dominating Phonetic ITEMs “H”, at the beginning of a syllable; and which occur in accentuated (S) words?</em></li>
 <li><strong>A</strong>:</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(ae, <span class="st">&quot;[[[Phoneme =~ .* ^ Phonetic == H] ^ Start(Word, Syllable) == 1] ^ Accent == S]&quot;</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># remove emuR_demoData as we will not be needing it </span>
-<span class="co"># throughout the rest of this vignette</span>
-<span class="kw">unlink</span>(<span class="kw">file.path</span>(<span class="kw">tempdir</span>(), <span class="st">&quot;emuR_demoData&quot;</span>), <span class="dt">recursive =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" data-line-number="1"><span class="kw">query</span>(ae, <span class="st">&quot;[[[Phoneme =~ .* ^ Phonetic == H] ^ Start(Word, Syllable) == 1] ^ Accent == S]&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb57-1" data-line-number="1"><span class="co"># remove emuR_demoData as we will not be needing it </span></a>
+<a class="sourceLine" id="cb57-2" data-line-number="2"><span class="co"># throughout the rest of this vignette</span></a>
+<a class="sourceLine" id="cb57-3" data-line-number="3"><span class="kw">unlink</span>(<span class="kw">file.path</span>(<span class="kw">tempdir</span>(), <span class="st">&quot;emuR_demoData&quot;</span>), <span class="dt">recursive =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="differences-and-incompatibilities-to-legacy-emu-query-language-r-package-emu-version-4.2" class="section level1">
@@ -490,18 +700,18 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <h2>Function call syntax</h2>
 <p>In <code>emuR</code> it is required that a emuDB is loaded into your current R session before being able to use the <code>query()</code> function. This is achieved using the <code>load_emuDB()</code> function (see <code>emuR_intro</code> vignette for details). This was not necessary using the legacy <code>emu.query()</code> function.</p>
 <p>Example calls to the <code>query()</code> function (prerequisite: a loaded emuDB called “andosl”):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># query all &quot;p&quot; ITEMs on the &quot;Phoneme&quot; level that are dominated by &quot;S&quot; (strong) syllables</span>
-<span class="kw">query</span>(<span class="dt">emuDBhandle =</span> andosl, 
-      <span class="dt">query =</span> <span class="st">&quot;[Phoneme == p ^ Syllable == S]&quot;</span>)
-
-<span class="co"># same query as before but this time using</span>
-<span class="co"># the sessionPattern and bundlePattern arguments </span>
-<span class="co"># to only select specific sessions / bundles</span>
-<span class="co"># using regular expressions (RegEx)</span>
-<span class="kw">query</span>(<span class="dt">emuDBhandle =</span> andosl, 
-      <span class="dt">query =</span> <span class="st">&quot;[Phoneme == p ^ Syllable == S]&quot;</span>, 
-      <span class="dt">sessionPattern =</span> <span class="st">&quot;000.&quot;</span>, <span class="co"># RegEx that matches session 0000; 000a; 0001; ...</span>
-      <span class="dt">bundlePattern =</span> <span class="st">&quot;msajc0[1-2].&quot;</span>) <span class="co"># RegEx that matches bundles msajc01a; msajc02a; msajc021; ...</span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb58-1" data-line-number="1"><span class="co"># query all &quot;p&quot; ITEMs on the &quot;Phoneme&quot; level that are dominated by &quot;S&quot; (strong) syllables</span></a>
+<a class="sourceLine" id="cb58-2" data-line-number="2"><span class="kw">query</span>(<span class="dt">emuDBhandle =</span> andosl, </a>
+<a class="sourceLine" id="cb58-3" data-line-number="3">      <span class="dt">query =</span> <span class="st">&quot;[Phoneme == p ^ Syllable == S]&quot;</span>)</a>
+<a class="sourceLine" id="cb58-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb58-5" data-line-number="5"><span class="co"># same query as before but this time using</span></a>
+<a class="sourceLine" id="cb58-6" data-line-number="6"><span class="co"># the sessionPattern and bundlePattern arguments </span></a>
+<a class="sourceLine" id="cb58-7" data-line-number="7"><span class="co"># to only select specific sessions / bundles</span></a>
+<a class="sourceLine" id="cb58-8" data-line-number="8"><span class="co"># using regular expressions (RegEx)</span></a>
+<a class="sourceLine" id="cb58-9" data-line-number="9"><span class="kw">query</span>(<span class="dt">emuDBhandle =</span> andosl, </a>
+<a class="sourceLine" id="cb58-10" data-line-number="10">      <span class="dt">query =</span> <span class="st">&quot;[Phoneme == p ^ Syllable == S]&quot;</span>, </a>
+<a class="sourceLine" id="cb58-11" data-line-number="11">      <span class="dt">sessionPattern =</span> <span class="st">&quot;000.&quot;</span>, <span class="co"># RegEx that matches session 0000; 000a; 0001; ...</span></a>
+<a class="sourceLine" id="cb58-12" data-line-number="12">      <span class="dt">bundlePattern =</span> <span class="st">&quot;msajc0[1-2].&quot;</span>) <span class="co"># RegEx that matches bundles msajc01a; msajc02a; msajc021; ...</span></a></code></pre></div>
 </div>
 <div id="result-type" class="section level2">
 <h2>Result type</h2>
@@ -520,18 +730,18 @@ ae =<span class="st"> </span><span class="kw">load_emuDB</span>(path2folder)</co
 <h2>Interpretation of the hash tag “#” in conjunction operator queries</h2>
 <div id="legacy-emu" class="section level4">
 <h4>legacy EMU</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">emu.query</span>(<span class="dt">template =</span> <span class="st">&quot;andosl&quot;</span>, 
-          <span class="dt">pattern =</span> <span class="st">&quot;*&quot;</span>, 
-          <span class="dt">query =</span> <span class="st">&quot;[Text=spring &amp; #Accent=S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb59-1" data-line-number="1"><span class="kw">emu.query</span>(<span class="dt">template =</span> <span class="st">&quot;andosl&quot;</span>, </a>
+<a class="sourceLine" id="cb59-2" data-line-number="2">          <span class="dt">pattern =</span> <span class="st">&quot;*&quot;</span>, </a>
+<a class="sourceLine" id="cb59-3" data-line-number="3">          <span class="dt">query =</span> <span class="st">&quot;[Text=spring &amp; #Accent=S]&quot;</span>)</a></code></pre></div>
 <pre><code>moving data from Tcl to R
 Read 1 records
 segment  list from database:  andosl 
 query was:  [Text=spring &amp; #Accent=S] 
   labels    start      end     utts
 1 spring 2288.959 2704.466 msajc094</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">emu.query</span>(<span class="dt">template =</span> <span class="st">&quot;andosl&quot;</span>,
-          <span class="dt">pattern =</span> <span class="st">&quot;*&quot;</span>,
-          <span class="dt">query =</span> <span class="st">&quot;[#Text=spring &amp; #Accent=S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb61-1" data-line-number="1"><span class="kw">emu.query</span>(<span class="dt">template =</span> <span class="st">&quot;andosl&quot;</span>,</a>
+<a class="sourceLine" id="cb61-2" data-line-number="2">          <span class="dt">pattern =</span> <span class="st">&quot;*&quot;</span>,</a>
+<a class="sourceLine" id="cb61-3" data-line-number="3">          <span class="dt">query =</span> <span class="st">&quot;[#Text=spring &amp; #Accent=S]&quot;</span>)</a></code></pre></div>
 <pre><code>moving data from Tcl to R
 Read 1 records
 segment  list from database:  andosl 
@@ -543,16 +753,16 @@ query was:  [#Text=spring &amp; #Accent=S]
 </div>
 <div id="emur" class="section level4">
 <h4>emuR</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span><span class="kw">query</span>(<span class="dt">emuDBhandle =</span> andosl,
-        <span class="dt">query =</span> <span class="st">&quot;[Text == spring &amp; #Accent == S]&quot;</span>, 
-        resultType ==<span class="st"> &quot;emusegs&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb63-1" data-line-number="1"><span class="op">&gt;</span><span class="st"> </span><span class="kw">query</span>(<span class="dt">emuDBhandle =</span> andosl,</a>
+<a class="sourceLine" id="cb63-2" data-line-number="2">        <span class="dt">query =</span> <span class="st">&quot;[Text == spring &amp; #Accent == S]&quot;</span>, </a>
+<a class="sourceLine" id="cb63-3" data-line-number="3">        resultType <span class="op">==</span><span class="st"> &quot;emusegs&quot;</span>)</a></code></pre></div>
 <pre><code>segment  list from database:  andosl 
 query was:  [Text=spring &amp; #Accent=S] 
   labels    start      end          utts
 1      S 2288.975 2704.475 0000:msajc094</code></pre>
 <p>Returns the same ITEM, but with the label of the hashed attributeDefinition name. The second legacy example is not a valid <code>emuR</code> query (two hash tags).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span><span class="kw">query</span>(<span class="dt">dbName =</span> <span class="st">&quot;andosl&quot;</span>,
-        <span class="dt">query =</span> <span class="st">&quot;[#Text == spring &amp; #Accent == S]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb65-1" data-line-number="1"><span class="op">&gt;</span><span class="st"> </span><span class="kw">query</span>(<span class="dt">dbName =</span> <span class="st">&quot;andosl&quot;</span>,</a>
+<a class="sourceLine" id="cb65-2" data-line-number="2">        <span class="dt">query =</span> <span class="st">&quot;[#Text == spring &amp; #Accent == S]&quot;</span>)</a></code></pre></div>
 <pre><code>Error in query.database.eql.KONJA(dbConfig, qTrim) : 
 Only one hashtag allowed in linear query term: #Text=spring &amp; #Accent=S </code></pre>
 <p>The <code>query()</code> function throws an error as it would be necessary to return each item twice to get both the “Text” and “Accent” labels.</p>
@@ -565,9 +775,9 @@ Only one hashtag allowed in linear query term: #Text=spring &amp; #Accent=S </co
 <p>Example:</p>
 <div id="legacy-emu-1" class="section level4">
 <h4>legacy EMU</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">emu.query</span>(<span class="dt">template =</span> <span class="st">&quot;ae&quot;</span>,
-          <span class="dt">pattern =</span> <span class="st">&quot;*&quot;</span>,
-          <span class="dt">query =</span> <span class="st">&quot;[Text!=beautiful|futile ^ Phoneme=u:]&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb67-1" data-line-number="1"><span class="kw">emu.query</span>(<span class="dt">template =</span> <span class="st">&quot;ae&quot;</span>,</a>
+<a class="sourceLine" id="cb67-2" data-line-number="2">          <span class="dt">pattern =</span> <span class="st">&quot;*&quot;</span>,</a>
+<a class="sourceLine" id="cb67-3" data-line-number="3">          <span class="dt">query =</span> <span class="st">&quot;[Text!=beautiful|futile ^ Phoneme=u:]&quot;</span>)</a></code></pre></div>
 <pre><code>moving data from Tcl to R
 Read 4 records
 segment  list from database:  ae 
@@ -581,9 +791,9 @@ query was:  [Text!=beautiful|futile ^ Phoneme=u:]
 </div>
 <div id="emur-1" class="section level4">
 <h4>emuR</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(<span class="dt">dbName =</span> <span class="st">&quot;ae&quot;</span>,
-      <span class="dt">query =</span> <span class="st">&quot;[Text != beautiful | futile ^ Phoneme == u:]&quot;</span>, 
-      <span class="dt">resultType =</span> <span class="st">&quot;emusegs&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb69-1" data-line-number="1"><span class="kw">query</span>(<span class="dt">dbName =</span> <span class="st">&quot;ae&quot;</span>,</a>
+<a class="sourceLine" id="cb69-2" data-line-number="2">      <span class="dt">query =</span> <span class="st">&quot;[Text != beautiful | futile ^ Phoneme == u:]&quot;</span>, </a>
+<a class="sourceLine" id="cb69-3" data-line-number="3">      <span class="dt">resultType =</span> <span class="st">&quot;emusegs&quot;</span>)</a></code></pre></div>
 <pre><code>segment  list from database:  ae 
 query was:  [Text!=beautiful|futile ^ Phoneme=u:] 
   labels    start      end          utts
@@ -767,83 +977,83 @@ query was:  [Text!=beautiful|futile ^ Phoneme=u:]
 </thead>
 <tbody>
 <tr class="odd">
-<td><p><code>EQL = CONJQ | SEQQ | DOMQ;</code></p></td>
-<td><p><strong>E</strong>MU <strong>Q</strong>uery <strong>L</strong>anguage</p></td>
+<td><code>EQL = CONJQ | SEQQ | DOMQ;</code></td>
+<td><strong>E</strong>MU <strong>Q</strong>uery <strong>L</strong>anguage</td>
 <td></td>
 </tr>
 <tr class="even">
-<td><p><code>DOMQ = &quot;[&quot;, ( CONJQ | DOMQ | SEQQ ), &quot;^&quot;, ( CONJQ | DOMQ | SEQQ ), &quot;]&quot;;</code></p></td>
-<td><p><strong>dom</strong>inance <strong>q</strong>uery</p></td>
-<td><p>levels must be hierarchically associated</p></td>
+<td><code>DOMQ = &quot;[&quot;, ( CONJQ | DOMQ | SEQQ ), &quot;^&quot;, ( CONJQ | DOMQ | SEQQ ), &quot;]&quot;;</code></td>
+<td><strong>dom</strong>inance <strong>q</strong>uery</td>
+<td>levels must be hierarchically associated</td>
 </tr>
 <tr class="odd">
-<td><p><code>SEQQ = &quot;[&quot;, ( CONJQ | SEQQ | DOMQ ), &quot;-&gt;&quot;, ( CONJQ | SEQQ | DOMQ ), &quot;]&quot;;</code></p></td>
-<td><p><strong>seq</strong>uential <strong>q</strong>uery</p></td>
-<td><p>levels must be linearly associated</p></td>
+<td><code>SEQQ = &quot;[&quot;, ( CONJQ | SEQQ | DOMQ ), &quot;-&gt;&quot;, ( CONJQ | SEQQ | DOMQ ), &quot;]&quot;;</code></td>
+<td><strong>seq</strong>uential <strong>q</strong>uery</td>
+<td>levels must be linearly associated</td>
 </tr>
 <tr class="even">
-<td><p><code>CONJQ = { &quot;[&quot; }, SQ, { &quot;&amp;&quot;, SQ }, { &quot;]&quot; };</code></p></td>
-<td><p><strong>conj</strong>unction <strong>q</strong>uery</p></td>
-<td><p>levels must be linearly associated</p></td>
+<td><code>CONJQ = { &quot;[&quot; }, SQ, { &quot;&amp;&quot;, SQ }, { &quot;]&quot; };</code></td>
+<td><strong>conj</strong>unction <strong>q</strong>uery</td>
+<td>levels must be linearly associated</td>
 </tr>
 <tr class="odd">
-<td><p><code>SQ = LABELQ | FUNCQ;</code></p></td>
-<td><p><em>s</em>imple <em>q</em>uery</p></td>
+<td><code>SQ = LABELQ | FUNCQ;</code></td>
+<td><em>s</em>imple <em>q</em>uery</td>
 <td></td>
 </tr>
 <tr class="even">
-<td><p><code>LABELQ = [ &quot;#&quot; ], LEVEL, ( &quot;=&quot; | &quot;==&quot; | &quot;!=&quot; | &quot;=~&quot; | &quot;!~&quot; ), LABELALTERNATIVES;</code></p></td>
-<td><p><strong>label</strong> <strong>q</strong>uery</p></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p><code>FUNCQ = POSQ | NUMQ;</code></p></td>
-<td><p><strong>fun</strong>ction <strong>q</strong>uery</p></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>POSQ = POSFCT, &quot;(&quot;, LEVEL, &quot;,&quot;, LEVEL, &quot;)&quot;, &quot;=&quot;, &quot;0&quot; | &quot;1&quot; | &quot;TRUE&quot; | &quot;FALSE&quot;;</code></p></td>
-<td><p><strong>position</strong> <strong>q</strong>uery</p></td>
-<td><p>levels must be hierarchically associated; second level determines semantic</p></td>
-</tr>
-<tr class="odd">
-<td><p><code>NUMQ = &quot;Num&quot;, &quot;(&quot;, LEVEL, &quot;,&quot;, LEVEL, &quot;)&quot;, COP, INTPN;</code></p></td>
-<td><p><strong>number</strong> <strong>q</strong>uery</p></td>
-<td><p>levels must be hierarchically associated; first level determines semantic</p></td>
-</tr>
-<tr class="even">
-<td><p><code>LABELALTERNATIVES = LABEL , { &quot;|&quot;, LABEL };</code></p></td>
-<td><p><strong>label alternatives</strong></p></td>
+<td><code>LABELQ = [ &quot;#&quot; ], LEVEL, ( &quot;=&quot; | &quot;==&quot; | &quot;!=&quot; | &quot;=~&quot; | &quot;!~&quot; ), LABELALTERNATIVES;</code></td>
+<td><strong>label</strong> <strong>q</strong>uery</td>
 <td></td>
 </tr>
 <tr class="odd">
-<td><p><code>LABEL = LABELING | ( &quot;'&quot;, LABELING, &quot;'&quot; );</code></p></td>
-<td><p><strong>label</strong></p></td>
-<td><p>levels must be part of the database structure; LABELING is an arbitrary character string or a label group class configured in the emuDB; result modifier ‘#’ may only occur once</p></td>
+<td><code>FUNCQ = POSQ | NUMQ;</code></td>
+<td><strong>fun</strong>ction <strong>q</strong>uery</td>
+<td></td>
 </tr>
 <tr class="even">
-<td><p><code>POSFCT = &quot;Start&quot; | &quot;Medial&quot; | &quot;End&quot;;</code></p></td>
-<td><p><strong>pos</strong>ition <strong>f</strong>un<strong>ct</strong>ion</p></td>
+<td><code>POSQ = POSFCT, &quot;(&quot;, LEVEL, &quot;,&quot;, LEVEL, &quot;)&quot;, &quot;=&quot;, &quot;0&quot; | &quot;1&quot; | &quot;TRUE&quot; | &quot;FALSE&quot;;</code></td>
+<td><strong>position</strong> <strong>q</strong>uery</td>
+<td>levels must be hierarchically associated; second level determines semantic</td>
+</tr>
+<tr class="odd">
+<td><code>NUMQ = &quot;Num&quot;, &quot;(&quot;, LEVEL, &quot;,&quot;, LEVEL, &quot;)&quot;, COP, INTPN;</code></td>
+<td><strong>number</strong> <strong>q</strong>uery</td>
+<td>levels must be hierarchically associated; first level determines semantic</td>
+</tr>
+<tr class="even">
+<td><code>LABELALTERNATIVES = LABEL , { &quot;|&quot;, LABEL };</code></td>
+<td><strong>label alternatives</strong></td>
 <td></td>
 </tr>
 <tr class="odd">
-<td><p><code>COP = &quot;=&quot; | &quot;==&quot; | &quot;!=&quot; | &quot;&gt;&quot; | &quot;&lt;&quot; | &quot;&lt;=&quot; | &quot;&gt;=&quot;;</code></p></td>
-<td><p><strong>c</strong>omparison <strong>o</strong>perator</p></td>
-<td></td>
+<td><code>LABEL = LABELING | ( &quot;'&quot;, LABELING, &quot;'&quot; );</code></td>
+<td><strong>label</strong></td>
+<td>levels must be part of the database structure; LABELING is an arbitrary character string or a label group class configured in the emuDB; result modifier ‘#’ may only occur once</td>
 </tr>
 <tr class="even">
-<td><p><code>INTPN = &quot;0&quot; | INTP;</code></p></td>
-<td><p><strong>integer </strong>p<strong>ositive with </strong>n**ull</p></td>
+<td><code>POSFCT = &quot;Start&quot; | &quot;Medial&quot; | &quot;End&quot;;</code></td>
+<td><strong>pos</strong>ition <strong>f</strong>un<strong>ct</strong>ion</td>
 <td></td>
 </tr>
 <tr class="odd">
-<td><p><code>INTP = DIGIT-&quot;0&quot;, { DIGIT };</code></p></td>
-<td><p><strong>int</strong>eger <strong>p</strong>ositive</p></td>
+<td><code>COP = &quot;=&quot; | &quot;==&quot; | &quot;!=&quot; | &quot;&gt;&quot; | &quot;&lt;&quot; | &quot;&lt;=&quot; | &quot;&gt;=&quot;;</code></td>
+<td><strong>c</strong>omparison <strong>o</strong>perator</td>
 <td></td>
 </tr>
 <tr class="even">
-<td><p><code>DIGIT = &quot;0&quot; | &quot;1&quot; | &quot;2&quot; | &quot;3&quot; | &quot;4&quot; | &quot;5&quot; | &quot;6&quot; | &quot;7&quot; | &quot;8&quot; | &quot;9&quot;;</code></p></td>
-<td><p><strong>digit</strong></p></td>
+<td><code>INTPN = &quot;0&quot; | INTP;</code></td>
+<td><strong>integer </strong>p<strong>ositive with </strong>n**ull</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>INTP = DIGIT-&quot;0&quot;, { DIGIT };</code></td>
+<td><strong>int</strong>eger <strong>p</strong>ositive</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>DIGIT = &quot;0&quot; | &quot;1&quot; | &quot;2&quot; | &quot;3&quot; | &quot;4&quot; | &quot;5&quot; | &quot;6&quot; | &quot;7&quot; | &quot;8&quot; | &quot;9&quot;;</code></td>
+<td><strong>digit</strong></td>
 <td></td>
 </tr>
 </tbody>
@@ -859,7 +1069,7 @@ query was:  [Text!=beautiful|futile ^ Phoneme=u:]
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-cassidy_harrington:2001">
-<p>Cassidy, Steve, and Jonathan Harrington. 2011. “Multi-Level Annotation in the Emu Speech Database Management System.” <em>Speech Communication</em>, no. 33: 61–78.</p>
+<p>Cassidy, Steve, and Jonathan Harrington. 2011. “Multi-Level Annotation in the Emu Speech Database Management System.” <em>Speech Communication</em>, no. 33:61–78.</p>
 </div>
 <div id="ref-harrington:2002">
 <p>Harrington, Jonathan, and Steve Cassidy. 2002. “The Emu-Query Language (Anhang).” IPDS Kiel.</p>

@@ -35,7 +35,7 @@ setServerHandle <- function(sh) {
 ##' \item To serve only a subset of sessions or bundles use the parameters \code{sessionPattern} and/or \code{bundlePattern}.
 ##' }
 ##' 
-##' @details  Function opens a HTTP/websocket and waits in a loop for browser requests. Parameter host determines the IP address(es) of hosts allowed to connect to the server. By default the server only listens to localhost. If you want to allow connection from any host set the host parameter to \code{0.0.0.0}. Please note that this might be an safety issue! The \code{port} parameter determines the port the server listens on. The \code{host} and \code{port} parameters are intended only for expert users. When started the R console will be blocked. On successfull connection the server sends the session and bundle list of the database referenced by name by parameter \code{dbName} or by UUID parameter \code{dbUUID}.
+##' @details  Function opens a HTTP/websocket and waits in a loop for browser requests. Parameter host determines the IP address(es) of hosts allowed to connect to the server. By default the server only listens to localhost. If you want to allow connection from any host set the host parameter to \code{0.0.0.0}. Please note that this might be an safety issue! The \code{port} parameter determines the port the server listens on. The \code{host} and \code{port} parameters are intended only for expert users. When started the R console will be blocked. On successful connection the server sends the session and bundle list of the database referenced by name by parameter \code{dbName} or by UUID parameter \code{dbUUID}.
 ##' The Web application requests bundle data for viewing or editing. If a bundle is modified with the EMU-webApp and the save button is pressed the server modifies the internal database and saves the changes to disk.
 ##' Communication between server and EMU webApp is defined by EMU-webApp-websocket-protocol version 0.0.2.
 ##' 
@@ -47,6 +47,8 @@ setServerHandle <- function(sh) {
 ##' @param port the port number to listen on (default: 17890)
 ##' @param autoOpenURL URL passed to \code{\link{browseURL}} function. If NULL or an empty string are passed in
 ##' \code{\link{browseURL}} will not be invoked.
+##' @param browser argument passed on to \code{browser} argument of \code{\link{browseURL}} (see 
+##' it's documentation for details )
 ##' @param debug TRUE to enable debugging (default: no debugging messages)
 ##' @param debugLevel integer higher values generate more detailed debug output
 ##' @return TRUE if the database was modified, FALSE otherwise
@@ -60,7 +62,13 @@ setServerHandle <- function(sh) {
 ##' serve(myDb)
 ##' }
 ##' 
-serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist = NULL  ,host='127.0.0.1', port=17890, autoOpenURL = "http://ips-lmu.github.io/EMU-webApp/?autoConnect=true",  debug=FALSE,debugLevel=0){
+serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist = NULL,
+                  host='127.0.0.1', port=17890, 
+                  autoOpenURL = "http://ips-lmu.github.io/EMU-webApp/?autoConnect=true", 
+                  browser = getOption("browser"), debug=FALSE, debugLevel=0){
+  
+  check_emuDBhandle(emuDBhandle)
+  
   if(debug && debugLevel==0){
     debugLevel=2
   }
@@ -87,16 +95,41 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
   
   
   httpRequest = function(req){
-    # Only 
-    # Rook conform answer  
-    body = paste('<p>http protocol not supported, please use ws protocol.</p>')
-    list(
-      status = 501L,
-      headers = list(
-        'Content-Type' = 'text/html'
-      ),
-      body = body
-    )
+    # process GET request by client 
+    # this is used if URL is used instead of BASE64 in encoding of media file in bundle
+    queryStr = shiny::parseQueryString(req$QUERY_STRING)
+    # SIC this should also have a third parameter "ext/extension"
+    if(!is.null(queryStr$session) && !is.null(queryStr$bundle)){
+      #print("processing GET request to media file...")
+      mediaFilePath = file.path(emuDBhandle$basePath, 
+                                paste0(queryStr$session, session.suffix), 
+                                paste0(queryStr$bundle, bundle.dir.suffix),
+                                paste0(queryStr$bundle, ".", DBconfig$mediafileExtension))
+      audioFile = file(mediaFilePath, "rb")
+      audioFileData=readBin(audioFile, raw(), n=file.info(mediaFilePath)$size)
+      close(audioFile)
+      # Only 
+      # Rook conform answer
+      res = list(
+        status = 200L, # 
+        headers = list(
+          'Content-Type' = 'audio/x-wav',
+          'Access-Control-Allow-Origin' = "*"
+        ),
+        body = audioFileData
+      )
+    }else{
+      body = paste('<p>http protocol not supported, please use ws protocol.</p>')
+      res = list(
+        status = 501L, 
+        headers = list(
+          'Content-Type' = 'text/html'
+        ),
+        body = body
+      )
+      
+    }
+    res
   }
   
   onHeaders<-function(req){
@@ -133,6 +166,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
       }else{
         D = DATA
       }
+      D = readr::parse_character(D) # ensure UTF-8 encoding windows
       jr=jsonlite::fromJSON(D,simplifyVector = FALSE)
       if(debugLevel >= 2 ){
         cat("Received command from EMU-webApp: ",jr[['type']],"\n")
@@ -236,25 +270,29 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
           # error
           err=simpleError(paste('Could not load bundle ',bundleName,' of session ',bundleSess))
         }
-        if(is.null(err)){
-          mediaFilePath=normalizePath(file.path(emuDBhandle$basePath, paste0(bundleSess, session.suffix), 
-                                                paste0(bundleName, bundle.dir.suffix), 
-                                                paste0(bundleName, ".", DBconfig$mediafileExtension)))
-          if(debugLevel>4){
-            cat("Mediafile: ",mediaFilePath," for ",b$name,"\n")
-          }
-          audioFile=tryCatch(file(mediaFilePath, "rb"),error=function(e) err<<-e)
-          if(is.null(err)){
-            audioFileData=readBin(audioFile, raw(), n=file.info(mediaFilePath)$size)
-            if(inherits(audioFileData,'error')){
-              err=audioFileData
-            }else{
-              audioBase64=base64enc::base64encode(audioFileData)
-              mediaFile=list(encoding="BASE64",data=audioBase64)
-              close(audioFile)
-            }
-          }
-        }
+        # if(is.null(err)){
+        #   mediaFilePath=normalizePath(file.path(emuDBhandle$basePath, paste0(bundleSess, session.suffix), 
+        #                                         paste0(bundleName, bundle.dir.suffix), 
+        #                                         paste0(bundleName, ".", DBconfig$mediafileExtension)))
+        #   if(debugLevel>4){
+        #     cat("Mediafile: ",mediaFilePath," for ",b$name,"\n")
+        #   }
+        #   audioFile=tryCatch(file(mediaFilePath, "rb"),error=function(e) err<<-e)
+        #   if(is.null(err)){
+        #     audioFileData=readBin(audioFile, raw(), n=file.info(mediaFilePath)$size)
+        #     if(inherits(audioFileData,'error')){
+        #       err=audioFileData
+        #     }else{
+        #       audioBase64=base64enc::base64encode(audioFileData)
+        #       mediaFile=list(encoding="BASE64",data=audioBase64)
+        #       close(audioFile)
+        #     }
+        #   }
+        # }
+        mediaFile=list(encoding="GETURL", data=paste0("http://", 
+                                                      ws$request$HTTP_HOST, 
+                                                      "?session=", bundleSess,
+                                                      "&bundle=", bundleName))
         if(is.null(err)){   
           ssffTracksInUse=get_ssffTracksUsedByDBconfig(DBconfig)
           ssffTrackNmsInUse=c()
@@ -316,6 +354,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
         }
         responseBundleJSON=jsonlite::toJSON(responseBundle,auto_unbox=TRUE,force=TRUE,pretty=TRUE)
         result=ws$send(responseBundleJSON)
+        
         if(is.null(err) & debugLevel >= 2){
           
           if(debugLevel >=8){
@@ -376,7 +415,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
             }
           }
           bundleData=jr[['data']][['annotation']]
-
+          
           # if we do not have an (error) response already
           if(is.null(err)){
             ##### emuDB ####
@@ -464,7 +503,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
   emuRserverRunning=TRUE
   if(length(autoOpenURL) != 0 && autoOpenURL != ""){
     # open browser with EMU-webApp
-    utils::browseURL(autoOpenURL)
+    utils::browseURL(autoOpenURL, browser = browser)
   }
   while(emuRserverRunning) {
     httpuv::service()

@@ -255,6 +255,7 @@ NULL
 ##' @export
 add_levelDefinition<-function(emuDBhandle, name,
                               type, rewriteAllAnnots = TRUE, verbose = TRUE){
+  check_emuDBhandle(emuDBhandle)
   allowedTypes = c('ITEM', 'SEGMENT', 'EVENT')
   # precheck type 
   if(!(type %in% allowedTypes)){
@@ -284,6 +285,7 @@ add_levelDefinition<-function(emuDBhandle, name,
 ##' @rdname AddListRemoveLevelDefinitions
 ##' @export
 list_levelDefinitions <- function(emuDBhandle){
+  check_emuDBhandle(emuDBhandle, checkCache=F)
   dbConfig = load_DBconfig(emuDBhandle)
   df <- data.frame(name = character(),
                    type = character(), 
@@ -308,7 +310,7 @@ list_levelDefinitions <- function(emuDBhandle){
 ##' @rdname AddListRemoveLevelDefinitions
 ##' @export
 remove_levelDefinition<-function(emuDBhandle, name, rewriteAllAnnots = TRUE, force = FALSE, verbose = TRUE){
-  
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   # check if level definition (name)exists 
   if(!any(sapply(dbConfig$levelDefinitions, function(ld) ld[['name']] == name))){
@@ -342,17 +344,17 @@ remove_levelDefinition<-function(emuDBhandle, name, rewriteAllAnnots = TRUE, for
     
     # delete all labels
     DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM labels ",
-                                                   "WHERE EXISTS( ",
-                                                   "SELECT * FROM items i ",
-                                                   "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
-                                                   "AND i.session = labels.session AND i.bundle = labels.bundle AND i.item_id = labels.item_id ",
-                                                   "AND i.level='", name, "' ",
-                                                   ")"
+                                                  "WHERE EXISTS( ",
+                                                  "SELECT * FROM items i ",
+                                                  "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
+                                                  "AND i.session = labels.session AND i.bundle = labels.bundle AND i.item_id = labels.item_id ",
+                                                  "AND i.level='", name, "' ",
+                                                  ")"
     ))
     
     # delete all items
     DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM items ",
-                                                   "WHERE items.db_uuid='", emuDBhandle$UUID, "' AND items.level='", name, "'"))
+                                                  "WHERE items.db_uuid='", emuDBhandle$UUID, "' AND items.level='", name, "'"))
   }
   
   # do removal
@@ -363,6 +365,16 @@ remove_levelDefinition<-function(emuDBhandle, name, rewriteAllAnnots = TRUE, for
     }
   }
   dbConfig$levelDefinitions = newLvlDefs
+  
+  # remove from levelCanvasOrder of EMUwebAppConfig if present
+  for(i in 1:length(dbConfig$EMUwebAppConfig$perspectives)){
+    if(any(dbConfig$EMUwebAppConfig$perspectives[[i]]$levelCanvases$order == name)){
+      # print(dbConfig$EMUwebAppConfig$perspectives[[i]]$levelCanvases$order)
+      found = dbConfig$EMUwebAppConfig$perspectives[[i]]$levelCanvases$order == name
+      # print(found)
+      dbConfig$EMUwebAppConfig$perspectives[[i]]$levelCanvases$order = dbConfig$EMUwebAppConfig$perspectives[[i]]$levelCanvases$order[!found]
+    }
+  }
   
   store_DBconfig(emuDBhandle, dbConfig)
   
@@ -442,10 +454,10 @@ NULL
 add_attributeDefinition <- function(emuDBhandle, levelName, 
                                     name, type = "STRING", 
                                     rewriteAllAnnots = TRUE, verbose = TRUE){
-  
+  check_emuDBhandle(emuDBhandle)
   internal_add_attributeDefinition(emuDBhandle, levelName, 
                                    name, type = "STRING", 
-                                   rewriteAllAnnots = TRUE, verbose = verbose)
+                                   rewriteAllAnnots = rewriteAllAnnots, verbose = verbose)
   
   
 }
@@ -458,6 +470,15 @@ internal_add_attributeDefinition <- function(emuDBhandle, levelName,
                                              insertLabels = TRUE){
   if(type != "STRING"){
     stop("Currently only attributeDefinition of type 'STRING' allowed")
+  }
+  
+  # precheck if attribute definition is already defined
+  lds = list_levelDefinitions(emuDBhandle)
+  for(ln in lds$name){
+    lads = list_attributeDefinitions(emuDBhandle, ln)
+    if(name %in% lads$name){
+      stop("attributeDefinition with name '", name, "' already exists on level '", ln, "'! Currently, only unique attributeDefinition names are allowed within a single emuDB.")
+    }
   }
   
   dbConfig = load_DBconfig(emuDBhandle)
@@ -480,9 +501,9 @@ internal_add_attributeDefinition <- function(emuDBhandle, levelName,
   # add to labels table
   if(insertLabels){
     DBI::dbExecute(emuDBhandle$connection, paste0("INSERT INTO labels ",
-                                                   "SELECT db_uuid, session , bundle, item_id, ", labelIdx, " AS label_idx, '", name, "' AS name, '' AS label ",
-                                                   "FROM labels ",
-                                                   "WHERE name = '", levelName, "' AND label_idx = 1 "))
+                                                  "SELECT db_uuid, session , bundle, item_id, ", labelIdx, " AS label_idx, '", name, "' AS name, '' AS label ",
+                                                  "FROM labels ",
+                                                  "WHERE name = '", levelName, "' AND label_idx = 1 "))
   }
   # store changes
   store_DBconfig(emuDBhandle, dbConfig)
@@ -498,29 +519,28 @@ internal_add_attributeDefinition <- function(emuDBhandle, levelName,
 ##' @rdname AddListRenameRemoveAttributeDefinitions
 ##' @export
 list_attributeDefinitions <- function(emuDBhandle, levelName){
+  check_emuDBhandle(emuDBhandle, checkCache = F)
+  # init empty result df
+  df = data.frame(name = character(), 
+                  level = character(), 
+                  type = character(), 
+                  hasLabelGroups = logical(), 
+                  hasLegalLabels = logical(), 
+                  stringsAsFactors = F)
   
-  ld = get_levelDefinition(emuDBhandle, levelName)
-  
-  if(length(ld$attributeDefinitions) > 1){
-    df = data.frame(name = character(), 
-                    type = character(), 
-                    hasLabelGroups = logical(), 
-                    hasLegalLabels = logical(), 
-                    stringsAsFactors = F)
+  for(lev in levelName){
+    ld = get_levelDefinition(emuDBhandle, lev)
+
     for(ad in ld$attributeDefinitions){
       df = rbind(df, df = data.frame(name = ad$name, 
+                                     level = lev,
                                      type = ad$type, 
                                      hasLabelGroups = !is.null(ad$labelGroups),
                                      hasLegalLabels = !is.null(ad$legalLabels),
                                      stringsAsFactors = F))
     }
-  }else{
-    df <- data.frame(name=ld$attributeDefinitions[[1]]$name, 
-                     type=ld$attributeDefinitions[[1]]$type,
-                     hasLabelGroups = !is.null(ld$attributeDefinitions[[1]]$labelGroups),
-                     hasLegalLabels = !is.null(ld$attributeDefinitions[[1]]$legalLabels),
-                     stringsAsFactors = F)
   }
+  
   rownames(df) <- NULL
   return(df)
 }
@@ -532,6 +552,7 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
   
   #############################
   # check input parameters
+  check_emuDBhandle(emuDBhandle)
   if(class(origAttrDef) != "character" | class(newAttrDef) != "character" | length(origAttrDef) != 1 | length(newAttrDef) != 1){
     stop("origAttrDef and newAttrDef have to be character vectors with only one item!")  
   }
@@ -637,12 +658,12 @@ rename_attributeDefinition <- function(emuDBhandle, origAttrDef, newAttrDef, ver
   DBI::dbBegin(emuDBhandle$connection)
   
   DBI::dbExecute(emuDBhandle$connection, paste0("UPDATE items SET level = '", newAttrDef, "' ",
-                                                 "WHERE db_uuid='", emuDBhandle$UUID, "' ",
-                                                 "AND level = '", origAttrDef, "'"))
+                                                "WHERE db_uuid='", emuDBhandle$UUID, "' ",
+                                                "AND level = '", origAttrDef, "'"))
   
   DBI::dbExecute(emuDBhandle$connection, paste0("UPDATE labels SET name = '", newAttrDef, "' ",
-                                                 "WHERE db_uuid='", emuDBhandle$UUID, "' ",
-                                                 "AND name = '", origAttrDef, "'"))
+                                                "WHERE db_uuid='", emuDBhandle$UUID, "' ",
+                                                "AND name = '", origAttrDef, "'"))
   
   # transaction end
   DBI::dbCommit(emuDBhandle$connection)
@@ -666,6 +687,8 @@ remove_attributeDefinition <- function(emuDBhandle,
                                        force = FALSE,
                                        rewriteAllAnnots = TRUE,
                                        verbose = TRUE){
+  
+  check_emuDBhandle(emuDBhandle)
   
   if(levelName == name){
     stop("Can not remove primary attributeDefinition (attributeDefinition with same name as level)")
@@ -697,12 +720,12 @@ remove_attributeDefinition <- function(emuDBhandle,
     }
     # delete all labels
     DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM labels ",
-                                                   "WHERE EXISTS( ",
-                                                   "SELECT * FROM items i ",
-                                                   "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
-                                                   "AND i.session = labels.session AND i.bundle = labels.bundle AND i.item_id = labels.item_id ",
-                                                   "AND i.level='", levelName, "' AND labels.name ='", name, "' ",
-                                                   ")"
+                                                  "WHERE EXISTS( ",
+                                                  "SELECT * FROM items i ",
+                                                  "WHERE i.db_uuid='", emuDBhandle$UUID, "' ",
+                                                  "AND i.session = labels.session AND i.bundle = labels.bundle AND i.item_id = labels.item_id ",
+                                                  "AND i.level='", levelName, "' AND labels.name ='", name, "' ",
+                                                  ")"
     ))
     
     
@@ -796,6 +819,8 @@ set_legalLabels <- function(emuDBhandle,
                             attributeDefinitionName,
                             legalLabels){
   
+  check_emuDBhandle(emuDBhandle)
+  
   if(!is.null(legalLabels) & class(legalLabels) != "character"){
     stop("legalLables must be of class 'character'")
   }
@@ -821,6 +846,7 @@ set_legalLabels <- function(emuDBhandle,
 get_legalLabels <- function(emuDBhandle,
                             levelName,
                             attributeDefinitionName){
+  check_emuDBhandle(emuDBhandle)
   
   ld = get_levelDefinition(emuDBhandle, levelName)
   
@@ -844,7 +870,7 @@ get_legalLabels <- function(emuDBhandle,
 remove_legalLabels <- function(emuDBhandle,
                                levelName,
                                attributeDefinitionName){
-  
+  check_emuDBhandle(emuDBhandle)
   # remove by setting to NULL
   set_legalLabels(emuDBhandle,
                   levelName,
@@ -922,7 +948,7 @@ add_attrDefLabelGroup <- function(emuDBhandle,
                                   attributeDefinitionName, 
                                   labelGroupName,
                                   labelGroupValues){
-  
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   curLgs = list_attrDefLabelGroups(emuDBhandle, 
                                    levelName, 
@@ -955,7 +981,7 @@ add_attrDefLabelGroup <- function(emuDBhandle,
 list_attrDefLabelGroups <- function(emuDBhandle,
                                     levelName,
                                     attributeDefinitionName){
-  
+  check_emuDBhandle(emuDBhandle)
   ld = get_levelDefinition(emuDBhandle, levelName)
   
   df = data.frame(name = character(), 
@@ -983,7 +1009,7 @@ remove_attrDefLabelGroup <- function(emuDBhandle,
                                      levelName,
                                      attributeDefinitionName, 
                                      labelGroupName){
-  
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   curLgs = list_attrDefLabelGroups(emuDBhandle, 
                                    levelName, 
@@ -1071,6 +1097,7 @@ add_linkDefinition <- function(emuDBhandle,
                                superlevelName,
                                sublevelName){
   
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   
   allowedTypes = c("ONE_TO_MANY", "MANY_TO_MANY", "ONE_TO_ONE")
@@ -1114,7 +1141,7 @@ add_linkDefinition <- function(emuDBhandle,
 ##' @rdname AddListRemoveLinkDefinition
 ##' @export
 list_linkDefinitions <- function(emuDBhandle){
-  
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   
   df = data.frame(type = character(),
@@ -1144,7 +1171,7 @@ remove_linkDefinition <- function(emuDBhandle,
                                   sublevelName,
                                   force = FALSE,
                                   verbose = TRUE){
-  
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   curLds = list_linkDefinitions(emuDBhandle)
   
@@ -1183,15 +1210,15 @@ remove_linkDefinition <- function(emuDBhandle,
     }
     # delete all links belonging to linkDef
     DBI::dbExecute(emuDBhandle$connection, paste0("DELETE FROM links ",
-                                                   "WHERE EXISTS( ",
-                                                   "SELECT * FROM items i_from, items i_to ",
-                                                   "WHERE i_from.db_uuid='", emuDBhandle$UUID, "' ",
-                                                   "AND i_from.session = links.session AND i_from.bundle = links.bundle AND i_from.item_id = links.from_id ",
-                                                   "AND i_from.level='", superlevelName, "' ",
-                                                   "AND i_to.db_uuid='", emuDBhandle$UUID, "' ",
-                                                   "AND i_to.session = links.session AND i_to.bundle = links.bundle AND i_to.item_id = links.to_id ",
-                                                   "AND i_to.level='", sublevelName, "' ",
-                                                   ")"
+                                                  "WHERE EXISTS( ",
+                                                  "SELECT * FROM items i_from, items i_to ",
+                                                  "WHERE i_from.db_uuid='", emuDBhandle$UUID, "' ",
+                                                  "AND i_from.session = links.session AND i_from.bundle = links.bundle AND i_from.item_id = links.from_id ",
+                                                  "AND i_from.level='", superlevelName, "' ",
+                                                  "AND i_to.db_uuid='", emuDBhandle$UUID, "' ",
+                                                  "AND i_to.session = links.session AND i_to.bundle = links.bundle AND i_to.item_id = links.to_id ",
+                                                  "AND i_to.level='", sublevelName, "' ",
+                                                  ")"
     ))
     
     
@@ -1297,6 +1324,8 @@ add_ssffTrackDefinition <- function(emuDBhandle, name,
                                     onTheFlyOptLogFilePath = NULL,
                                     verbose = TRUE, interactive = TRUE){
   
+  check_emuDBhandle(emuDBhandle)
+  
   dbConfig = load_DBconfig(emuDBhandle)
   
   #########################
@@ -1334,11 +1363,11 @@ add_ssffTrackDefinition <- function(emuDBhandle, name,
     stop("ssffTrackDefinitions with name ", name ," already exists for emuDB: ", emuDBhandle$dbName, "!")
   }
   
+  ans = 'y'
   # calculate new files
   if(!is.null(onTheFlyFunctionName)){
     # check if files exist
     filesDf = list_files(emuDBhandle, fileExtension)
-    ans = 'y'
     if(nrow(filesDf) != 0){
       fp = paste(emuDBhandle$basePath, paste0(filesDf$session, session.suffix), paste0(filesDf$bundle, bundle.dir.suffix), filesDf$file, sep = .Platform$file.sep)
       if(interactive){
@@ -1370,17 +1399,20 @@ add_ssffTrackDefinition <- function(emuDBhandle, name,
     }
   }
   
-  # add new ssffTrackDefinition
-  dbConfig$ssffTrackDefinitions[[length(dbConfig$ssffTrackDefinitions) + 1]] = list(name = name, 
-                                                                                    columnName = columnName,
-                                                                                    fileExtension = fileExtension)
-  # store changes
-  store_DBconfig(emuDBhandle, dbConfig)
+  if(ans == 'y'){
+    # add new ssffTrackDefinition
+    dbConfig$ssffTrackDefinitions[[length(dbConfig$ssffTrackDefinitions) + 1]] = list(name = name, 
+                                                                                      columnName = columnName,
+                                                                                      fileExtension = fileExtension)
+    # store changes
+    store_DBconfig(emuDBhandle, dbConfig)
+  }
 }
 
 ##' @rdname AddListRemoveSsffTrackDefinition
 ##' @export
 list_ssffTrackDefinitions <- function(emuDBhandle){
+  check_emuDBhandle(emuDBhandle, checkCache = F)
   dbConfig = load_DBconfig(emuDBhandle)
   df <- do.call(rbind, lapply(dbConfig$ssffTrackDefinitions, data.frame, stringsAsFactors=FALSE))
   return(df)
@@ -1391,7 +1423,7 @@ list_ssffTrackDefinitions <- function(emuDBhandle){
 ##' @export
 remove_ssffTrackDefinition <- function(emuDBhandle, name, 
                                        deleteFiles = FALSE){
-  
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   
   # precheck if exists
@@ -1487,6 +1519,8 @@ add_labelGroup <- function(emuDBhandle,
                            name,
                            values){
   
+  check_emuDBhandle(emuDBhandle)
+  
   dbConfig = load_DBconfig(emuDBhandle)
   curLgs = list_labelGroups(emuDBhandle)
   
@@ -1507,6 +1541,7 @@ add_labelGroup <- function(emuDBhandle,
 ##' @export
 list_labelGroups <- function(emuDBhandle){
   
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   df = data.frame(name = character(),
                   values = character(),
@@ -1528,6 +1563,7 @@ list_labelGroups <- function(emuDBhandle){
 remove_labelGroup <- function(emuDBhandle,
                               name){
   
+  check_emuDBhandle(emuDBhandle)
   dbConfig = load_DBconfig(emuDBhandle)
   curLgs = list_labelGroups(emuDBhandle)
   

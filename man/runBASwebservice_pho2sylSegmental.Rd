@@ -6,8 +6,8 @@
 \usage{
 runBASwebservice_pho2sylSegmental(handle, segmentAttributeDefinitionName,
   language, superLevel = NULL, sylAttributeDefinitionName = "MAS",
-  params = list(wsync = "yes"), perspective = "default", resume = FALSE,
-  verbose = TRUE)
+  params = list(wsync = "yes"), perspective = "default", patience = 0,
+  resume = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{handle}{emuDB handle}
@@ -25,7 +25,7 @@ If set to NULL, the syllable level cannot be linked up.}
 
 \item{sylAttributeDefinitionName}{attribute name for syllable segmentation}
 
-\item{params}{named list of parameters to be passed on to the webservice. It is your own reponsibility to
+\item{params}{named list of parameters to be passed on to the webservice. It is your own responsibility to
 ensure that these parameters are compatible with the webservice API
 (see \url{https://clarin.phonetik.uni-muenchen.de/BASWebServices/services/help}).
 Some options accepted by the API (e.g. output format) cannot be set when calling a webservice from within emuR,
@@ -33,6 +33,9 @@ and will be overridden.}
 
 \item{perspective}{the webApp perspective that the new level will be added to.
 If NULL, the new level is not added to any perspectives.}
+
+\item{patience}{If a web service call fails, it is repeated a further n times, with n being the value of patience.
+Must be set to a value between 0 and 3.}
 
 \item{resume}{If a previous call to this function has failed (and you think you have fixed the issue
 that caused the error), you can set resume=TRUE to recover any progress made up to that point. This

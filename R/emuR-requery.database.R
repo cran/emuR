@@ -29,6 +29,22 @@ drop_requeryTmpTables <- function(emuDBhandle){
   }
 }
 
+check_emuRsegsForRequery <- function(sl){
+  
+  if(length(unique(sl$level)) != 1){
+    warning("emuRsegs contains segments/annotation items of multiple levels!")
+  }
+  
+  sl_df = as.data.frame(sl)
+  
+  sl_df_sorted = dplyr::arrange_(sl_df, "session", "bundle", "sample_start")
+  comp_res = compare::compare(sl_df, sl_df_sorted, allowAll = F)
+  if(!comp_res$result){
+    warning("emuRsegs is not ordered correctly (by session; bundle; sample_start)! Hence, the ordering of the resulting emuRsegs object of the requery will NOT be the same! Use sort(emuRsegs) to sort the emuRsegs object correctly!")
+  }
+
+}
+
 
 ##' Requery sequential context of segment list in an emuDB
 ##' @description Function to requery sequential context of a segment list queried from an emuDB
@@ -45,7 +61,7 @@ drop_requeryTmpTables <- function(emuDBhandle){
 ##' @param length item length of segments in the returned segment list
 ##' @param ignoreOutOfBounds ignore result segments that are out of bundle bounds
 ##' @param calcTimes calculate times for resulting segments (results in \code{NA} values for start and end times in emuseg/emuRsegs). As it can be very computationally expensive to 
-##' calculate the times for large nested hierarchies it can be turned of via this boolian parameter. 
+##' calculate the times for large nested hierarchies, it can be turned off via this boolean parameter.
 ##' @param timeRefSegmentLevel set time segment level from which to derive time information. It is only necessary to set this parameter if more than one child level contains time information and the queried parent level is of type ITEM.
 ##' @param verbose be verbose. Set this to \code{TRUE} if you wish to choose which path to traverse on intersecting hierarchies. If set to \code{FALSE} (the default) all paths will be traversed (= legacy EMU bahaviour).
 ##' @return result set object of class 'emuRsegs' containing the requeried segments
@@ -99,6 +115,8 @@ requery_seq<-function(emuDBhandle, seglist, offset = 0, offsetRef = 'START',
                       length = 1, ignoreOutOfBounds = FALSE, calcTimes = TRUE, 
                       timeRefSegmentLevel = NULL, verbose = FALSE){
   
+  check_emuDBhandle(emuDBhandle)
+  
   if(!inherits(seglist,"emuRsegs")){
     stop("Segment list 'seglist' must be of type 'emuRsegs'. (Do not set a value for 'resultType' parameter in the query() command; then the default resultType=emuRsegs will be used)")
   }
@@ -110,34 +128,54 @@ requery_seq<-function(emuDBhandle, seglist, offset = 0, offsetRef = 'START',
     # empty seglist, return the empty list
     return(seglist)
   }else{
+    check_emuRsegsForRequery(seglist)
+    
     # drop create tmp tables and recreate (will ensure they are empty)
     drop_requeryTmpTables(emuDBhandle)
     create_requeryTmpTables(emuDBhandle)
     # place in emuRsegsTmp table
     DBI::dbExecute(emuDBhandle$connection, "DELETE FROM emursegs_tmp;") # delete 
     
-    DBI::dbWriteTable(emuDBhandle$connection, "emursegs_tmp", as.data.frame(seglist), append=T, row.names = F) # append to make sure field names done't get overwritten
+    DBI::dbWriteTable(emuDBhandle$connection, "emursegs_tmp", as.data.frame(seglist), append=T, row.names = F) # append to make sure field names don't get overwritten
     
     # load config
     dbConfig=load_DBconfig(emuDBhandle)
     
     # query for sequential requeries
-    heQueryStr=paste0("SELECT il.db_uuid,il.session,il.bundle,il.item_id AS seq_start_id, ir.item_id AS seq_end_id,",length," AS seq_len, sl.level, sl.start_item_seq_idx AS seq_start_seq_idx, sl.end_item_seq_idx AS seq_end_seq_idx ",
-                      "FROM emursegs_tmp sl,items sll, items slr,items il, items ir ",
-                      "WHERE il.db_uuid=ir.db_uuid AND il.session=ir.session AND il.bundle=ir.bundle AND ",
-                      "il.db_uuid=sl.db_uuid AND il.session=sl.session AND il.bundle=sl.bundle AND ",
-                      "sll.db_uuid=sl.db_uuid AND sll.session=sl.session AND sll.bundle=sl.bundle AND sl.start_item_id=sll.item_id AND ",
-                      "slr.db_uuid=sl.db_uuid AND slr.session=sl.session AND slr.bundle=sl.bundle AND sl.end_item_id=slr.item_id AND ")
+    # heQueryStr=paste0("SELECT il.db_uuid,il.session,il.bundle, il.item_id AS seq_start_id, ir.item_id AS seq_end_id,",length," AS seq_len, sl.level, il.seq_idx AS seq_start_seq_idx, ir.seq_idx AS seq_end_seq_idx ",
+    #                   "FROM emursegs_tmp sl, items sll, items slr, items il, items ir ",
+    #                   "WHERE il.db_uuid=ir.db_uuid AND il.session=ir.session AND il.bundle=ir.bundle AND ",
+    #                   "il.db_uuid=sl.db_uuid AND il.session=sl.session AND il.bundle=sl.bundle AND ",
+    #                   "sll.db_uuid=sl.db_uuid AND sll.session=sl.session AND sll.bundle=sl.bundle AND sl.start_item_id=sll.item_id AND ",
+    #                   "slr.db_uuid=sl.db_uuid AND slr.session=sl.session AND slr.bundle=sl.bundle AND sl.end_item_id=slr.item_id AND ")
+    
+    if(FALSE){ # here the boolean input parameter should be 
+      join_type = "LEFT JOIN"
+    }else{
+      join_type = "JOIN"
+    }
+    
     if(offsetRef=='START'){
-      heQueryStr=paste0(heQueryStr,"il.level=sll.level AND il.seq_idx=sll.seq_idx+",offset," AND ",
-                        "ir.level=sll.level AND ir.seq_idx=sll.seq_idx+",offset+length-1)
+      heQueryStr=paste0("SELECT sl.db_uuid, sl.session, sl.bundle, items_start.item_id AS seq_start_id, items_end.item_id AS seq_end_id, ", length, " AS seq_len, sl.level, items_start.seq_idx AS seq_start_seq_idx, items_end.seq_idx AS seq_end_seq_idx ",
+                        "FROM emursegs_tmp sl ",
+                        join_type, " items items_start ON sl.db_uuid = items_start.db_uuid AND sl.session = items_start.session AND sl.bundle = items_start.bundle AND sl.level = items_start.level AND sl.start_item_seq_idx + ", offset, " = items_start.seq_idx ",
+                        join_type, " items items_end ON sl.db_uuid = items_end.db_uuid AND sl.session = items_end.session AND sl.bundle = items_end.bundle  AND sl.level = items_end.level AND sl.start_item_seq_idx + ", offset + length - 1, " = items_end.seq_idx ",
+                        "")
+      
+      #heQueryStr=paste0(heQueryStr,"il.level = sll.level AND il.seq_idx = sll.seq_idx + ", offset, " AND ",
+      #                  "ir.level=sll.level AND ir.seq_idx=sll.seq_idx+",offset+length-1)
     }else if(offsetRef=='END'){
-      heQueryStr=paste0(heQueryStr,"il.level=slr.level AND il.seq_idx=slr.seq_idx+",offset," AND ",
-                        "ir.level=slr.level AND ir.seq_idx=slr.seq_idx+",offset+length-1)
+      heQueryStr=paste0("SELECT sl.db_uuid, sl.session, sl.bundle, items_start.item_id AS seq_start_id, items_end.item_id AS seq_end_id, ", length, " AS seq_len, sl.level, items_start.seq_idx AS seq_start_seq_idx, items_end.seq_idx AS seq_end_seq_idx ",
+                        "FROM emursegs_tmp sl ",
+                        join_type, " items items_start ON sl.db_uuid = items_start.db_uuid AND sl.session = items_start.session AND sl.bundle = items_start.bundle AND sl.level = items_start.level AND sl.end_item_seq_idx + ", offset, " = items_start.seq_idx ",
+                        join_type, " items items_end ON sl.db_uuid = items_end.db_uuid AND sl.session = items_end.session AND sl.bundle = items_end.bundle  AND sl.level = items_end.level AND sl.end_item_seq_idx + ", offset + length - 1, " = items_end.seq_idx ",
+                        "")
+      #heQueryStr=paste0(heQueryStr,"il.level=slr.level AND il.seq_idx=slr.seq_idx+",offset," AND ",
+      #                  "ir.level=slr.level AND ir.seq_idx=slr.seq_idx+",offset+length-1)
     }else{
       stop("Parameter offsetRef must be one of 'START' or 'END'\n")
     }
-    heQueryStr=paste0(heQueryStr," ORDER BY il.ROWID");
+    #heQueryStr=paste0(heQueryStr," ORDER BY il.ROWID");
     he = DBI::dbGetQuery(emuDBhandle$connection, heQueryStr)
     slLen=nrow(seglist)
     resLen=nrow(he)
@@ -155,9 +193,14 @@ requery_seq<-function(emuDBhandle, seglist, offset = 0, offsetRef = 'START',
     create_tmpFilteredQueryTablesDBI(emuDBhandle)
     DBI::dbWriteTable(emuDBhandle$connection, "interm_res_items_tmp_root", he, overwrite=T)
     
-    
     trSl=convert_queryResultToEmuRsegs(emuDBhandle, timeRefSegmentLevel = timeRefSegmentLevel, filteredTablesSuffix = "", queryStr = "FROM REQUERY", calcTimes, verbose)
     drop_allTmpTablesDBI(emuDBhandle)
+    
+    inSlLen=nrow(seglist)
+    trSlLen=nrow(trSl)
+    if(inSlLen!=trSlLen){
+      warning("Length of requery segment list (",trSlLen,") differs from input list (",inSlLen,")! These segments where lost while deriving their time   (no )")
+    }
     
     return(trSl)
   }
@@ -165,7 +208,7 @@ requery_seq<-function(emuDBhandle, seglist, offset = 0, offsetRef = 'START',
 
 ##' Requery hierarchical context of a segment list in an emuDB
 ##' @description Function to requery hierarchical context of a segment list queried from an emuDB
-##' @details A segment is defined as a single item or a chain of items from the respective level, e.g. if a level in a bundle instance has labels 'a', 'b' and 'c' in that order, 'a' or 'a->b' oder 'a->b->c' are all valid segments, but not 'a->c'.
+##' @details A segment is defined as a single item or a chain of items from the respective level, e.g. if a level in a bundle instance has labels 'a', 'b' and 'c' in that order, 'a' or 'a->b' or 'a->b->c' are all valid segments, but not 'a->c'.
 ##' For each segment of the input segment list \code{seglist} the function checks the start and end item for hierarchically linked items in the given target level, and based on them constructs segments in the target level.
 ##' As the start item in the resulting segment the item with the lowest sample position is chosen; for the end item that with the highest sample position.
 ##' If result and input segment list have the same length (for each input segment one segment on the target level was found), the result segment list has the same length and order as the input list; 
@@ -176,7 +219,7 @@ requery_seq<-function(emuDBhandle, seglist, offset = 0, offsetRef = 'START',
 ##' @param level character string: name of target level
 ##' @param collapse collapse the found items in the requested level to a sequence (concatenated with ->). If set to \code{FALSE} separate items as new entries in the emuRsegs object are returned.
 ##' @param calcTimes calculate times for resulting segments (results in \code{NA} values for start and end times in emuseg/emuRsegs). As it can be very computationally expensive to 
-##' calculate the times for large nested hierarchies it can be turned of via this boolian parameter.
+##' calculate the times for large nested hierarchies, it can be turned off via this boolean parameter.
 ##' @param timeRefSegmentLevel set time segment level from which to derive time information. It is only necessary to set this parameter if more than one child level contains time information and the queried parent level is of type ITEM.
 ##' @param verbose be verbose. Set this to \code{TRUE} if you wish to choose which path to traverse on intersecting hierarchies. If set to \code{FALSE} (the default) all paths will be traversed (= legacy EMU bahaviour).
 ##' @return result set object of class \link{emuRsegs}
@@ -220,13 +263,20 @@ requery_seq<-function(emuDBhandle, seglist, offset = 0, offsetRef = 'START',
 requery_hier<-function(emuDBhandle, seglist, level, collapse = TRUE, 
                        calcTimes = T, timeRefSegmentLevel = NULL, verbose = FALSE){
   
+  check_emuDBhandle(emuDBhandle)
+  
   if(!inherits(seglist,"emuRsegs")){
     stop("Segment list 'seglist' must be of type 'emuRsegs'. (Do not set a value for 'resultType' parameter for the query, the default resultType will be used)")
   }
+  
+
   if(nrow(seglist)==0){
     # empty seglist, return the empty list
     return(seglist)
   }else{
+    
+    check_emuRsegsForRequery(seglist)
+    
     # drop create tmp tables and recreate (will ensure they are empty)
     drop_allTmpTablesDBI(emuDBhandle)
     create_requeryTmpTables(emuDBhandle)
@@ -340,7 +390,7 @@ requery_hier<-function(emuDBhandle, seglist, level, collapse = TRUE,
     inSlLen=nrow(seglist)
     trSlLen=nrow(trSl)
     
-    if(verbose & inSlLen!=trSlLen){
+    if(inSlLen!=trSlLen){
       warning("Length of requery segment list (",trSlLen,") differs from input list (",inSlLen,")!")
     }
     
@@ -348,4 +398,11 @@ requery_hier<-function(emuDBhandle, seglist, level, collapse = TRUE,
     return(trSl)
   }
 }
+
+#######################
+# FOR DEVELOPMENT
+# library('testthat')
+# test_file("tests/testthat/test_aaa_initData.R")
+# test_file('tests/testthat/test_emuR-requery.database.R')
+
 

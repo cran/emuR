@@ -35,15 +35,15 @@ update_cache <- function(emuDBhandle, verbose = TRUE){
   sesDelta_toDelete = dplyr::anti_join(notUpdatedSessionDBI, sessions, by = "name")
   
   # add new
-  if(length(sesDelta_new) > 0){
-    for(i in 1:length(sesDelta_new)){
-      add_sessionDBI(emuDBhandle, sesDelta_new[i])
+  if(nrow(sesDelta_new) > 0){
+    for(i in 1:nrow(sesDelta_new)){
+      add_sessionDBI(emuDBhandle, sesDelta_new[i,])
     }
   }
   # delete
-  if(length(sesDelta_toDelete) > 0){
-    for(i in 1:length(sesDelta_toDelete)){
-      remove_sessionDBI(emuDBhandle, sesDelta_toDelete[i])
+  if(nrow(sesDelta_toDelete) > 0){
+    for(i in 1:nrow(sesDelta_toDelete)){
+      remove_sessionDBI(emuDBhandle, sesDelta_toDelete[i,])
     }
   }
   
@@ -106,7 +106,8 @@ update_cache <- function(emuDBhandle, verbose = TRUE){
       # extract MD5 sum of bundle annotJSON
       newMD5annotJSON = files_sesBndlMd5DF[files_sesBndlMd5DF$session == bndl$session & files_sesBndlMd5DF$name == bndl$name,]$md5_annot_json
       # read annotJSON as charac 
-      annotJSONchar = enc2utf8(readChar(annotFilePath, file.info(annotFilePath)$size)) # wrapped in enc2utf8 as readChar respects the system default (windows iso 88591)
+      #annotJSONchar = enc2utf8(readChar(annotFilePath, file.info(annotFilePath)$size)) # wrapped in enc2utf8 as readChar respects the system default (windows iso 88591)
+      annotJSONchar = readr::read_file(annotFilePath)
       # convert to bundleAnnotDFs
       bundleAnnotDFs = annotJSONcharToBundleAnnotDFs(annotJSONchar)
       # removing old bundle entry

@@ -1,3 +1,46 @@
+# emuR 1.0.0
+
+## new features / performance tweaks / improvements
+
+* implemented new `consistentOutputType` parameter for `get_trackdata()` to always return a `trackdata` or `emuRtrackdata` object independent of what the `cut` and `npoints` arguments are set to
+* now removing `levelCanvasOrder` entry in `remove_levelDefinition()` (fixes \#156)
+* `serve()` method now uses GET to deliver media files to the EMU-webApp. This avoids the base64 conversion overhead and is a quite significant load time improvement
+* explicit error message in `convert_legacyEmuDB()` when invalid redundant links are found
+* better error message in BPF parser
+* `convert_legacyEmuDB()` automatically converts `.ssd` media files to `.wav` and normalizes the annotations to start at 0 (only if attr(ssd,'startTime') is not 0).
+* added `sort()` S3 method for `emuRsegs` objects
+* checking for badly sorted `emuRsegs` in `requery_hier()` and `requery_seq()` functions
+* `create_emuRtrackdata()` returns a simple `data.frame` object not a `data.table` object
+* `emuRtrackdata` object now contains a `times_norm` (normalized time values between 0 and 1 for each segment) column by default
+* added note to `print.emuRsegs()` to give the user a hint about missing columns
+* implemented `print.emuRtrackdata()` to avoid overly verbose output
+* implemented `normalize_length()` function as S3 function to normalize the lenght of each segment in an `emuRtrackdata` object
+* added `absolute_file_path` column to output of `list_files()`
+* query engine does not rely on label index in label array any more (updated `convert_queryResultToEmuRsegs()` to use `resultAttrDef` instead of `labelIdx`). Closes \#164.
+* added `browser` argument to `serve()` function which is passed on to `utils::browseURL()` function
+* `requery_seq()` now uses `start_item_seq_idx` and `end_item_seq_idx` of seglist instead of `start_item_id` and `start_item_id` to simplify function
+* implemented `check_emuDBhandle()` function that is used on every exported function that takes a `emuDBhandle` as an argument to check if the handle is still valid (closes \#176)
+* implemented `"tibble"` as `resultType` option in `get_trackdata()`. This will probably replace the `"emuRtrackdata"` option in future (it contains exactly the same data/columns).
+* prechecking if attribute definition is already defined (closes \#182)
+* `get_trackdata()` now uses temporary SQL tables to store the intermediate results (massive performance gains!). Removed `nrOfAllocationRows` parameter as this is no longer needed as no matrix is used to store the intermediate results. (also closes \#125)
+* `convert_TextGridCollectio()` using `dir.exists()` instead of `file.exists()` to check dirs 
+* all read operations now use the readr package (avoids encoding problems like \#187)
+* `list_attributeDefinitions()` now allows for a name vector to be passed in
+* rewrite of `rewrite_allAnnots()` functions for faster rewrites of `_annot.json` files to disk
+* improved cleanup in testing DBconfig functions
+* now ordering by `items_idx` not by `start_start_seq_idx` which led to bad label sequences (fixes \#140)
+
+## bug fixes
+
+* fixed problem of updating cache. Didn't handle `data.frame` object that was thought to be a vector correctly!
+* fixed a bug in the BPF export function, which meant that WAVE files were only copied into one session
+* added missing `$` in pattern arguments in `list.files` call in `list_files` (fixes \#170)
+* not adding ssffTrackDefinition to DBconfig if user input is no (closes \#171)
+* fixed bad `seq_start_seq_idx` and `seq_seq_idx` returned by `requery_seq()` (fixes \#183) 
+* fixed bad `seq_start_seq_idx` returned by internal `query_databaseHier()` function
+* fixed bad sorting of `requery_seq()/requery_hier()` when `calcTimes = F` (still sorted by `start_sample` instead of the correct `seq_idx`)
+* added `readr::parse_character()` to data received in `serve()` as this is recoded in windows (fixes \#188).
+
 # emuR 0.2.3
 
 ## new features / performance tweaks / improvements

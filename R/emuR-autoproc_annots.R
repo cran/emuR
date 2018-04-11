@@ -37,6 +37,8 @@ replace_itemLabels <- function(emuDBhandle, attributeDefinitionName, origLabels,
   #############################
   # check input parameters
   
+  check_emuDBhandle(emuDBhandle)
+  
   allAttrNames = get_allAttributeNames(emuDBhandle)
   if(!attributeDefinitionName %in% allAttrNames){
     stop(paste0("No attributeDefinitionName: ", attributeDefinitionName, " found in emuDB! The available attributeNames are: ", paste0(get_allAttributeNames(emuDBhandle), collapse = "; ")))
@@ -124,6 +126,8 @@ replace_itemLabels <- function(emuDBhandle, attributeDefinitionName, origLabels,
 duplicate_level <- function(emuDBhandle, levelName, duplicateLevelName, 
                             duplicateLinks = TRUE, linkDuplicates = FALSE, 
                             linkDefType = "ONE_TO_ONE", verbose = TRUE) {
+  
+  check_emuDBhandle(emuDBhandle)
   
   ldefs = list_levelDefinitions(emuDBhandle)
   
@@ -286,6 +290,275 @@ resample_annots <- function(emuDBhandle, oldSampleRate, newSampleRate, verbose =
   
   DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM items WHERE level = 'Tone'"))
 }
+
+
+
+## Append an item (on a given level) to each bundle
+##
+## @param emuDBhandle emuDB handle object (see \link{load_emuDB})
+## @param levelName Name of the level to which to append the new items
+## @param labels Character vector containing one label for each attributeDefinition of \code{levelName}
+## @param sessionPattern A (RegEx) pattern matching sessions to be included in the operation
+## @param bundlePattern A (RegEx) pattern matching bundles to be included in the operation
+## @param verbose Show progress bars and further information
+## @export
+## @seealso \code{\link{change_labels}}
+## @keywords emuDB
+## @examples
+## \dontrun{
+## TO DO - Add example
+## }
+append_itemsToLevel = function(emuDBhandle,
+                               levelName,
+                               labels,
+                               sessionPattern = ".*",
+                               bundlePattern = ".*",
+                               verbose = T) {
+  ##
+  ## Check pre-conditions
+  ##
+  levelDefinition = get_levelDefinition(emuDBhandle, levelName)
+
+  if (is.null(levelDefinition)) {
+    print("Error: The given level does not exist ")
+    return(invisible(NULL))
+  }
+  
+  if (length(labels) != length(levelDefinition$attributeDefinitions)) {
+    print (
+      paste0(
+        "Error: The number of labels (",
+        length(labels),
+        ") must match the number of attribute definitions (",
+        length(levelDefinition$attributeDefinitions),
+        ") for the given level (",
+        levelName,
+        ")"
+      )
+    )
+    
+    return(invisible(NULL))
+  }
+
+
+  ##
+  ## Filter bundles according to sessionPattern and bundlePattern
+  ##
+  bundles = list_bundles(emuDBhandle)
+  sessionMatch = emuR_regexprl (sessionPattern, bundles$session)
+  bundleMatch = emuR_regexprl (bundlePattern, bundles$name)
+  bundles = bundles [sessionMatch & bundleMatch, ]
+  
+  
+  ##
+  ## Get sample rate
+  ##
+  statement = DBI::dbSendStatement(
+    emuDBhandle$connection,
+    "SELECT sample_rate FROM bundle
+    WHERE
+    db_uuid = ? AND
+    session = ? AND
+    name = ?"
+  )
+  
+  DBI::dbBind(statement,
+              list(rep(emuDBhandle$UUID, nrow(bundles)),
+                   bundles$session,
+                   bundles$name))
+  sampleRate = DBI::dbFetch(statement)
+  DBI::dbClearResult(statement)
+
+  
+  ##
+  ## Get appropriate item ID
+  ##
+  statement = DBI::dbSendStatement(
+    emuDBhandle$connection,
+    "SELECT max(item_id) FROM items
+    WHERE
+    db_uuid = ? AND
+    session = ? AND
+    bundle = ?"
+  )
+  
+  DBI::dbBind(statement,
+              list(rep(emuDBhandle$UUID, nrow(bundles)),
+                   bundles$session,
+                   bundles$name))
+  itemID = DBI::dbFetch(statement)
+  DBI::dbClearResult(statement)
+  
+  itemID[is.na(itemID),1] = 0
+  itemID = itemID + 1
+  
+  
+  ##
+  ## Get appropriate sequence index
+  ##
+  statement = DBI::dbSendStatement(
+    emuDBhandle$connection,
+    "SELECT max(seq_idx) FROM items
+    WHERE
+    db_uuid = ? AND
+    session = ? AND
+    bundle = ? AND
+    level = ?"
+  )
+  
+  DBI::dbBind(statement,
+              list(rep(emuDBhandle$UUID, nrow(bundles)),
+                   bundles$session,
+                   bundles$name,
+                   rep(levelName, nrow(bundles))))
+  sequenceIndex = DBI::dbFetch(statement)
+  DBI::dbClearResult(statement)
+  
+  sequenceIndex[is.na(sequenceIndex),1] = 0
+  sequenceIndex = sequenceIndex + 1
+  
+  
+  ##
+  ## Insert items
+  ##
+  statement = DBI::dbSendStatement(
+    emuDBhandle$connection,
+    "INSERT INTO items
+    (db_uuid, session, bundle, item_id, level, type, seq_idx, sample_rate)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  )
+
+  DBI::dbBind(
+    statement,
+    list(
+      rep(emuDBhandle$UUID, nrow(bundles)),
+      bundles$session,
+      bundles$name,
+      itemID[,1],
+      rep(levelName, nrow(bundles)),
+      rep("ITEM", nrow(bundles)),
+      sequenceIndex[,1],
+      sampleRate$sample_rate
+    )
+  )
+  ## @todo check success
+  DBI::dbClearResult(statement)
+  
+  
+  ##
+  ## Insert labels
+  ##
+ 
+  for (i in 1:length(labels)) {
+    attributeDefinition = emuR::list_attributeDefinitions(emuDBhandle,
+                                                          levelName)[i, "name"]
+ 
+    statement = DBI::dbSendStatement(
+      emuDBhandle$connection,
+      "INSERT INTO labels
+      (db_uuid, session, bundle, item_id, label_idx, name, label)
+      VALUES (?, ?, ?, ?, ?, ?, ?)"
+    )
+  
+    DBI::dbBind(
+      statement,
+      list(
+        rep(emuDBhandle$UUID, nrow(bundles)),
+        bundles$session,
+        bundles$name,
+        itemID[,1],
+        rep(i, nrow(bundles)),
+        rep(attributeDefinition, nrow(bundles)),
+        rep(labels[i], nrow(bundles))
+      )
+    )
+    
+    ## @todo check success
+    DBI::dbClearResult(statement)    
+  }
+  
+  rewrite_allAnnots(emuDBhandle, verbose)
+}
+
+# ##' Add items to an empty level
+# ##'
+# ##'
+# ##' Although an object of class emuRsegs may be passed into this function
+# ##' it is not obligatory. The requiered column names of the data.frame
+# ##' object passed into this function are
+# ##' @param emuDBhandle emuDB handle object (see \link{load_emuDB})
+# ##' @param levelName Name of the level to which to add the items
+# ##' @param seglist Segmentlist containing information about the items that are
+# ##' to be added to the specified level. 
+# ##' @param verbose Show progress bars and further information
+# ##' @export
+# ##' @seealso \code{\link{change_labels}}
+# ##' @keywords emuDB
+# ##' @examples
+# ##' \dontrun{
+# ##' TO DO - Add example
+# ##' }
+# add_itemsToEmptyLevel <- function(emuDBhandle, levelName, seglist, verbose = TRUE){
+#   
+#   levelDef = get_levelDefinition(emuDBhandle, levelName)
+#   
+#   if(is.null(levelDef)){
+#     stop("Specified level does not exist!")
+#   }
+#   
+#   # check input parameters
+#   if(levelDef$type == "SEGMENT"){
+#     # if(is.null(sampleStart) || is.null(sampleEnd)){
+#     #   stop("Specified level is of type SEGMENT! Both sampleStart and sampleEnd have to be set!")
+#     # }
+#     # if(length(labels) != length(sampleStart) || length(labels) != length(sampleEnd)){
+#     #   stop("labels, sampleStart and sampleEnd have to be of the same length!")
+#     # }
+#   }else if(levelDef$type == "EVENT"){
+#     # if(is.null(sampleStart)){
+#     #   stop("Specified level is of type EVENT! sampleStart has to be set!")
+#     # }
+#     # if(length(labels) != length(sampleStart)){
+#     #   stop("labels and sampleStart have to be of the same length!")
+#     # }
+#   }else{
+#     stop("ITEM levels not supported yet!")
+#   }
+#   
+#   # check that level is empty
+#   res = DBI::dbGetQuery(emuDBhandle$connection, statement = paste0("SELECT * FROM items WHERE level='", levelName, "'"))
+#   if(nrow(res) != 0){
+#     stop("Specified level is not empty!")
+#   }
+#   
+#   # use dplyr to sort seglist (in case these go mixed up somehow)
+#   sortedSl = seglist %>% dplyr::arrange(session, bundle, sample_start)
+#   
+#   
+#   if(levelDef$type == "SEGMENT"){
+#   }else if(levelDef$type == "EVENT"){
+#     
+#     sortedSl %>%
+#       dplyr::group_by(session, bundle) %>% 
+#       dplyr::mutate(seq_idx = row_number())
+#     
+#     # create items df
+#     itemsDf = data.frame(db_uuid = emuDBhandle$UUID, 
+#                          session = sortedSl$session, 
+#                          bundle = sortedSl$bundle, 
+#                          item_id = sortedSl$start_item_id, # SIC!!! 
+#                          level = rep(levelName, length), 
+#                          type = ,
+#                          seq_idx = ,
+#                          sample_rate = ,
+#                          sample_point = ,
+#                          sample_start = ,
+#                          sample_dur = )
+#     
+#   }else{
+#     stop("ITEM levels not supported yet!")
+#   }
+# }
 
 # FOR DEVELOPMENT
 # library('testthat')

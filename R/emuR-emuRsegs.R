@@ -37,7 +37,7 @@ make.emuRsegs <- function(dbName,seglist,query,type)
 }
 
 
-##' Print emuDB segment list
+##' Print emuRsegs segment list
 ##' @param x object to print
 ##' @param ... additional params
 ##' @export
@@ -48,7 +48,27 @@ make.emuRsegs <- function(dbName,seglist,query,type)
   printX='[.data.frame'(x,c('labels','start','end','session','bundle','level','type'))
   
   print.data.frame(printX, ...)
+  
+  #cat("\nNOTE: to reduce the verboseness of the output not all colums of an emuRsegs object are printed. Use print.data.frame() to print all columns.\n")
 }
+
+##' Sort emuRsegs segment list by session, bundle and sample_start 
+##' @param x object to print
+##' @param decreasing NOT IMPLEMENTED!
+##' @param ... additional params
+##' @export
+"sort.emuRsegs" <-  function(x, decreasing, ...) 
+{
+
+  old_atts = attributes(x)
+  
+  sl_df_sorted = dplyr::arrange_(x, "session", "bundle", "sample_start")
+  
+  attributes(sl_df_sorted) = old_atts
+  
+  return(sl_df_sorted)
+}
+
 
 # S3 method definition
 as.emusegs <- function(x, ...){
