@@ -8,12 +8,13 @@
 get_trackdata(emuDBhandle, seglist = NULL, ssffTrackName = NULL,
   cut = NULL, npoints = NULL, onTheFlyFunctionName = NULL,
   onTheFlyParams = NULL, onTheFlyOptLogFilePath = NULL,
-  resultType = "trackdata", consistentOutputType = FALSE, verbose = TRUE)
+  resultType = "trackdata", consistentOutputType = TRUE,
+  verbose = TRUE)
 }
 \arguments{
 \item{emuDBhandle}{emuDB handle as returned by \code{\link{load_emuDB}}}
 
-\item{seglist}{\code{\link{emuRsegs}} or \code{\link{emusegs}} object obtained by \code{\link{query}}ing a loaded emuDB}
+\item{seglist}{\code{tibble}, \code{\link{emuRsegs}} or \code{\link{emusegs}} object obtained by \code{\link{query}}ing a loaded emuDB}
 
 \item{ssffTrackName}{The name of track that one wishes to extract (see 
 \code{\link{list_ssffTrackDefinitions}} for the defined ssffTracks of the 
@@ -50,14 +51,15 @@ parameter one wishes to change.}
 
 \item{resultType}{Specify class of returned object. Either \code{"emuRtrackdata"}, \code{"trackdata"} or \code{"tibble"}  (see \code{\link{trackdata}}, \code{\link{emuRtrackdata}} and \code{\link{tibble}} for details about these objects).}
 
-\item{consistentOutputType}{Prevent converting the output object to a \code{data.frame} depending on the \code{npoint} and \code{cut} arguments}
+\item{consistentOutputType}{Prevent converting the output object to a \code{data.frame} depending on the \code{npoint} and \code{cut} arguments (only applies to output type "trackdata"). Set 
+to \code{FALSE} if the following legacy \code{emu.track} output conversion behaviour is desired: If the \code{cut} parameter is not set (the default) an object of type \code{\link{trackdata}} 
+is returned. If \code{cut} is set and \code{npoints} is not, or the seglist 
+is of type event and npoints is not set, a \code{\link{data.frame}} is returned (see the \code{consistentOutputType} to change this behaviour).}
 
 \item{verbose}{Show progress bars and further information}
 }
 \value{
-If the \code{cut} parameter is not set (the default) an object of type \code{\link{trackdata}}, \code{\link{emuRtrackdata}} or \code{\link{tibble}} 
-is returned. If \code{cut} is set and \code{npoints} is not, or the seglist 
-is of type event and npoints is not set, a \code{\link{data.frame}} is returned (see the \code{consistentOutputType} to change this behaviour).
+object of type that is specified with \code{resultType}
 }
 \description{
 Extract trackdata information from a loaded emuDB that 
@@ -68,7 +70,7 @@ This function utilizes the wrassp package for signal processing and
 SSFF/audio file handling. It reads time relevant data from a given 
 segment list (\code{\link{emuRsegs}} or \code{\link{emusegs}}), extracts the 
 specified trackdata and places it into a 
-trackdata object (analogous to the depricated \code{emu.track}). This function
+trackdata object (analogous to the deprecated \code{emu.track}). This function
 replaces the deprecated \code{emu.track} function. Note that an error is thrown
 if the bundles in the \code{\link{emuRsegs}} or \code{\link{emusegs}} object 
 have in-homogeneous sampling rates as this will lead to inconsistent/erroneous

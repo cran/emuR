@@ -12,6 +12,17 @@ setServerHandle <- function(sh) {
   assign("serverHandle", sh, envir = .server_env)
 }
 
+check_tibbleForServe <- function(tbl){
+  req_columns = c("db_uuid", "session", "bundle", "start", 
+                  "end", "sample_rate")
+  
+  if(!all(req_columns %in% names(tbl))){
+    stop(paste0("tibble object does not contain all required columns. The required columns are: ", 
+                paste(req_columns, collapse = "; ")))
+  }
+  
+}
+
 ##' Serve EMU database to EMU-webApp
 ##' 
 ##' @description Serves emuDB media files, SSFF tracks and annotations for EMU-webApp browser GUI \url{http://ips-lmu.github.io/EMU-webApp/}
@@ -42,7 +53,7 @@ setServerHandle <- function(sh) {
 ##' @param emuDBhandle emuDB handle as returned by \code{\link{load_emuDB}}
 ##' @param sessionPattern A regular expression pattern matching session names to be served
 ##' @param bundlePattern A regular expression pattern matching bundle names to be served
-##' @param seglist segment list to use for times anchors and session + bunde restriction (type: \link{emuRsegs})
+##' @param seglist segment list to use for times anchors and session + bundle restriction (type: \link{emuRsegs})
 ##' @param host host IP to listen to (default: 127.0.0.1  (localhost))
 ##' @param port the port number to listen on (default: 17890)
 ##' @param autoOpenURL URL passed to \code{\link{browseURL}} function. If NULL or an empty string are passed in
@@ -62,10 +73,10 @@ setServerHandle <- function(sh) {
 ##' serve(myDb)
 ##' }
 ##' 
-serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist = NULL,
-                  host='127.0.0.1', port=17890, 
+serve <- function(emuDBhandle, sessionPattern = '.*', bundlePattern = '.*', seglist = NULL,
+                  host = '127.0.0.1', port = 17890, 
                   autoOpenURL = "http://ips-lmu.github.io/EMU-webApp/?autoConnect=true", 
-                  browser = getOption("browser"), debug=FALSE, debugLevel=0){
+                  browser = getOption("browser"), debug = FALSE, debugLevel = 0){
   
   check_emuDBhandle(emuDBhandle)
   
@@ -79,6 +90,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
   if(is.null(seglist)){
     allBundlesDf=list_bundles(emuDBhandle)
   }else{
+    check_tibbleForServe(seglist)
     tmp = data.frame(session = seglist$session, bundle = seglist$bundle, stringsAsFactors = F)
     allBundlesDf=unique(tmp)
   }
@@ -105,6 +117,7 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
                                 paste0(queryStr$session, session.suffix), 
                                 paste0(queryStr$bundle, bundle.dir.suffix),
                                 paste0(queryStr$bundle, ".", DBconfig$mediafileExtension))
+      
       audioFile = file(mediaFilePath, "rb")
       audioFileData=readBin(audioFile, raw(), n=file.info(mediaFilePath)$size)
       close(audioFile)
@@ -233,10 +246,13 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
           for(i in 1:nrow(response$data)){
             sesBool = response$data[i,]$session == seglist$session 
             bndlBool = response$data[i,]$bundle == seglist$bundle
+            start_sample_vals = round(((seglist[sesBool & bndlBool,]$start / 1000) + 0.5/seglist[sesBool & bndlBool,]$sample_rate) * seglist[sesBool & bndlBool,]$sample_rate)
+            # end_sample_vals calculated with + 1 as EMU-webApp seems to always mark the right boundary left of the selected sample
+            end_sample_vals = round(((seglist[sesBool & bndlBool,]$end / 1000) + 0.5/seglist[sesBool & bndlBool,]$sample_rate) * seglist[sesBool & bndlBool,]$sample_rate)
             dataWithTimeAnchors[[i]] = list(session = response$data[i,]$session, 
                                             name = response$data[i,]$bundle,
-                                            timeAnchors = data.frame(sample_start = seglist[sesBool & bndlBool,]$sample_start,
-                                                                     sample_end = seglist[sesBool & bndlBool,]$sample_end))
+                                            timeAnchors = data.frame(sample_start = start_sample_vals,
+                                                                     sample_end = end_sample_vals))
             
           }
           response$data = dataWithTimeAnchors
@@ -291,9 +307,9 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
         # }
         mediaFile=list(encoding="GETURL", data=paste0("http://", 
                                                       ws$request$HTTP_HOST, 
-                                                      "?session=", bundleSess,
-                                                      "&bundle=", bundleName))
-        if(is.null(err)){   
+                                                      "?session=", utils::URLencode(bundleSess, reserved = T),
+                                                      "&bundle=", utils::URLencode(bundleName, reserved = T)))
+        if(is.null(err)){
           ssffTracksInUse=get_ssffTracksUsedByDBconfig(DBconfig)
           ssffTrackNmsInUse=c()
           for(ssffTrackInUse in ssffTracksInUse){
@@ -503,7 +519,13 @@ serve <- function(emuDBhandle, sessionPattern='.*',bundlePattern='.*', seglist =
   emuRserverRunning=TRUE
   if(length(autoOpenURL) != 0 && autoOpenURL != ""){
     # open browser with EMU-webApp
-    utils::browseURL(autoOpenURL, browser = browser)
+    viewer <- getOption("viewer")
+    if(FALSE){
+    # if (!is.null(viewer)){
+      viewer(file.path(tempdir(), "EMU-webApp/index.html"), height = 500)
+    }else{
+      utils::browseURL(autoOpenURL, browser = browser)
+    }
   }
   while(emuRserverRunning) {
     httpuv::service()
@@ -547,6 +569,10 @@ get_ssffTracksUsedByDBconfig <- function(DBconfig){
     for(tddd in p$twoDimCanvases$twoDimDrawingDefinitions){
       # dots
       for(dot in tddd$dots){
+        allTracks = c(allTracks, dot$xSsffTrack, dot$ySsffTrack)
+      }
+      # staticContours
+      for(dot in tddd$staticContours){
         allTracks = c(allTracks, dot$xSsffTrack, dot$ySsffTrack)
       }
     }

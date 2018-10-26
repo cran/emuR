@@ -27,7 +27,7 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
   if(class(lines) == "try-error") {
     stop("Cannot read from file ", hlbFilePath)
   }
-  lineCount=length(lines)  
+  lineCount=length(lines)
   
   # assume header in line 1
   # ALC EMU Db has trailing blank in header line 
@@ -91,35 +91,37 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
             stop("Existing item count mismatch: ",exItemsLen," != ",currItemsLen)
           }
           i=0
-          for(i in 1:exItemsLen){
-            exItem=exItems[[i]]
-            currItem=currentitems[[i]]
-            exType=exItem$type
-            # merge labels
-            mergedLabels=exItem[['labels']]
-            for(itLbl in currItem[['labels']]){
-              for(exLabel in exItem[['labels']]){
-                if(exLabel[['name']]==itLbl[['name']]){
-                  # label exists, check equality
-                  exLblVal=exLabel[['value']]
-                  if(is.null(exLblVal)){
-                    exLblVal=''
+          if(exItemsLen > 0){
+            for(i in 1:exItemsLen){
+              exItem=exItems[[i]]
+              currItem=currentitems[[i]]
+              exType=exItem$type
+              # merge labels
+              mergedLabels=exItem[['labels']]
+              for(itLbl in currItem[['labels']]){
+                for(exLabel in exItem[['labels']]){
+                  if(exLabel[['name']]==itLbl[['name']]){
+                    # label exists, check equality
+                    exLblVal=exLabel[['value']]
+                    if(is.null(exLblVal)){
+                      exLblVal=''
+                    }
+                    itLblVal=itLbl[['value']]
+                    if(exLblVal!=itLblVal){
+                      stop("Labels of attribute level '",exLabel[['name']],"' differ: '",exLabel[['value']],"' '",itLbl[['value']],"' in HLB file: '",hlbFilePath,"' line ",lnr,".\n")
+                    }
+                  }else{
+                    # merge
+                    mergedLabels[[length(mergedLabels)+1]]=itLbl
                   }
-                  itLblVal=itLbl[['value']]
-                  if(exLblVal!=itLblVal){
-                    stop("Labels of attribute level '",exLabel[['name']],"' differ: '",exLabel[['value']],"' '",itLbl[['value']],"' in HLB file: '",hlbFilePath,"' line ",lnr,".\n")
-                  }
-                }else{
-                  # merge
-                  mergedLabels[[length(mergedLabels)+1]]=itLbl
                 }
+                
               }
-              
-            }
-            if(newTier$type == "SEGMENT"){
-              newItems[[i]]=list(id=currItem$id,sampleStart=exItem$sampleStart,sampleDur=exItem$sampleDur,labels=mergedLabels)
-            }else if(newTier$type == "EVENT"){
-              newItems[[i]]=list(id=currItem$id,samplePoint=exItem$samplePoint,labels=mergedLabels)
+              if(newTier$type == "SEGMENT"){
+                newItems[[i]]=list(id=currItem$id,sampleStart=exItem$sampleStart,sampleDur=exItem$sampleDur,labels=mergedLabels)
+              }else if(newTier$type == "EVENT"){
+                newItems[[i]]=list(id=currItem$id,samplePoint=exItem$samplePoint,labels=mergedLabels)
+              }
             }
           }
           newTier$items=newItems
@@ -193,7 +195,7 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
                   } 
                 }
                 tdLblName=ldAttrDef[['name']]
-
+                
                 if(is.null(ldAttrDef)){
                   stop("Label name ",tk," has no declaration in level definition. '",hlbFilePath,"' line ",lnr,": ",line)
                 }
@@ -228,6 +230,7 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
   }
   
   # Add levels which are not used in HLB file
+  maxId = maxId + 1
   for(l in levels){
     ln=l$name
     found=FALSE
@@ -239,6 +242,13 @@ parse_hlbFile <- function(hlbFilePath=NULL,levelDefinitions,levels,encoding=NULL
       }
     }
     if(!found){
+      # fix ids
+      if(length(l$items) > 0){
+        for(item_idx in 1:length(l$items)){
+          l$items[[item_idx]]$id = maxId
+          maxId = maxId + 1
+        }
+      }
       hlbTiers[[length(hlbTiers)+1]]=l
     }
   }

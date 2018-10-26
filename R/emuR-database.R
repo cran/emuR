@@ -87,6 +87,7 @@ database.DDL.emuDB_labels = 'CREATE TABLE labels (
   label TEXT,
   PRIMARY KEY (db_uuid, session, bundle, item_id, label_idx),
   FOREIGN KEY (db_uuid, session, bundle) REFERENCES bundle(db_uuid, session, name) ON DELETE CASCADE
+  -- FOREIGN KEY (db_uuid, session, bundle, item_id) REFERENCES items(db_uuid, session, bundle, item_id) ON DELETE CASCADE
 );'
 
 database.DDL.emuDB_label_nameLabel_idx = 'CREATE INDEX IF NOT EXISTS label_nameLabel_idx ON labels(db_uuid, bundle, session, item_id)'
@@ -322,7 +323,7 @@ remove_bundleAnnotDBI<-function(emuDBhandle, sessionName, bundleName){
 ##' # (see ?load_emuDB for more information)
 ##' 
 ##' # rename ae emuDB to "aeNew"
-##' rename(databaseDir = "/path/2/ae_emuDB", newName = "aeNew")
+##' rename_emuDB(databaseDir = "/path/2/ae_emuDB", newName = "aeNew")
 ##' 
 ##' }
 ##' 
@@ -431,12 +432,19 @@ list_bundles <- function(emuDBhandle, session=NULL){
   return(res)
 }
 
-
-
-rewrite_allAnnots <- function(emuDBhandle, verbose=TRUE){
-
-  bndls = list_bundles(emuDBhandle)
+## rewrite annot json files from the cache
+## @param emuDBhandle emuDBhandle
+## @param bundles data.frame containing session 
+## and bundle colums (e.g. see output of list_bundles())
+rewrite_annots <- function(emuDBhandle, 
+                           bundles = NULL, 
+                           verbose = TRUE){
   
+  if(is.null(bundles)){
+    bndls = list_bundles(emuDBhandle)
+  }else{
+    bndls = bundles
+  }
   # check if any bundles exist
   if(nrow(bndls) == 0){
     return()
@@ -452,11 +460,11 @@ rewrite_allAnnots <- function(emuDBhandle, verbose=TRUE){
   
   for(i in 1:nrow(bndls)){
     bndl = bndls[i,]
-
+    
     bundleAnnotDFs = load_bundleAnnotDFsDBI(emuDBhandle, bndl$session, bndl$name)
     
     annotJSONchar = bundleAnnotDFsToAnnotJSONchar(emuDBhandle, bundleAnnotDFs)
-
+    
     # construct path to annotJSON
     annotFilePath = file.path(emuDBhandle$basePath, paste0(bndl$session, session.suffix), 
                               paste0(bndl$name, bundle.dir.suffix), 
@@ -579,7 +587,7 @@ store<-function(emuDBhandle, targetDir, options=NULL, verbose=TRUE){
   
   # rewrite annotations (or should these just be a copied as well?)
   emuDBhandle$basePath = pp
-  rewrite_allAnnots(emuDBhandle, verbose = verbose)
+  rewrite_annots(emuDBhandle, verbose = verbose)
   
   # copy SSFF files
   ssffDefs = list_ssffTrackDefinitions(emuDBhandle)
@@ -632,7 +640,7 @@ create_emuDB<-function(name, targetDir, mediaFileExtension='wav',
 ##' files to an emuR internal database format. The function expects a emuDB file structure in directory 
 ##' \code{databaseDir}. The emuDB configuration file is loaded first. On success the function iterates 
 ##' through session and bundle directories and loads found annotation files. The parameter \code{inMemoryCache} 
-##' determines where the internal database is stored: If \code{FALSE} a databse cache file in \code{databaseDir} 
+##' determines where the internal database is stored: If \code{FALSE} a database cache file in \code{databaseDir} 
 ##' is used. When the database is loaded for the first time the function will create a new cache file and store 
 ##' the data to it. On subsequent loading of the same database the cache is only updated if files have changed, 
 ##' therefore the loading is then much faster. For this to work the user needs write permissions to 
@@ -645,7 +653,7 @@ create_emuDB<-function(name, targetDir, mediaFileExtension='wav',
 ##' for expert use only!
 ##' @param verbose be verbose
 ##' @param ... additional parameters
-##' @return name of emuDB
+##' @return emuDB handle object
 ##' @import jsonlite DBI
 ##' @export
 ##' @keywords emuDB database DBconfig

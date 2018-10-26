@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-04-11" />
+<meta name="date" content="2018-10-26" />
 
 <title>EQL - Version 2 of the Emu Query Language</title>
 
@@ -278,10 +278,14 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 
 <h1 class="title toc-ignore">EQL - Version 2 of the Emu Query Language</h1>
-<h4 class="date"><em>2018-04-11</em></h4>
+<h4 class="date"><em>2018-10-26</em></h4>
 
 
 
+<div id="deprecation-warning" class="section level1">
+<h1>DEPRECATION WARNING</h1>
+<p>This vignette is considered depricated! It’s content has been moved to the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/">the EMU-SDMS manual</a> (+ expanded and updated). Specifially see the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-querysys.html">the query system</a> as well as the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/app-chap-eql.html">EQL: further examples</a> chapters.</p>
+</div>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>This document introduces and defines version 2 of the <strong>E</strong>mu <strong>Q</strong>uery <strong>L</strong>anguage (<strong>EQL</strong>) and tries to show what it is capable of by giving numerous examples. The EQL is a query language that is aimed at speech and language researchers that is supposed to be easy to understand and learn yet expressive and powerful. It enables researchers to easily query annotation structures of databases stored in the emuDB format. The <code>emuR</code> package provides a <code>query()</code> function to query emuDBs that are loaded into the current R session (for more information see the <code>emuR_intro</code> as well as the <code>emuDB</code> vignettes). The main argument of the <code>query()</code> function is the <code>query</code> argument (<code>query(..., query = &quot;XXX&quot;, ...)</code> where <code>XXX</code> is the query string). In this document we will be focusing soley on these query strings and how to compile them.</p>

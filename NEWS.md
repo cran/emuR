@@ -1,3 +1,40 @@
+# emuR 1.1.0
+
+## new features / performance tweaks / improvements
+
+* URL encoding of bundle and session names to allow for URL string reserved characters in bundle and session names
+* error message of `get_trackdata()` now contains seglist row index if "Can not extract following"
+* `normalize_length()` now allows for additional non-numeric columns
+* changed `stop()` to `warning()` in `get_trackdata()` when samplerates are inconsistent (closes \#190)
+* better error message when there is a naming mismatch of `_emuDB` dir `_DBconfig.json`
+* using `sub()` instead of `tools::file_path_sans_ext()` to handle `_` in file extensions
+* `query()`, `requery_seq()` and `requery_hier()` now supports the `resultType` `"tibble"` (and `get_trackdata()`, `requery_seq()`, `requery_hier()` and `serve()` support them as input)
+* `serve()` function now uses `seglist$start` and  `seglist$end` instead of `seglist$sample_start` and `seglist$sample_end`
+* implemented first version of `update_itemsInLevel()` (only label updates for now)
+* now setting the `sample_start` and `sample_end` values in query results when EVENT levels are queried (previously only `start` was set)
+* implemented first versions of `create_links()` (currently not checking for anything), `create_itemsInLevel()` (only EVENTs and ITEMs) and `update_itemsInLevel()` (only labels) and `delete_itemsInLevel()`
+* `list_bundles()` outside of loop for performance bump in `get_trackdata()`
+* better error message in `add_files()` if no files are found
+* `consistentOutputType` of `get_trackdata()` is not set to `TRUE` and is reset to `T` if `resultType` is `"emuRtrackdata"` or `"tibble"` (fixes \#203)
+* avoiding negative `times_rel` and `times_norm` values in `create_emuRtrackdata()` by setting them to 0 (caused by string to numeric conversion precision errors)
+* `requery_seq()` now inserts NA values for the out of bounds rows instead of dropping them.
+* implemented `list_sampleRates()` function
+* `get_trackdata()` is now iteratively appending to a `list()` instead of into a SQLite temp table. This is a fairly large performance boost and also fixes \#206.
+* added deprecation warnings to vignettes (added links to manual chapters)
+
+## bug fixes
+
+* propper fix for "now ordering by `items_idx` not by `start_start_seq_idx` which led to bad label sequences (fixes \#140)"
+* fixed bad indexing in `normalize_length()` when sl_rowIdx values are not a `c(1, 2, 3, 4, ...)` sequence
+* fixed `staticContours` SSFF tracks not being sent to EMU-webApp (fixes \#195)
+* fixed bug with completely empty levels that caused a bad resort of levels in `_annot.json`s in `rewrite_allAnnots()`
+* fixed bug in `add_files()` that was using the wrong variable (fixes \#196)
+* added error message when querying levels without time-bearing sub-levels (closes \#150)
+* fixed bug in `create_emuRtrackdata()` with handeling trackdata object of class `spectral`
+* correct recalculation of ITEM IDs of missing levels in .hlb files (== only present in ESPS files) in `convert_legacyEmuDB()`
+* fixed handling of completely empty levels in .hlb files
+* `normalize_length()` now handles various additional column types (not just `"numeric"`)
+
 # emuR 1.0.0
 
 ## new features / performance tweaks / improvements

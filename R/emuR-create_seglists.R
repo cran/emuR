@@ -1,4 +1,37 @@
 
+convert_queryEmuRsegsToTibble <- function(emuDBhandle, emuRsegs){
+  
+  if(nrow(emuRsegs) == 0){
+    return(dplyr::tibble(labels = character(), start = numeric(), end = numeric(),
+                         db_uuid = character(), session = character(), 
+                         bundle = character(), start_item_id = integer(), end_item_id = integer(),
+                         level = character(), attribute = character(), start_item_seq_idx = integer(), 
+                         end_item_seq_idx = integer(), type = character(), sample_start = integer(), 
+                         sample_end = integer(), sample_rate = integer()))
+  }
+  resultAttrDef = unique(emuRsegs$level)
+  if(length(resultAttrDef) > 1){
+    stop("Could not convert the emuRsegs object to a tibble as it contains multiple attribute definitions.")
+  }
+  attrDefLn = get_levelNameForAttributeName(emuDBhandle, resultAttrDef)
+  # fix attribute/level 
+  emuRsegs$attribute = resultAttrDef
+  emuRsegs$level = attrDefLn
+  
+  # select columns in correct order
+  res_tibble = emuRsegs %>% 
+    dplyr::select("labels", "start", "end",
+                  "db_uuid", "session", 
+                  "bundle", "start_item_id", "end_item_id",
+                  "level", "attribute", "start_item_seq_idx", 
+                  "end_item_seq_idx", "type", "sample_start", 
+                  "sample_end", "sample_rate") %>%
+    dplyr::as_tibble()
+  
+  return(res_tibble)
+  
+}
+
 convert_queryResultToEmusegs<-function(emuDBhandle, timeRefSegmentLevel=NULL, filteredTablesSuffix, calcTimes = T, verbose){
   queryStr = DBI::dbGetQuery(emuDBhandle$connection, "SELECT query_str FROM interm_res_meta_infos_tmp_root")$query_str
   emuRsegs = convert_queryResultToEmuRsegs(emuDBhandle, timeRefSegmentLevel, filteredTablesSuffix, queryStr = queryStr, calcTimes, verbose)
@@ -110,9 +143,26 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
                                                     " ELSE 'SIC!! Something went wrong' ",
                                                     "END AS end, ",
                                                     "interm_res_items_tmp_root.session || ':' || interm_res_items_tmp_root.bundle AS utts, ",
-                                                    "interm_res_items_tmp_root.db_uuid, interm_res_items_tmp_root.session, interm_res_items_tmp_root.bundle, interm_res_items_tmp_root.seq_start_id AS start_item_id, interm_res_items_tmp_root.seq_end_id AS end_item_id, ",
-                                                    "interm_res_items_tmp_root.level AS level, interm_res_items_tmp_root.seq_start_seq_idx, interm_res_items_tmp_root.seq_end_seq_idx AS end_item_seq_idx, items_seq_start.type AS type, ",
-                                                    "items_seq_start.sample_start AS sample_start, (items_seq_end.sample_start + items_seq_end.sample_dur) AS sampleEnd, items_seq_start.sample_rate AS sample_rate ",
+                                                    "interm_res_items_tmp_root.db_uuid, ",
+                                                    "interm_res_items_tmp_root.session, ",
+                                                    "interm_res_items_tmp_root.bundle, ",
+                                                    "interm_res_items_tmp_root.seq_start_id AS start_item_id, ",
+                                                    "interm_res_items_tmp_root.seq_end_id AS end_item_id, ",
+                                                    "interm_res_items_tmp_root.level AS level, ",
+                                                    "interm_res_items_tmp_root.seq_start_seq_idx, ",
+                                                    "interm_res_items_tmp_root.seq_end_seq_idx AS end_item_seq_idx, ",
+                                                    "items_seq_start.type AS type, ",
+                                                    # "items_seq_start.sample_start AS sample_start, ",
+                                                    "CASE items_seq_start.type ",
+                                                    "   WHEN 'SEGMENT' THEN items_seq_start.sample_start ",
+                                                    "   WHEN 'EVENT' THEN items_seq_start.sample_point ",
+                                                    "END AS sample_start, ",
+                                                    # "(items_seq_end.sample_start + items_seq_end.sample_dur) AS sampleEnd, ",
+                                                    "CASE items_seq_start.type ",
+                                                    "   WHEN 'SEGMENT' THEN (items_seq_end.sample_start + items_seq_end.sample_dur) ",
+                                                    "   WHEN 'EVENT' THEN items_seq_start.sample_point ",
+                                                    "END AS sample_end, ",
+                                                    "items_seq_start.sample_rate AS sample_rate ",
                                                     "FROM interm_res_items_tmp_root, items AS items_seq_start, items AS items_seq_end, labels ",
                                                     "WHERE interm_res_items_tmp_root.db_uuid = items_seq_start.db_uuid AND interm_res_items_tmp_root.session = items_seq_start.session AND interm_res_items_tmp_root.bundle = items_seq_start.bundle AND interm_res_items_tmp_root.seq_start_id = items_seq_start.item_id ",
                                                     "AND interm_res_items_tmp_root.db_uuid = items_seq_end.db_uuid AND interm_res_items_tmp_root.session = items_seq_end.session AND interm_res_items_tmp_root.bundle = items_seq_end.bundle AND interm_res_items_tmp_root.seq_end_id = items_seq_end.item_id ",
@@ -121,6 +171,7 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
       
       
     }else{
+      
       segLvlNms = find_segmentLevels(emuDBhandle, resultAttrDef)
       
       if(!is.null(timeRefSegmentLevel)){
@@ -131,7 +182,15 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
       }else{
         segLvlsCnt=length(segLvlNms)
         if(segLvlsCnt>1){
-          stop("Segment time information derivation for level '",resultAttrDef,"' is ambiguous:\nThe level is linked to multiple segment levels: ",paste(segLvlNms,collapse=', '),"\nPlease select one of these levels using the 'timeRefSegmentLevel' query parameter.")
+          stop("Segment time information derivation for level '",
+               resultAttrDef,
+               "' is ambiguous:\nThe level is linked to multiple segment levels: ",
+               paste(segLvlNms,collapse=', '),
+               "\nPlease select one of these levels using the 'timeRefSegmentLevel' query parameter.")
+        }else if(segLvlsCnt == 0){
+          stop("Could not find a time bearing sub-level connected to '", 
+               resultAttrDef, 
+               "'. Consider either using 'calcTimes=F' or adding potentially missing link definitions in your emuDB.")
         }
         lnwt = segLvlNms[1] # level name with time
       }
@@ -149,7 +208,7 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
                                                     ""))
       
       query_databaseHier(emuDBhandle, firstLevelName = lnwt, secondLevelName = attrDefLn, leftTableSuffix = timeItemsTableSuffix, rightTableSuffix = "root", filteredTablesSuffix, minMaxSeqIdxLeafOnly = F, verbose = verbose) # result written to lr_exp_res_tmp table
-      
+
       # calculate left and right times and store in tmp table
       DBI::dbExecute(emuDBhandle$connection, paste0("INSERT INTO emursegs_tmp ",
                                                     "SELECT 'XXX' AS labels, ",
@@ -184,7 +243,8 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
     # construct labels
     DBI::dbExecute(emuDBhandle$connection, paste0("CREATE INDEX IF NOT EXISTS emursegs_tmp_idx ON emursegs_tmp(db_uuid, session, bundle, start_item_id, end_item_id)"))
     
-    seglist = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT GROUP_CONCAT(labels.label, '->') AS labels, emursegs_tmp.start, emursegs_tmp.end, emursegs_tmp.utts, emursegs_tmp.db_uuid, emursegs_tmp.session, emursegs_tmp.bundle, ",
+    seglist = DBI::dbGetQuery(emuDBhandle$connection, paste0("select GROUP_CONCAT(ungrouped.label, '->') AS labels, start, end, utts, db_uuid, session, bundle, start_item_id, end_item_id, level, start_item_seq_idx, end_item_seq_idx, type, sample_start, sample_end, sample_rate FROM ",
+                                                             "(SELECT emursegs_tmp.rowid, labels.label, emursegs_tmp.start, emursegs_tmp.end, emursegs_tmp.utts, emursegs_tmp.db_uuid, emursegs_tmp.session, emursegs_tmp.bundle, ",
                                                              "emursegs_tmp.start_item_id, emursegs_tmp.end_item_id, emursegs_tmp.level, emursegs_tmp.start_item_seq_idx, emursegs_tmp.end_item_seq_idx, ",
                                                              "emursegs_tmp.type, emursegs_tmp.sample_start, emursegs_tmp.sample_end, emursegs_tmp.sample_rate ",
                                                              "FROM emursegs_tmp, ", itemsTableName, " AS itl, ", itemsTableName, " AS itr, ", itemsTableName, " AS iseq, ", labelsTableName, " AS labels ", # items table left & right
@@ -194,8 +254,8 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
                                                              "AND iseq.seq_idx >= itl.seq_idx  AND iseq.seq_idx <= itr.seq_idx ", # join all seq. items
                                                              "AND iseq.db_uuid = labels.db_uuid AND iseq.session = labels.session AND iseq.bundle = labels.bundle AND iseq.item_id = labels.item_id ",
                                                              "AND labels.name = '", resultAttrDef, "' ",
-                                                             "GROUP BY emursegs_tmp.rowid, emursegs_tmp.db_uuid, emursegs_tmp.session, emursegs_tmp.bundle, emursegs_tmp.start_item_id, emursegs_tmp.end_item_id ", # once again using rowid to preserve duplicates (requery only)
-                                                             "ORDER BY emursegs_tmp.db_uuid, emursegs_tmp.session, emursegs_tmp.bundle, emursegs_tmp.level, iseq.seq_idx ",
+                                                             "ORDER BY emursegs_tmp.db_uuid, emursegs_tmp.session, emursegs_tmp.bundle, emursegs_tmp.level, iseq.seq_idx) AS ungrouped ",
+                                                             "GROUP BY rowid",
                                                              ""))
     # drop temp table
     DBI::dbExecute(emuDBhandle$connection, paste0("DROP TABLE IF EXISTS emursegs_tmp"))
@@ -217,6 +277,16 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle, timeRefSegmentLevel=NULL,
   # queryStr = DBI::dbGetQuery(emuDBhandle$connection, "SELECT query_str FROM interm_res_meta_infos_tmp_root")$query_str
   segmentList=make.emuRsegs(dbName = emuDBhandle$dbName, seglist = seglist, query = queryStr, type = slType)
   segmentList=sort(segmentList) # sorting just in case
+  
+  # # rename the 'level' column, which contains, in fact, an attribute name
+  # segmentList$attribute = segmentList$level
+  # # resolve attribute to level names
+  # for (rowname in rownames(segmentList)) {
+  #   currentRow = segmentList[rowname,]
+  #   segmentList$level = get_levelNameForAttributeName(emuDBhandle = emuDBhandle,
+  #                                                     attributeName = currentRow$level)
+  # }
+  
   return(segmentList)
   
 }

@@ -7,7 +7,7 @@
 ##' SSFF/audio file handling. It reads time relevant data from a given 
 ##' segment list (\code{\link{emuRsegs}} or \code{\link{emusegs}}), extracts the 
 ##' specified trackdata and places it into a 
-##' trackdata object (analogous to the depricated \code{emu.track}). This function
+##' trackdata object (analogous to the deprecated \code{emu.track}). This function
 ##' replaces the deprecated \code{emu.track} function. Note that an error is thrown
 ##' if the bundles in the \code{\link{emuRsegs}} or \code{\link{emusegs}} object 
 ##' have in-homogeneous sampling rates as this will lead to inconsistent/erroneous
@@ -16,7 +16,7 @@
 ##' see \code{vignette{emuDB}}.
 ##' 
 ##' @param emuDBhandle emuDB handle as returned by \code{\link{load_emuDB}}
-##' @param seglist \code{\link{emuRsegs}} or \code{\link{emusegs}} object obtained by \code{\link{query}}ing a loaded emuDB 
+##' @param seglist \code{tibble}, \code{\link{emuRsegs}} or \code{\link{emusegs}} object obtained by \code{\link{query}}ing a loaded emuDB 
 ##' @param ssffTrackName The name of track that one wishes to extract (see 
 ##' \code{\link{list_ssffTrackDefinitions}} for the defined ssffTracks of the 
 ##' emuDB). If the parameter \code{onTheFlyFunctionName} is set, then 
@@ -46,11 +46,12 @@
 ##' parameter one wishes to change.     
 ##' @param onTheFlyOptLogFilePath Path to optional log file for on-the-fly function
 ##' @param resultType Specify class of returned object. Either \code{"emuRtrackdata"}, \code{"trackdata"} or \code{"tibble"}  (see \code{\link{trackdata}}, \code{\link{emuRtrackdata}} and \code{\link{tibble}} for details about these objects).
-##' @param consistentOutputType Prevent converting the output object to a \code{data.frame} depending on the \code{npoint} and \code{cut} arguments
-##' @param verbose Show progress bars and further information
-##' @return If the \code{cut} parameter is not set (the default) an object of type \code{\link{trackdata}}, \code{\link{emuRtrackdata}} or \code{\link{tibble}} 
+##' @param consistentOutputType Prevent converting the output object to a \code{data.frame} depending on the \code{npoint} and \code{cut} arguments (only applies to output type "trackdata"). Set 
+##' to \code{FALSE} if the following legacy \code{emu.track} output conversion behaviour is desired: If the \code{cut} parameter is not set (the default) an object of type \code{\link{trackdata}} 
 ##' is returned. If \code{cut} is set and \code{npoints} is not, or the seglist 
 ##' is of type event and npoints is not set, a \code{\link{data.frame}} is returned (see the \code{consistentOutputType} to change this behaviour).
+##' @param verbose Show progress bars and further information
+##' @return object of type that is specified with \code{resultType}
 ##' @seealso \code{\link{formals}}, \code{\link[wrassp]{wrasspOutputInfos}}, \code{\link{trackdata}}, \code{\link{emuRtrackdata}}
 ##' @keywords misc
 ##' @import wrassp
@@ -84,7 +85,7 @@
 "get_trackdata" <- function(emuDBhandle, seglist = NULL, ssffTrackName = NULL, cut = NULL, 
                             npoints = NULL, onTheFlyFunctionName = NULL, onTheFlyParams = NULL, 
                             onTheFlyOptLogFilePath = NULL, resultType = "trackdata",
-                            consistentOutputType = FALSE, verbose = TRUE){
+                            consistentOutputType = TRUE, verbose = TRUE){
   
   check_emuDBhandle(emuDBhandle)
   
@@ -110,8 +111,8 @@
     if(cut < 0 || cut > 1){
       stop('Bad value given for cut argument. Cut can only be a value between 0 and 1!')
     }
-    if(emusegs.type(seglist) == 'event'){
-      stop("Cut value should not be set if emusegs.type(Seglist) == 'event'!")
+    if(sum(seglist$end) == 0){
+      stop("Cut value should not be set if sum(seglist$end) == 0!")
     }
   }
   
@@ -135,6 +136,16 @@
   # check resultType if valid string
   if(!resultType %in% c("tibble", "emuRtrackdata", "trackdata")){
     stop("resultType has to either be 'emuRtrackdata' or 'trackdata'")
+  }
+  
+  # 
+  if(!resultType %in% c("trackdata")){
+    if(consistentOutputType == F){
+      if(verbose){
+        cat("INFO: resetting 'consistentOutputType' back to TRUE as setting it to FALSE is only allowed when resultType is set to 'trackdata'\n")
+      }
+      consistentOutputType = T
+    }
   }
   
   if(resultType == "emuRtrackdata" && class(seglist) =="emusegs"){
@@ -172,8 +183,12 @@
   
   ###################################
   # check for sample rate consistancy
-  uniqSessionBndls =utils::read.table(text = as.character(dplyr::distinct_(seglist, "utts")$utts), sep = ":", 
-                                      col.names = c("session", "bundle"), colClasses = c("character", "character"), stringsAsFactors = F)
+  if(!("emuRsegs" %in% class(seglist)) & !("tbl_df" %in% class(seglist))){
+    uniqSessionBndls = utils::read.table(text = as.character(dplyr::distinct_(seglist, "utts")$utts), sep = ":", 
+                                         col.names = c("session", "bundle"), colClasses = c("character", "character"), stringsAsFactors = F)
+  }else{
+    uniqSessionBndls = dplyr::distinct_(as.data.frame(seglist), "bundle", "session")
+  }
   DBI::dbExecute(emuDBhandle$connection,"CREATE TEMP TABLE uniq_session_bndls_tmp (session TEXT,bundle TEXT)")
   DBI::dbWriteTable(emuDBhandle$connection, "uniq_session_bndls_tmp", uniqSessionBndls, append = T)
   sesBndls = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT bundle.db_uuid, bundle.session, bundle.name, bundle.annotates, bundle.sample_rate, bundle.md5_annot_json ",
@@ -185,53 +200,19 @@
   sesBndls$db_uuid = NULL
   sesBndls$MD5annotJSON = NULL
   if(length(unique(sesBndls$sample_rate)) != 1){
-    stop("The emusegs/emuRsegs object passed in refers to bundles with in-homogeneous sampling rates in their audio files! Here is a list of all refered to bundles incl. their sampling rate: \n", paste(utils::capture.output(print(sesBndls)), collapse = "\n"))
+    warning("The emusegs/emuRsegs object passed in refers to bundles with in-homogeneous sampling rates in their audio files! Here is a list of all refered to bundles incl. their sampling rate: \n", paste(utils::capture.output(print(sesBndls)), collapse = "\n"))
   }
   
   ###################################
   #create empty index, ftime matrices
-  index <- matrix(ncol=2, nrow=length(seglist$utts))
+  index <- matrix(ncol=2, nrow=nrow(seglist))
   colnames(index) <- c("start","end")
   
-  ftime <- matrix(ncol=2, nrow=length(seglist$utts))
+  ftime <- matrix(ncol=2, nrow=nrow(seglist))
   colnames(ftime) <- c("start","end")
   
   data <- NULL
   origFreq <- NULL
-  
-  
-  ########################
-  # preallocate data (needs first element to be read)
-  # 
-  # splUtt = stringr::str_split(seglist$utts[1], ':')[[1]]
-  # 
-  # # check if utts entry exists
-  # bndls = list_bundles(emuDBhandle)
-  # if(!any(bndls$session == splUtt[1] & bndls$name == splUtt[2])){
-  #   stop("Following utts entry not found: ", seglist$utts[1])
-  # }
-  # 
-  # if(!is.null(onTheFlyFunctionName)){
-  #   funcFormals = NULL
-  #   qr = DBI::dbGetQuery(emuDBhandle$connection, paste0("SELECT * FROM bundle WHERE db_uuid='", emuDBhandle$UUID, "' AND session='",
-  #                                                       splUtt[1], "' AND name='", splUtt[2], "'"))
-  #   funcFormals$listOfFiles = file.path(emuDBhandle$basePath, paste0(qr$session, session.suffix), paste0(qr$name, bundle.dir.suffix), qr$annotates)
-  #   funcFormals$toFile = FALSE
-  #   curDObj = do.call(onTheFlyFunctionName,funcFormals)
-  # }else{
-  #   fpath <- file.path(emuDBhandle$basePath, paste0(splUtt[1], session.suffix), paste0(splUtt[2], bundle.dir.suffix), paste0(splUtt[2], ".", trackDef[[1]]$fileExtension))
-  #   curDObj <- wrassp::read.AsspDataObj(fpath)
-  # }
-  # tmpData <- eval(parse(text = paste("curDObj$", trackDef[[1]]$columnName, sep = "")))
-  # if(verbose){
-  #   cat('\n  INFO: preallocating data matrix with:', ncol(tmpData), ',', nrOfAllocationRows, 
-  #       'columns and rows.')
-  # }
-  # data <- matrix(ncol = ncol(tmpData), nrow = nrOfAllocationRows) # preallocate
-  # timeStampRowNames = numeric(nrOfAllocationRows) - 1 # preallocate rownames vector. -1 to set default val other than 0
-  
-  DBI::dbExecute(emuDBhandle$connection, "DROP TABLE IF EXISTS gettrackdata_data_tmp")
-  DBI::dbExecute(emuDBhandle$connection, "DROP TABLE IF EXISTS gettrackdata_timeStampRowNames_tmp")
   
   ###############################
   # set up function formals + pb
@@ -241,26 +222,31 @@
     funcFormals$toFile = FALSE
     funcFormals$optLogFilePath = onTheFlyOptLogFilePath
     if(verbose){
-      cat('\n  INFO: applying', onTheFlyFunctionName, 'to', length(seglist$utts), 'files\n')
-      pb <- utils::txtProgressBar(min = 0, max = length(seglist$utts), style = 3)
+      cat('\n  INFO: applying', onTheFlyFunctionName, 'to', nrow(seglist), 'segments/events\n')
+      pb <- utils::txtProgressBar(min = 0, max = nrow(seglist), style = 3)
     }
   }else{
     if(verbose){
-      cat('\n  INFO: parsing', length(seglist$utts), trackDef[[1]]$fileExtension, 'files\n')
-      pb <- utils::txtProgressBar(min = 0, max = length(seglist$utts), style = 3)
+      cat('\n  INFO: parsing', nrow(seglist), trackDef[[1]]$fileExtension, 'segments/events\n')
+      pb <- utils::txtProgressBar(min = 0, max = nrow(seglist), style = 3)
     }
   }
   
   prevUtt = ""
+  bndls = list_bundles(emuDBhandle)
   
   # loop through bundle names
   curIndexStart = 1
-  for (i in 1:length(seglist$utts)){
-    curUtt = seglist$utts[i]
-    splUtt = stringr::str_split(curUtt, ':')[[1]]
+  for (i in 1:nrow(seglist)){
+    if(!("emuRsegs" %in% class(seglist)) & !("tbl_df" %in% class(seglist))){
+      curUtt = seglist$utts[i]
+      splUtt = stringr::str_split(curUtt, ':')[[1]]
+    }else{
+      splUtt = c(seglist$session[i], seglist$bundle[i])
+      curUtt = paste(splUtt[1], ":", splUtt[2])
+    }
     
     # check if utts entry exists
-    bndls = list_bundles(emuDBhandle)
     if(!any(bndls$session == splUtt[1] & bndls$name == splUtt[2])){
       stop("Following utts entry not found: ", seglist$utts[i])
     }
@@ -294,7 +280,7 @@
     
     # set curStart+curEnd
     curStart <- seglist$start[i]
-    if(emusegs.type(seglist) == 'event'){
+    if(sum(seglist$end) == 0){
       curEnd <- seglist$start[i]
     }else{
       curEnd <- seglist$end[i]
@@ -303,9 +289,8 @@
     
     fSampleRateInMS <- (1 / attr(curDObj, "sampleRate")) * 1000
     fStartTime <- attr(curDObj, "startTime") * 1000
-    
     # add one on if event to be able to capture in breakValues 
-    if(emusegs.type(seglist) == 'event'){
+    if(sum(seglist$end) == 0){ # if event seglist
       if(npoints == 1 || is.null(npoints)){
         timeStampSeq <- seq(fStartTime, curEnd + fSampleRateInMS, fSampleRateInMS)
       }else{
@@ -344,8 +329,8 @@
     
     #############################################################
     # set curIndexEnd dependant on if event/segment/cut/npoints
-    if(!is.null(cut) || emusegs.type(seglist) == 'event'){
-      if(emusegs.type(seglist) == 'event'){
+    if(!is.null(cut) || sum(seglist$end) == 0){
+      if(sum(seglist$end) == 0){
         cutTime = curStart
         curEndDataIdx <- curStartDataIdx
         curStartDataIdx = curStartDataIdx - 1 # last to elements are relevant -> move start to left
@@ -388,51 +373,29 @@
       curData[,] <- tmpData[curStartDataIdx:curEndDataIdx,]
     }else{
       entry= paste(seglist[i,], collapse = " ")
-      stop('Can not extract following segmentlist entry: ', entry, ' start and/or end times out of bounds')
+      stop('Can not extract data for the ', i, 'th row of the segment list: ', entry, ' start and/or end times out of bounds')
     }
     
-    ##############################
-    # Check if enough space (expand data matrix if necessary) 
-    # then append to data matrix 
-    # if(dim(data)[1] < curIndexEnd){
-    #   if(verbose){
-    #     cat('\n  INFO: allocating more space in data matrix')
-    #   }
-    #   # check if still to small (for a huge amount of samples)
-    #   if(nrow(data) + nrOfAllocationRows < nrow(data)){
-    #     expandBy = nrOfAllocationRows
-    #   }else{
-    #     expandBy = nrow(curData)
-    #   }
-    #   data = rbind(data, matrix(ncol = ncol(data), nrow = expandBy))
-    #   timeStampRowNames = c(timeStampRowNames, numeric(expandBy) - 1)
-    # }
-    
-    #data[curIndexStart:curIndexEnd,] = curData
-    #timeStampRowNames[curIndexStart:curIndexEnd] <- rowSeq
     curIndexStart <- curIndexEnd + 1
     
-    DBI::dbWriteTable(emuDBhandle$connection, "gettrackdata_data_tmp", as.data.frame(curData), append = T)
-    DBI::dbWriteTable(emuDBhandle$connection, "gettrackdata_timeStampRowNames_tmp", as.data.frame(rowSeq), append = T)
+    if(!exists("data_list")){
+      # init lists
+      data_list = list()
+      timeStampRowNames_list = list()
+    }
     
+    data_list[[i]] = curData
+    timeStampRowNames_list[[i]] = rowSeq
     
     prevUtt = curUtt
     
   }
   
-  ########################################
-  # remove superfluous NA vals from data
-  # if(verbose){
-  #   cat('\n  INFO: removing superfluous NA vals from over-allocated data matrix\n')
-  # }
-  #data = data[complete.cases(data),]
-  #data = as.matrix(data) # make sure it is a matrix to be able to set row names
-  data = as.matrix(DBI::dbReadTable(emuDBhandle$connection, "gettrackdata_data_tmp"))
+  # combind lists to form result
+  data = do.call(rbind, data_list)
+  timeStampRowNames = unlist(timeStampRowNames_list)
   
-  timeStampRowNames = as.matrix(DBI::dbReadTable(emuDBhandle$connection, "gettrackdata_timeStampRowNames_tmp"))
-  #timeStampRowNames = timeStampRowNames[timeStampRowNames != -1]
-  
-  if(!consistentOutputType && ((!is.null(cut) && (npoints == 1 || is.null(npoints))) || (emusegs.type(seglist) == 'event' && (npoints == 1 || is.null(npoints))))){
+  if(!consistentOutputType && ((!is.null(cut) && (npoints == 1 || is.null(npoints))) || (sum(seglist$end) == 0 && (npoints == 1 || is.null(npoints))))){
     resObj = as.data.frame(data)
     colnames(resObj) = paste(trackDef[[1]]$columnName, seq(1:ncol(resObj)), sep = '')    
   }else{
@@ -468,10 +431,6 @@
   if(resultType == "tibble"){
     resObj = tibble::as_tibble(create_emuRtrackdata(seglist, resObj))
   }
-  
-  # remove temp tables
-  DBI::dbExecute(emuDBhandle$connection, "DROP TABLE IF EXISTS gettrackdata_data_tmp")
-  DBI::dbExecute(emuDBhandle$connection, "DROP TABLE IF EXISTS gettrackdata_timeStampRowNames_tmp")
   
   return(resObj)
   
