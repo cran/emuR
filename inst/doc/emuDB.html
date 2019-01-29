@@ -17,7 +17,7 @@
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
 a.sourceLine:empty { height: 1.2em; }
@@ -79,7 +79,29 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -279,7 +301,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <div id="deprecation-warning" class="section level1">
 <h1>DEPRECATION WARNING</h1>
-<p>This vignette is considered depricated! It’s content has been moved to the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/">the EMU-SDMS manual</a> (+ expanded and updated). Specifially see the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-emuDB.html">The emuDB Format</a> chapter.</p>
+<p>This vignette is considered deprecated! It’s content has been moved to the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/">the EMU-SDMS manual</a> (+ expanded and updated). Specifially see the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-emuDB.html">The emuDB Format</a> chapter.</p>
 </div>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
@@ -328,7 +350,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb2-3" title="3"><span class="co"># load database</span></a>
 <a class="sourceLine" id="cb2-4" title="4">dbHandle =<span class="st"> </span><span class="kw">load_emuDB</span>(dbPath, <span class="dt">verbose =</span> F)</a>
 <a class="sourceLine" id="cb2-5" title="5"><span class="kw">print</span>(dbHandle)</a></code></pre></div>
-<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = &#39;fromScratchDB&#39;, basePath = &#39;/private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB&#39;)&quot;</code></pre>
+<pre><code>## [1] &quot;&lt;emuDBhandle&gt; (dbName = &#39;fromScratchDB&#39;, basePath = &#39;/private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpUNaIbs/fromScratchDB_emuDB&#39;)&quot;</code></pre>
 <p>This will load the database into it’s cached form for quick access to the data. Note that if a large emuDB has never been loaded and no cache has previously been generated, this can take a while to complete. Once a cache is present only altered annotation files have to be updated which reduces load times dramatically. As you can see the <code>load_emuDB()</code> function returns a database handle. This emuDBhandle is used to reference the loaded database in most database interaction functions of the <code>emuR</code> package.</p>
 <p>Next, let us look at some actual database manipulation functions. The general function prefix naming convention of database manipulation functions for loaded databases are:</p>
 <ul>
@@ -352,8 +374,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>alternatively a summary of the emuDB also gives us this as well as additional information:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">summary</span>(dbHandle)</a></code></pre></div>
 <pre><code>## Name:     fromScratchDB 
-## UUID:     7c1c41de-30a8-4727-ab76-2ac96c64021a 
-## Directory:    /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB 
+## UUID:     7e4e80ec-092e-4785-97ce-3226cfc8a361 
+## Directory:    /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpUNaIbs/fromScratchDB_emuDB 
 ## Session count: 0 
 ## Bundle count: 0 
 ## Annotation item count:  0 
@@ -520,20 +542,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>We have now added a new session called ‘filesFromWrassp’ to the ‘fromScratchDB’ containing a new bundle for each of our imported media files. These bundles adhere to the structure we have specified above. Note however that the levels in the annotation files (<code>_annot.json</code>) that were created during the import are still empty. These will have to be created manually at a later stage using the EMU-webApp. To list the files that are part of the emuDB call:</p>
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="co"># show head of list_files</span></a>
 <a class="sourceLine" id="cb28-2" title="2"><span class="kw">head</span>(<span class="kw">list_files</span>(dbHandle))</a></code></pre></div>
-<pre><code>##           session bundle              file
-## 1 filesFromWrassp lbo001        lbo001.wav
-## 2 filesFromWrassp lbo001 lbo001_annot.json
-## 3 filesFromWrassp lbo002        lbo002.wav
-## 4 filesFromWrassp lbo002 lbo002_annot.json
-## 5 filesFromWrassp lbo003        lbo003.wav
-## 6 filesFromWrassp lbo003 lbo003_annot.json
-##                                                                                                                          absolute_file_path
-## 1        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo001_bndl/lbo001.wav
-## 2 /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo001_bndl/lbo001_annot.json
-## 3        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo002_bndl/lbo002.wav
-## 4 /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo002_bndl/lbo002_annot.json
-## 5        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo003_bndl/lbo003.wav
-## 6 /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo003_bndl/lbo003_annot.json</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##   session     bundle file        absolute_file_path                        
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;                                     
+## 1 filesFromW… lbo001 lbo001.wav  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 2 filesFromW… lbo001 lbo001_ann… /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 3 filesFromW… lbo002 lbo002.wav  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 4 filesFromW… lbo002 lbo002_ann… /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 5 filesFromW… lbo003 lbo003.wav  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 6 filesFromW… lbo003 lbo003_ann… /private/var/folders/yk/8z9tn7kx6hbcg_9n4…</code></pre>
 <p>The <code>emuR</code> package also provides a mechanism for adding files to preexisting bundle folders as this can be quite tedious to perform manually due to the nested folder structure of an emuDB. Let us create a set of files that contain the zero-crossing-rate values of the wav files we added above and for the sake of demonstration save them to a different location to then re-add them to the database.</p>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="co"># list all wav files in new emuDB</span></a>
 <a class="sourceLine" id="cb30-2" title="2">wavFilePaths =<span class="st"> </span><span class="kw">list.files</span>(dbPath, </a>
@@ -555,20 +572,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb30-18" title="18">          <span class="dt">targetSessionName =</span> <span class="st">&#39;filesFromWrassp&#39;</span>)</a></code></pre></div>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="co"># show head of list_files to check if files were added</span></a>
 <a class="sourceLine" id="cb31-2" title="2"><span class="kw">head</span>(<span class="kw">list_files</span>(dbHandle))</a></code></pre></div>
-<pre><code>##           session bundle              file
-## 1 filesFromWrassp lbo001        lbo001.wav
-## 2 filesFromWrassp lbo001        lbo001.zcr
-## 3 filesFromWrassp lbo001 lbo001_annot.json
-## 4 filesFromWrassp lbo002        lbo002.wav
-## 5 filesFromWrassp lbo002        lbo002.zcr
-## 6 filesFromWrassp lbo002 lbo002_annot.json
-##                                                                                                                          absolute_file_path
-## 1        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo001_bndl/lbo001.wav
-## 2        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo001_bndl/lbo001.zcr
-## 3 /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo001_bndl/lbo001_annot.json
-## 4        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo002_bndl/lbo002.wav
-## 5        /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo002_bndl/lbo002.zcr
-## 6 /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/fromScratchDB_emuDB/filesFromWrassp_ses/lbo002_bndl/lbo002_annot.json</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##   session     bundle file        absolute_file_path                        
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;                                     
+## 1 filesFromW… lbo001 lbo001.wav  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 2 filesFromW… lbo001 lbo001.zcr  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 3 filesFromW… lbo001 lbo001_ann… /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 4 filesFromW… lbo002 lbo002.wav  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 5 filesFromW… lbo002 lbo002.zcr  /private/var/folders/yk/8z9tn7kx6hbcg_9n4…
+## 6 filesFromW… lbo002 lbo002_ann… /private/var/folders/yk/8z9tn7kx6hbcg_9n4…</code></pre>
 </div>
 <div id="ssff-track-definitions" class="section level2">
 <h2>SSFF track definitions</h2>

@@ -1,3 +1,20 @@
+# emuR 1.1.2
+
+## new features / performance tweaks / improvements
+
+* rewrite of `list_files()` that leads to massive speed bump
+* implemented `convert_wideToLong()` function to convert trackdata tibble objects to their long form representation (useful for spectral analysis)
+* `query()` sub-function now sets `perl = TRUE` arguments in `regexp` call when using `sessionPattern` and `bundlePattern` (useful for e.g. for negative look-around `bundlePattern = "^((?!msajc003).)*$"`)
+* implemented `export_seglistToTxtCollection()` 
+* normalize length now also using `list()` with `do.call(rbind, res_list)`
+* implemted new `runMINNI` boolean parameter in `runBASwebservice_all()`
+
+## bug fixes
+
+* https default on `serve()`
+* fixed problems of `calcFreqs = T` in `convert_wideToLong()` (possibly caused by newer version of dplyr?)
+
+
 # emuR 1.1.1
 
 ## new features / performance tweaks / improvements
@@ -39,7 +56,7 @@
 * fixed bug with completely empty levels that caused a bad resort of levels in `_annot.json`s in `rewrite_allAnnots()`
 * fixed bug in `add_files()` that was using the wrong variable (fixes \#196)
 * added error message when querying levels without time-bearing sub-levels (closes \#150)
-* fixed bug in `create_emuRtrackdata()` with handeling trackdata object of class `spectral`
+* fixed bug in `create_emuRtrackdata()` with handling trackdata object of class `spectral`
 * correct recalculation of ITEM IDs of missing levels in .hlb files (== only present in ESPS files) in `convert_legacyEmuDB()`
 * fixed handling of completely empty levels in .hlb files
 * `normalize_length()` now handles various additional column types (not just `"numeric"`)

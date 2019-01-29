@@ -11,14 +11,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-11-12" />
+<meta name="date" content="2019-01-29" />
 
 <title>An Introduction to the emuR package</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
 a.sourceLine:empty { height: 1.2em; }
@@ -80,7 +80,29 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -277,13 +299,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">An Introduction to the emuR package</h1>
 <h3 class="subtitle"><em>The Main Package of the EMU Speech Database Management System</em></h3>
-<h4 class="date"><em>2018-11-12</em></h4>
+<h4 class="date"><em>2019-01-29</em></h4>
 
 
 
 <div id="deprecation-warning" class="section level1">
 <h1>DEPRECATION WARNING</h1>
-<p>This vignette is considered depricated! It’s content has been moved to the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/">the EMU-SDMS manual</a> (+ expanded and updated). Specifially see the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-overview.html">An overview of the EMU-SDMS</a> as well as the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-tutorial.html">A tutorial on how to use the EMU-SDMS</a> chapters.</p>
+<p>This vignette is considered deprecated! It’s content has been moved to the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/">the EMU-SDMS manual</a> (+ expanded and updated). Specifially see the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-overview.html">An overview of the EMU-SDMS</a> as well as the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-tutorial.html">A tutorial on how to use the EMU-SDMS</a> chapters.</p>
 </div>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
@@ -365,7 +387,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">summary</span>(ae)</a></code></pre></div>
 <pre><code>## Name:     ae 
 ## UUID:     0fc618dc-8980-414d-8c7a-144a649ce199 
-## Directory:    /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpeFWGop/emuR_demoData/ae_emuDB 
+## Directory:    /private/var/folders/yk/8z9tn7kx6hbcg_9n4c1sld980000gn/T/RtmpUNaIbs/emuR_demoData/ae_emuDB 
 ## Session count: 1 
 ## Bundle count: 7 
 ## Annotation item count:  736 
@@ -460,7 +482,7 @@ To stop the server press EMU-webApp &#39;clear&#39; button or reload the page in
 <p>Once again we will start by querying our annotation structure for the segments we are interested in:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="co"># query emuDB</span></a>
 <a class="sourceLine" id="cb17-2" title="2">sl =<span class="st"> </span><span class="kw">query</span>(ae, <span class="dt">query =</span> <span class="st">&quot;Phonetic==I|o:|u:|V|@&quot;</span>)</a></code></pre></div>
-<p><strong>INFO: the EQL2 introduces a new operand which is the regular expression operand: =~. So alternatively we could also formulate the query like follows: “Phonetic=~’[szSZ]’”</strong></p>
+<p><strong>INFO: the EQL2 introduces a new operand which is the regular expression operand: =~. So alternatively we could also formulate the query like follows: “Phonetic=~‘[szSZ]’”</strong></p>
 <p>Now that we have extracted the necessary segment information we can simply call:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="co"># get formant values for those segments</span></a>
 <a class="sourceLine" id="cb18-2" title="2">td =<span class="st"> </span><span class="kw">get_trackdata</span>(ae, sl,</a>
@@ -515,7 +537,7 @@ To stop the server press EMU-webApp &#39;clear&#39; button or reload the page in
 ## 4      F 1463.175 1634.425    0000 msajc003  Word ITEM
 ## 5      C 1634.425 2150.175    0000 msajc003  Word ITEM
 ## 6      F  411.675  571.925    0000 msajc010  Word ITEM</code></pre>
-<p>As we can see, the result is not quite what we would have expected as it does not contain the orthographic word transcriptions but a classification of the words into content words (’C’) and function words (’F’). Looking back at the output of <code>summary()</code> we can see that the ‘Words’ level has multiple <code>attributeDefintions</code> which indicates that each annotational unit in the ‘Words’ level has multiple parallel labels defined for it. So let’s instead try the <code>attributeDefintion</code> called ‘Text’.</p>
+<p>As we can see, the result is not quite what we would have expected as it does not contain the orthographic word transcriptions but a classification of the words into content words (‘C’) and function words (‘F’). Looking back at the output of <code>summary()</code> we can see that the ‘Words’ level has multiple <code>attributeDefintions</code> which indicates that each annotational unit in the ‘Words’ level has multiple parallel labels defined for it. So let’s instead try the <code>attributeDefintion</code> called ‘Text’.</p>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">words =<span class="st"> </span><span class="kw">requery_hier</span>(ae, sibil, <span class="dt">level =</span> <span class="st">&quot;Text&quot;</span>)</a>
 <a class="sourceLine" id="cb26-2" title="2"></a>
 <a class="sourceLine" id="cb26-3" title="3"><span class="kw">head</span>(words)</a></code></pre></div>

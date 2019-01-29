@@ -162,7 +162,7 @@ create_emuRtrackdata <- function(sl, td){
     class(res_tbl[[colName]]) = class(x[[colName]]) # set col column class
   }
   
-  segNr = 1
+  res_list = list()
   
   for (i in unique(x$sl_rowIdx)){
     # get current segment and remove unwanted columns
@@ -188,14 +188,12 @@ create_emuRtrackdata <- function(sl, td){
     eRtd.normtemp$times_orig = seq(unique(eRtd.normtemp$start), unique(eRtd.normtemp$end),length.out = N)
     eRtd.normtemp$times_rel = seq(0,unique(eRtd.normtemp$end) - unique(eRtd.normtemp$start), length.out = N)
     
-    curRowIdxStart = segNr * N - N + 1
-    curRowIdxEnd = segNr * N
-    
-    res_tbl[curRowIdxStart:curRowIdxEnd,] = eRtd.normtemp
-    
-    segNr = segNr + 1
+    res_list[[i]] = eRtd.normtemp
     
   }
+  
+  res_tbl = do.call(rbind, res_list)
+  
   return(res_tbl)
 }
 
@@ -212,7 +210,50 @@ create_emuRtrackdata <- function(sl, td){
   #cat("\nNOTE: to reduce the verboseness of the output not all colums of an emuRtrackdata object are printed. Use print.data.frame() to print all columns.\n")
 }
 
-
+##' convert tracks of a tibble trackdata object to the long form
+##' 
+##' Converts a trackdata tibble object of the form (==wide):
+##' \tabular{lllllll}{
+##' sl_rowIdx \tab ... \tab T1 \tab T2 \tab T3 \tab ... \tab TN\cr
+##' 1 \tab ... \tab T1_value \tab T2_value \tab T3_value \tab ... \tab TN_value
+##' }
+##' to its long form equivalent:
+##' \tabular{llll}{
+##' sl_rowIdx \tab ... \tab track_name \tab track_value \cr
+##' 1 \tab ... \tab T1 \tab T1_value \cr
+##' 1 \tab ... \tab T2 \tab T2_value \cr
+##' 1 \tab ... \tab T3 \tab T3_value \cr
+##' ... \tab ... \tab ... \tab ... \cr
+##' 1 \tab ... \tab TN \tab TN_value \cr
+##' }
+##' 
+##' @param td wide form trackdata tibble object
+##' @param calcFreqs calculate an additional column containing 
+##' frequency values from 0-nyquist frequency that match T1-TN (can be quite useful for spectral data)
+##' @return long form trackdata tibble object
+##' @export
+convert_wideToLong <- function(td, calcFreqs = F){
+  
+  # get col idx values of tracks (T1-TN)
+  tracks_colIdx = grep(pattern = "^T[0-9]+$", names(td))
+  
+  tracks_long = dplyr::ungroup(td) %>% 
+    tidyr::gather(key = "track_name", value = "track_value", min(tracks_colIdx):max(tracks_colIdx), convert = T) %>% 
+    dplyr::mutate(freq = as.numeric(substring(.data$track_name, 2))) %>% 
+    dplyr::group_by(.data$sl_rowIdx)  %>%
+    dplyr::arrange(.data$freq, .by_group = T)
+  
+  # calc freq if calcFreqs = F otherwise drop column
+  if(calcFreqs) {
+    tracks_long = tracks_long %>% 
+      dplyr::mutate(freq = rep(seq(0, (unique(.data$sample_rate) / 2), length.out = length(tracks_colIdx)), each = dplyr::n() / length(tracks_colIdx)))
+  } else{
+    tracks_long = tracks_long %>%
+      dplyr::select(-.data$freq) 
+  } 
+  
+  return(dplyr::ungroup(tracks_long))
+}
 
 #######################
 # FOR DEVELOPMENT
