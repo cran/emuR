@@ -1,3 +1,22 @@
+# emuR 2.0.0
+
+## new features / performance tweaks / improvements
+
+* changed default `resultTypes` to `"tibble"` (`query()`, `requery_hier()`, `requery_seq()`, `get_trackdata()`)
+* changed url in printed output of serve to https
+* `serve()` doesn't block the R console any more
+* suppressing requery differing length warnings in `runBASwebservice_*` functions
+* `requery_hier()` now persists the input segment list length by inserting NA rows for missing segments
+* depricated vignettes are now stubs only (== empty containing notice pointing to the EMU-SDMS manual)
+* implemented `rename_bundles()` function
+* better `times_norm` calculation for `normalize_length()`
+* better error message when empty or non existing session is passed into `add_files()`
+* `serve()` `useViewer` parameter now implemented and the default. If a ver
+* `serve()` now uses a single server to host the EMU-webApp and provide the websocket server for the emuDB
+* `serve()` now works within RStudio when it is run as a web application
+
+## bug fixes
+
 # emuR 1.1.2
 
 ## new features / performance tweaks / improvements

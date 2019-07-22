@@ -7,7 +7,8 @@
 serve(emuDBhandle, sessionPattern = ".*", bundlePattern = ".*",
   seglist = NULL, host = "127.0.0.1", port = 17890,
   autoOpenURL = "https://ips-lmu.github.io/EMU-webApp/?autoConnect=true",
-  browser = getOption("browser"), debug = FALSE, debugLevel = 0)
+  browser = getOption("browser"), useViewer = TRUE, debug = FALSE,
+  debugLevel = 0)
 }
 \arguments{
 \item{emuDBhandle}{emuDB handle as returned by \code{\link{load_emuDB}}}
@@ -28,39 +29,69 @@ serve(emuDBhandle, sessionPattern = ".*", bundlePattern = ".*",
 \item{browser}{argument passed on to \code{browser} argument of \code{\link{browseURL}} (see 
 it's documentation for details )}
 
+\item{useViewer}{Use the viewer provided by \code{getOption("viewer")} (the viewer pane when using RStudio) 
+and host a local version of the EMU-webApp in it. This will clone the current 
+EMU-webApp build (\url{https://github.com/IPS-LMU/EMU-webApp/tree/gh-pages/}) into the directory provided by 
+\code{\link{tempdir}} and serve this local version. A clone will 
+only be performed if no \code{file.path(tempdir(), "EMU-webApp")} directory is present. An alternative
+directory can be also set: \code{options(emuR.EMUwebApp.dir="path/to/EMU-webApp")} (use if offline functionality is required).}
+
 \item{debug}{TRUE to enable debugging (default: no debugging messages)}
 
 \item{debugLevel}{integer higher values generate more detailed debug output}
 }
 \value{
-TRUE if the database was modified, FALSE otherwise
+TRUE (invisible) if the server was started
 }
 \description{
-Serves emuDB media files, SSFF tracks and annotations for EMU-webApp browser GUI \url{http://ips-lmu.github.io/EMU-webApp/}
+Serves emuDB media files, SSFF tracks and annotations for 
+EMU-webApp browser GUI \url{http://ips-lmu.github.io/EMU-webApp/}
 
 Instructions:
 
-Start and connect:
+Start and connect (this should happen automatically):
 
 \itemize{
 \item Call this function to start the server.
 \item Start a suitable HTML5 capable Web-Browser (Google Chrome, Firefox,...).
 \item Navigate to the EMU-Webapp URL: \url{http://ips-lmu.github.io/EMU-webApp/}.
 \item Press the 'Connect' button in the EMU-webApp and connect with default URL.
-\item EMU-webApp loads the bundle list and the first bundles media file, SSFF tracks and annotations.
+\item EMU-webApp loads the bundle list and the first 
+bundles media file, SSFF tracks and annotations.
 }
 
 Disconnect and stop:
 \itemize{
-\item Disconnect and stop the server with the 'Clear' button of the webapp or the reload button of your browser.
-\item The server can also be interrupted with Ctrl-C if something went wrong.
-\item To serve only a subset of sessions or bundles use the parameters \code{sessionPattern} and/or \code{bundlePattern}.
+\item Disconnect and stop the server with the 'Clear' button of 
+the webapp or the reload button of your browser.
+\item The server can also be stopped by 
+calling \code{\link{stopAllServers}} of the \link{httpuv} package
+}
+
+Hints:
+\itemize{
+\item To serve only a subset of sessions or bundles use 
+the parameters \code{sessionPattern} and/or \code{bundlePattern}.
+\item Use the \code{seglist} parameter to pass in a segment list
+which was generated using the \code{query} function. This will
+allow quick navigation to those segments.
 }
 }
 \details{
-Function opens a HTTP/websocket and waits in a loop for browser requests. Parameter host determines the IP address(es) of hosts allowed to connect to the server. By default the server only listens to localhost. If you want to allow connection from any host set the host parameter to \code{0.0.0.0}. Please note that this might be an safety issue! The \code{port} parameter determines the port the server listens on. The \code{host} and \code{port} parameters are intended only for expert users. When started the R console will be blocked. On successful connection the server sends the session and bundle list of the database referenced by name by parameter \code{dbName} or by UUID parameter \code{dbUUID}.
-The Web application requests bundle data for viewing or editing. If a bundle is modified with the EMU-webApp and the save button is pressed the server modifies the internal database and saves the changes to disk.
-Communication between server and EMU webApp is defined by EMU-webApp-websocket-protocol version 0.0.2.
+Function opens a HTTP/websocket and waits in a loop for browser requests. 
+Parameter host determines the IP address(es) of hosts allowed to connect to the 
+server. By default the server only listens to localhost. If you want to allow 
+connection from any host set the host parameter to \code{0.0.0.0}. Please note 
+that this might be an safety issue! The \code{port} parameter determines the port 
+the server listens on. The \code{host} and \code{port} parameters are intended 
+only for expert users. When started the R console will be blocked. On successful 
+connection the server sends the session and bundle list of the database referenced 
+by name by parameter \code{dbName} or by UUID parameter \code{dbUUID}.
+The Web application requests bundle data for viewing or editing. If a bundle 
+is modified with the EMU-webApp and the save button is pressed the server modifies 
+the internal database and saves the changes to disk.
+Communication between server and EMU webApp is defined by EMU-webApp-websocket-protocol 
+version 0.0.2 (\url{https://ips-lmu.github.io/The-EMU-SDMS-Manual/app-chap-wsProtocol.html}).
 }
 \examples{
 \dontrun{ 

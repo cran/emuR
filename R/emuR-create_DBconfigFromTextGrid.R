@@ -1,5 +1,3 @@
-requireNamespace("RSQLite", quietly = T)
-
 ## Create emuDB DBconfig object from a TextGrid file
 ## 
 ## @param tgPath path to TextGrid file
@@ -28,17 +26,20 @@ create_DBconfigFromTextGrid = function(tgPath, dbName, basePath, tierNames = NUL
   ####################
   
   # parse TextGrid  
-  tgAnnotDFs = TextGridToBundleAnnotDFs(tgPath, sampleRate = 2000, name = "tmpBundleName", annotates = "tmpBundleName.wav") # sampleRate/name/annotates don't matter!! -> hardcoded
+  tgAnnotDFs = TextGridToBundleAnnotDFs(tgPath, 
+                                        sampleRate = 2000, 
+                                        name = "tmpBundleName", 
+                                        annotates = "tmpBundleName.wav") # sampleRate/name/annotates don't matter!! -> hardcoded
   
   # remove unwanted levels
   if(!is.null(tierNames)){
     # filter items
-    tgAnnotDFs$items = dplyr::filter_(tgAnnotDFs$items, ~(level %in% tierNames))
+    tgAnnotDFs$items = dplyr::filter(tgAnnotDFs$items, .data$level %in% tierNames)
     # filter labels
-    tgAnnotDFs$labels = dplyr::filter_(tgAnnotDFs$labels, ~(name %in% tierNames))
+    tgAnnotDFs$labels = dplyr::filter(tgAnnotDFs$labels, .data$name %in% tierNames)
   }
   
-  levels = dplyr::distinct_(tgAnnotDFs$items, "level", .keep_all = TRUE)
+  levels = dplyr::distinct(tgAnnotDFs$items, .data$level, .keep_all = TRUE)
   
   # create level definitions
   levelDefinitions = list()
@@ -52,7 +53,9 @@ create_DBconfigFromTextGrid = function(tgPath, dbName, basePath, tierNames = NUL
     if(lev$type == 'SEGMENT' || lev$type == 'EVENT'){
       defaultLvlOrder[[length(defaultLvlOrder)+1L]]=lev$level
     }else{
-      stop(paste0('Found levelDefinition that is not of type SEGMENT|EVENT while parsing TextGrid...this should not occur! This TextGrid file caused the problem:', tgPath))
+      stop(paste0('Found levelDefinition that is not of type SEGMENT|EVENT ",
+                  "while parsing TextGrid...this should not occur! This ",
+                  "TextGrid file caused the problem:', tgPath))
     }
     # add new leveDef.
     levelDefinitions[[levIdx]] = list(name = lev$level, 

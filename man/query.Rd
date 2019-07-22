@@ -5,43 +5,65 @@
 \title{Query emuDB}
 \usage{
 query(emuDBhandle, query, sessionPattern = ".*", bundlePattern = ".*",
-  queryLang = "EQL2", timeRefSegmentLevel = NULL, resultType = NULL,
-  calcTimes = TRUE, verbose = FALSE)
+  queryLang = "EQL2", timeRefSegmentLevel = NULL,
+  resultType = "tibble", calcTimes = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{emuDBhandle}{emuDB handle object (see \link{load_emuDB})}
 
 \item{query}{string (see vignette \code{EQL})}
 
-\item{sessionPattern}{A regular expression pattern matching session names to be searched from the database}
+\item{sessionPattern}{A regular expression pattern matching session names to 
+be searched from the database}
 
-\item{bundlePattern}{A regular expression pattern matching bundle names to be searched from the database}
+\item{bundlePattern}{A regular expression pattern matching bundle names to be 
+searched from the database}
 
 \item{queryLang}{query language used for evaluating the query string}
 
-\item{timeRefSegmentLevel}{set time segment level from which to derive time information. It is only necessary to set this parameter if more than one child level contains time information and the queried parent level is of type ITEM.}
+\item{timeRefSegmentLevel}{set time segment level from which to derive time 
+information. It is only necessary to set this parameter if more than one child 
+level contains time information and the queried parent level is of type ITEM.}
 
-\item{resultType}{type (class name) of result (either 'tibble', 'emuRsegs' or 'emusegs' (use 'emusegs' for legacy compatablility only))}
+\item{resultType}{type (class name) of result (either 'tibble', 'emuRsegs' or 
+'emusegs' (use 'emusegs' for legacy compatablility only))}
 
-\item{calcTimes}{calculate times for resulting segments (results in \code{NA} values for start and end times in emuseg/emuRsegs). As it can be very computationally expensive to 
-calculate the times for large nested hierarchies, it can be turned off via this boolean parameter.}
+\item{calcTimes}{calculate times for resulting segments (results in 
+\code{NA} values for start and end times in emuseg/emuRsegs). As it can be 
+very computationally expensive to 
+calculate the times for large nested hierarchies, it can be turned off via this 
+boolean parameter.}
 
-\item{verbose}{be verbose. Set this to \code{TRUE} if you wish to choose which path to traverse on intersecting hierarchies. If set to \code{FALSE} (the default) all paths will be traversed (= legacy EMU behaviour).}
+\item{verbose}{be verbose. Set this to \code{TRUE} if you wish to choose which 
+path to traverse on intersecting hierarchies. If set to \code{FALSE} (the default) 
+all paths will be traversed (= legacy EMU behaviour).}
 }
 \value{
-result set object of class resultType (default: \link{emuRsegs}, compatible to legacy type \link{emusegs})
+result set object of class resultType (default: \link{emuRsegs}, 
+compatible to legacy type \link{emusegs})
 }
 \description{
 Function to query annotation items/structures in a emuDB
 }
 \details{
-Evaluates a query string of query language queryLang on an emuDB referenced by dbName and returns a segment list of desired type resultType.  
-For details of the query language please refer to the EQL vignette (type: \code{vignette('EQL')} ).
-Returns a list of segments which meet the conditions given by the query string. A segment can consist of one (e.g. 's') or more (e.g. 's->t') items from the specified emuDB level. 
-Segment objects (type 'SEGMENT') contain the label string and the start and end time information of the segment (in msec). \link{emuRsegs} objects additionally contain sample position of start and end item. 
-Time information of symbolic elements (type 'ITEM') are derived from linked SEGMENT levels if available. If multiple linked SEGMENT levels exist, you can specify the level by argument \code{timeRefSegmentLevel}. If time and sample values cannot be derived they will be set to \code{\link{NA}}.
-\link{emuRsegs} result lists will be ordered by the hidden columns UUID, session, bundle and sample start position. Legacy \link{emusegs} lists are ordered by the columns utts and start.
-The query may be limited to session and/or bundle names specified by regular expression pattern strings (see \link{regex}) in parameters \code{sessionPattern} respectively \code{bundlePattern}.
+Evaluates a query string of query language queryLang on an 
+emuDB referenced by dbName and returns a segment list of the desired type resultType.  
+For details of the query language please refer to the EMU-SDMS manual's query 
+system chapter (\url{https://ips-lmu.github.io/The-EMU-SDMS-Manual/chap-querysys.html}).
+Returns a list of segments which meet the conditions given by the query string. 
+A segment can consist of one (e.g. 's') or more (e.g. 's->t') items from 
+the specified emuDB level. Segment objects (type 'SEGMENT') contain the label 
+string and the start and end time information of the segment (in ms). 
+\link{emuRsegs} objects additionally contain sample position of start and end item. 
+Time information of symbolic elements (type 'ITEM') are derived from linked SEGMENT 
+levels if available. If multiple linked SEGMENT levels exist, you can specify the 
+level with the \code{timeRefSegmentLevel} argument. If time and sample values cannot be 
+derived they will be set to \code{\link{NA}}. \link{emuRsegs} result lists will 
+be ordered by the hidden columns UUID, session, bundle and sequence index (seq_idx). 
+Legacy \link{emusegs} lists are ordered by the columns utts and start.
+The query may be limited to session and/or bundle names specified by regular 
+expression pattern strings (see \link{regex}) in parameters \code{sessionPattern} 
+respectively \code{bundlePattern}.
 }
 \examples{
 \dontrun{
@@ -57,15 +79,17 @@ The query may be limited to session and/or bundle names specified by regular exp
 seglistTs=query(ae, "[Phonetic == t -> Phonetic == s]")
 
 ## Query database ae with EQL query "[Syllable == S ^ Phoneme == t]":
-## 'Find all items 't' in level Phoneme that are dominated by items 'S' in level Syllable.'
+## 'Find all items 't' in level Phoneme that are dominated by 
+## items 'S' in level Syllable.'
 ## Return legacy Emu result type 'emusegs'
 
 query(ae, "[Syllable == S ^ Phoneme == t]", resultType="emusegs")
 
-## Query 'p' items of level Phoneme from bundles whose bundle names start with 'msajc07' 
+## Query 'p' items of level Phoneme from bundles whose 
+## bundle names start with 'msajc07' 
 ## and whose session names start with '00'
-## (Note that here the query uses the operator '=' (meaning '==') which is kept for 
-##  backwards compatibilty to EQL1.)  
+## (Note that here the query uses the operator '=' (meaning '==') 
+## which is kept for backwards compatibilty to EQL1.)  
 
 query(ae, "Phoneme = p", bundlePattern = "msajc05.*", sessionPattern = "00.*")
 
