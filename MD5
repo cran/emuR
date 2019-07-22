@@ -1,6 +1,6 @@
-c14a709e65ff9c2733e1857eae8bf564 *DESCRIPTION
+2aea926722a07c667431cdfa27988be9 *DESCRIPTION
 960ed45f1e4efe0b8c15023ce283a8b9 *NAMESPACE
-4bde531b7855ead893ef8ddb1766f01d *NEWS.md
+0f7aefe55f3258a688d7278375a07932 *NEWS.md
 1560f9c594759e423407d851cda6e04b *R/MethodEPG.R
 7566ee35eaab8d1d532a384c1279a8d8 *R/Methodspectral.R
 412773fb6b5f330a59687f8e5ccc422e *R/apply.R
@@ -52,7 +52,7 @@ ce9b8cc709465d56b6e68edb254cf223 *R/emuR-get_trackdata.R
 ccfcd9e537a2ad43bc771c5a24637c3c *R/emuR-legacy.R
 c52a695c7a7442399a25811783c73f64 *R/emuR-legacy.template.R
 fda1b20bfe4bc2bf7922106646f4f8fc *R/emuR-objDocs.R
-15120079a21f57296b238aed707389df *R/emuR-options.R
+db08da9e8e4dbf59ba4799c44442e2f6 *R/emuR-options.R
 b1b9e8047b4eed55cfe8a2e73ab12936 *R/emuR-packageDocs.R
 3710b87aa5c3e7c5e05f80437ed5667f *R/emuR-parse_TextGridDBI.R
 01abaaf9b193ee60c65ac8af0e92fdf3 *R/emuR-parser.BPF.R
@@ -63,7 +63,7 @@ adcf33e8d43679eeaa7bc2b8e1c6d7db *R/emuR-parser.esps.R
 ab26c2fe52041606fd93c3c8d6dbccdd *R/emuR-query.database.R
 97d26cd7187d9be27beee3a148521c36 *R/emuR-releaseQuestions.R
 890e4965b13d697ba825284f4693d1ae *R/emuR-requery.database.R
-23c91312ca675eafd26366168b7c7499 *R/emuR-server.R
+fb12a8327e6f3bf1fd4a601e7864949c *R/emuR-server.R
 336f9b69a59e6f8387e74bd4edc96fd1 *R/emuR-validate.R
 748025ad7d0bb04e60d518c81025aca3 *R/emusegs.R
 70cada12ce39f0acd4415fae0a73edf1 *R/end.emusegs.R
@@ -385,7 +385,7 @@ a44c8d6ea8fa4dc98ea2c8a080352a51 *man/runBASwebservice_g2pForTokenization.Rd
 51f5cb162b7dc81745aaa8763870c656 *man/runBASwebservice_pho2sylCanonical.Rd
 537b12a44f32d4082478b98946bb6628 *man/runBASwebservice_pho2sylSegmental.Rd
 393b5fe8ee6f0d6a28f16ffff73ecd77 *man/segmentlist.Rd
-a2c64d63287459383087f2887baf8b35 *man/serve.Rd
+31f1f2b41bf0890dcb95654f2ecc879c *man/serve.Rd
 5edd8e6c973f81760e20a8718c064f9c *man/shift.Rd
 af8bfd4d1858354c4bd3e9ace982e0b2 *man/sort.emuRsegs.Rd
 5ca5743889fc3e59dd8edcdb5d5c31e1 *man/sortmatrix.Rd
