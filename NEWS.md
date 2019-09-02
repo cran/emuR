@@ -1,3 +1,11 @@
+# emuR 2.0.3
+
+## new features / performance tweaks / improvements
+
+## bug fixes
+
+- fixed options(emuR.emuWebApp.dir = file.path(tempdir(), "EMU-webApp")) setting
+
 # emuR 2.0.2
 
 ## new features / performance tweaks / improvements

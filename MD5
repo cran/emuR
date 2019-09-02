@@ -1,6 +1,6 @@
-2aea926722a07c667431cdfa27988be9 *DESCRIPTION
+e950fcee58d47a65902497b8effce82e *DESCRIPTION
 960ed45f1e4efe0b8c15023ce283a8b9 *NAMESPACE
-0f7aefe55f3258a688d7278375a07932 *NEWS.md
+de705b79bdf234accc8bc3f2554c8151 *NEWS.md
 1560f9c594759e423407d851cda6e04b *R/MethodEPG.R
 7566ee35eaab8d1d532a384c1279a8d8 *R/Methodspectral.R
 412773fb6b5f330a59687f8e5ccc422e *R/apply.R
@@ -22,10 +22,10 @@ e2a2000b690cb8f582dec50b65ca9367 *R/dimtrackdata.R
 55420df8ff004e82253004eed1b40000 *R/dplot.R
 1175cf7551947ef2dd97042a30d30956 *R/dsmooth.R
 e212b7b60558f56279b63f73abd95a16 *R/dtime.R
-f2204b99f045260341b0dd2c7e492fef *R/emuR-annotations_crud.R
+a5c343e05ed1c8c4f5b2a28acffe9d8b *R/emuR-annotations_crud.R
 8fcd5254cca7430961c3fd6c08a21689 *R/emuR-autobuild.R
 3fea2a2af64e7998b5b3818487596bf9 *R/emuR-autoproc_annots.R
-7ec53cdcbef3ae2328c9d8ad02809f1c *R/emuR-bas_webservices.R
+f6d28eb617011c12eb3f6cfdf3e07ee6 *R/emuR-bas_webservices.R
 a115fa3717a353fc89a6eaf03cdc26c1 *R/emuR-bas_webservicesDBI.R
 2865b30fb99f699e366006ef2494bdf7 *R/emuR-convert_BPFCollection.R
 832f8fed4efa100d7d05fb05dabe430a *R/emuR-convert_TextGridCollection.R
@@ -36,7 +36,7 @@ ce6391c6595197a6a26f22c9159a6e19 *R/emuR-create_filePairList.R
 9d10016bfd35d6804b250327f5a8115f *R/emuR-create_seglists.R
 5232cc134b02d0ad7f91cb5308453d0e *R/emuR-crud-helpers.R
 84851306d97c41a5618dbc7737c30289 *R/emuR-dataDocs.R
-fbb51729193c893ad00c4d612a1b38fb *R/emuR-database.DBconfig.EMUwebAppConfig.R
+9b2b9825cae98ec432ef484d376b05d4 *R/emuR-database.DBconfig.EMUwebAppConfig.R
 74f1d288cacca63513aaa36885b45d4b *R/emuR-database.DBconfig.R
 886680c8160b950b84a8f4e9cd11686a *R/emuR-database.R
 8f19b8bf77a6e0301497ca3f75ea5d5b *R/emuR-database.annotJSON.R
@@ -52,7 +52,6 @@ ce9b8cc709465d56b6e68edb254cf223 *R/emuR-get_trackdata.R
 ccfcd9e537a2ad43bc771c5a24637c3c *R/emuR-legacy.R
 c52a695c7a7442399a25811783c73f64 *R/emuR-legacy.template.R
 fda1b20bfe4bc2bf7922106646f4f8fc *R/emuR-objDocs.R
-db08da9e8e4dbf59ba4799c44442e2f6 *R/emuR-options.R
 b1b9e8047b4eed55cfe8a2e73ab12936 *R/emuR-packageDocs.R
 3710b87aa5c3e7c5e05f80437ed5667f *R/emuR-parse_TextGridDBI.R
 01abaaf9b193ee60c65ac8af0e92fdf3 *R/emuR-parser.BPF.R
@@ -93,6 +92,7 @@ f8edbf8d8cb39b8f2ded3ad0887f0abe *R/spectralclass.R
 56da9bde79d92bb242497efecac19039 *R/trackdata.class.R
 379d3474d9190eb2bdba6f4041553c3b *R/tracktimes.R
 2f3cf55128831988cf69f50b47ad33ee *R/trapply.R
+8c5697c2893da51f605b6b3b1a867888 *R/zzz.R
 2f11c7dc30af585436b81684086318b9 *README.md
 a4220cfca3b216c24696289ed72a0b0d *build/vignette.rds
 e90082ddf6ac5f8fc00f809a36ce06b0 *data/bridge.rda
@@ -113,11 +113,11 @@ ef19ccb1450691a6cafc44e30f5fc06d *data/polhom.rda
 cbe12adc14199b56ef512ceb9d771671 *inst/CITATION
 9d94e0607ddfaacc1a5b880e7703001f *inst/COPYRIGHTS
 80ee1ecde4df262c2c4f1689928beae6 *inst/doc/EQL.Rmd
-30e2ca62e27399d80e4251a1a644d1af *inst/doc/EQL.html
+a4347a62e57bbf50d87aeaf88dc22acb *inst/doc/EQL.html
 7311c9e085739fb6bccc70a048cb149a *inst/doc/emuDB.Rmd
 85164add4e131d6caaf52a9d92c646e0 *inst/doc/emuDB.html
 316b6b252946b7e46b52e61b42a44825 *inst/doc/emuR_intro.Rmd
-d1c509fd92bf61705dfce670a5822c8a *inst/doc/emuR_intro.html
+a5a37eed3ae816ab5a02657cb6dba575 *inst/doc/emuR_intro.html
 4a3496d9df9757a2efee50f783a38ca5 *inst/extdata/ae-hStar.seg
 3f93e147cbb2aaeceeef00051e83fcd6 *inst/extdata/ae-n.seg
 b8d57805a46a39d001b2bbbfa3405dcc *inst/extdata/demo-all-rms.dat
@@ -200,7 +200,7 @@ c48340d847c0d08716dd1384c0cc7c67 *man/AddListRemoveSsffTrackDefinition.Rd
 81879d0f999bc668d09aabc4a906c39b *man/AddListRenameRemoveAttributeDefinitions.Rd
 adb652ffacfe32d43e44df9f2aadc36b *man/SetGetRemoveLegalLabels.Rd
 b968959f40ee37fbd2bab1242885a532 *man/SetGetSignalCanvasesOrder.Rd
-c89ae05746bf622731305314e03cf9f1 *man/SetGetlevelCanvasesOrder.Rd
+2d83cb357621795fc9a913b33c9181b9 *man/SetGetlevelCanvasesOrder.Rd
 3dee3c1e1635835b487bde31b897563f *man/Slope.test.Rd
 a47a3308fb9d99597144d842db409168 *man/add_files.Rd
 49824b03cdcf0bfbef223837948fa61e *man/as.matrix.emusegs.Rd
@@ -376,7 +376,7 @@ b7b49a2e8afe2a7b6fe2f673b3840c5f *man/requery_hier.Rd
 6828f6bc02eeee465811d0418b929b92 *man/rescale.gerst.Rd
 b6970221a0ce1d1656f2f0bd075409ec *man/rescale.lob.Rd
 e052a4afd415874a61b2d72ea45a1acf *man/rescale.nearey.Rd
-47d5ec8bf8ca84ad946d9104db07e155 *man/runBASwebservice_all.Rd
+e1d4697444e0b3f4108da9391520bd8a *man/runBASwebservice_all.Rd
 2a9cc3915683c32f6dd626a0dea16a1d *man/runBASwebservice_chunker.Rd
 848012e63ff8b5ac3d59346477e7a734 *man/runBASwebservice_g2pForPronunciation.Rd
 a44c8d6ea8fa4dc98ea2c8a080352a51 *man/runBASwebservice_g2pForTokenization.Rd
@@ -442,6 +442,7 @@ d6583748088d599ccc45236fac60c6a5 *tests/testthat/test_emuR-create_filePairList.R
 60dce69ba6119c67ba40e430611f68fd *tests/testthat/test_emuR-emuRtrackdata.R
 d1635bbf254379251792b8fb2d014c58 *tests/testthat/test_emuR-export_TextGridCollection.R
 fd9f26e28043752ab8949172fde12066 *tests/testthat/test_emuR-get_trackdata.R
+457ff0469874ecbdbf3737935ddeb859 *tests/testthat/test_emuR-hooks.R
 246d582e32c194dcd503bb4e8d9515a9 *tests/testthat/test_emuR-query.database.R
 a6a7a926ca3412bd74036bcc18174896 *tests/testthat/test_emuR-requery.database.R
 addfbf438efef3ac7cddc49a1647f0b3 *tests/testthat/test_emuR-validate.R
