@@ -423,8 +423,7 @@ serve <- function(emuDBhandle,
         }
         
         mediaFile = list(encoding = "GETURL", 
-                         data = paste0("http://", 
-                                       ws$request$HTTP_HOST, 
+                         data = paste0(rstudioapi::translateLocalUrl(paste0("http://", ws$request$HTTP_HOST)), 
                                        "?session=", 
                                        utils::URLencode(bundleSess, reserved = T),
                                        "&bundle=", 
@@ -691,7 +690,7 @@ serve <- function(emuDBhandle,
   if(length(autoOpenURL) != 0 && autoOpenURL != ""){
     # open browser with EMU-webApp
     viewer <- getOption("viewer")
-    if(useViewer){
+    if(useViewer & rstudioapi::isAvailable()){
       webApp_path = getOption("emuR.emuWebApp.dir")
       # TODO: can this be emulated? git clone --depth 1 -b gh-pages https://github.com/IPS-LMU/EMU-webApp
       #unlink(webApp_path, recursive = T)
@@ -713,10 +712,10 @@ serve <- function(emuDBhandle,
       
       # replace <base href> tag because rstudio changes this 
       # in the web version and Angular needs it to be set
-      if(rstudioapi::translateLocalUrl("http://localhost:17890/") == "http://localhost:17890/"){
+      if(rstudioapi::translateLocalUrl(paste0("http://localhost:", port, "/")) == paste0("http://localhost:", port, "/")){
         base_path = "/"
       } else {
-        base_path = paste0("/", rstudioapi::translateLocalUrl("http://localhost:17890/"))
+        base_path = paste0("/", rstudioapi::translateLocalUrl(paste0("http://localhost:", port, "/")))
       }
       
       index_html = readr::read_file(file.path(webApp_path, "index.html"))
@@ -736,13 +735,17 @@ serve <- function(emuDBhandle,
         # host in viewer
         viewer(paste0("http://127.0.0.1:", 
                       port, 
-                      "/?autoConnect=true&serverUrl=ws://127.0.0.1:", 
-                      port))
+                      "/?autoConnect=true",
+                      "&serverUrl=", 
+                      stringr::str_replace(rstudioapi::translateLocalUrl(paste0("http://127.0.0.1:", port), absolute = TRUE),
+                                                                         "http", 
+                                                                         "ws")))
       }else{
-        # default port of httd is 4321 so use that
+        # host in browser
         utils::browseURL(paste0("http://127.0.0.1:", 
                                 port, 
-                                "/?autoConnect=true&serverUrl=ws://127.0.0.1:", 
+                                "/?autoConnect=true",
+                                "&serverUrl=ws://127.0.0.1:", 
                                 port),
                          browser = browser)
       }
@@ -750,6 +753,7 @@ serve <- function(emuDBhandle,
     }else{
       # use online version
       utils::browseURL(autoOpenURL, browser = browser)
+      cat("Unable to detect RStudio. Serving to online version.\n")
     }
   }
   

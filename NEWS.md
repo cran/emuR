@@ -1,10 +1,17 @@
-# emuR 2.0.3
+# emuR 2.0.4
 
 ## new features / performance tweaks / improvements
 
+- `export_seglistToTxtCollection()` now zero pads file names (should fix #219)
+
 ## bug fixes
 
-- fixed options(emuR.emuWebApp.dir = file.path(tempdir(), "EMU-webApp")) setting
+- using `rstudioapi::translateLocalUrl()` for ws connection url to permit RStudio to connect
+- fixed bug in duplicate levels (bad level name insert into items table) that was causing the items array in the JSON file to stay empty
+- `serve()` working outside of RStudio again (overlooked that `rstudioapi::translateLocalUrl()` needs RStudio)
+- improved error formatting in `load_emuDB()` and `export_TextGridCollection`
+- fixed `rename_bundles()` issue with sub-string matching of names (fixes \#220)
+- `requery_hier()` works with non-main attributes again (always returned levels main attribute labels) 
 
 # emuR 2.0.2
 
@@ -19,7 +26,7 @@
 * implemented `rename_bundles()` function
 * better `times_norm` calculation for `normalize_length()`
 * better error message when empty or non existing session is passed into `add_files()`
-* `serve()` `useViewer` parameter now implemented and the default. If a ver
+* `serve()` `useViewer` parameter now implemented and the default.
 * `serve()` now uses a single server to host the EMU-webApp and provide the websocket server for the emuDB
 * `serve()` now works within RStudio when it is run as a web application
 
