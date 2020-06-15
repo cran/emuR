@@ -63,6 +63,7 @@
 ##' @param verbose if set to \code{TRUE}, more status messages are printed
 ##' 
 ##' @export
+##' @importFrom rlang .data
 create_itemsInLevel = function(emuDBhandle,
                                itemsToCreate,
                                rewriteAllAnnots = TRUE,
@@ -358,7 +359,6 @@ create_itemsInLevel = function(emuDBhandle,
 ##'                         files) (intended for expert use only)
 ##' @param verbose if set to \code{TRUE}, more status messages are printed
 ##' 
-##' @importFrom rlang .data
 update_itemsInLevel = function (emuDBhandle,
                                 itemsToUpdate,
                                 rewriteAllAnnots = TRUE,

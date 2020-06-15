@@ -4,9 +4,16 @@
 \alias{runBASwebservice_pho2sylCanonical}
 \title{Adds syllabified word labels to a word level that already contains canonical pronunciations.}
 \usage{
-runBASwebservice_pho2sylCanonical(handle, canoAttributeDefinitionName,
-  language, canoSylAttributeDefinitionName = "KAS", params = list(),
-  patience = 0, resume = FALSE, verbose = TRUE)
+runBASwebservice_pho2sylCanonical(
+  handle,
+  canoAttributeDefinitionName,
+  language,
+  canoSylAttributeDefinitionName = "KAS",
+  params = list(),
+  patience = 0,
+  resume = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{handle}{emuDB handle}
@@ -25,7 +32,7 @@ Up-to-date lists of the languages accepted by all webservices can be found here:
 ensure that these parameters are compatible with the webservice API
 (see \url{https://clarin.phonetik.uni-muenchen.de/BASWebServices/services/help}).
 Some options accepted by the API (e.g. output format) cannot be set when calling a webservice from within emuR,
-and will be overridden.}
+and will be overridden. If file parameters are used please wrap the file path in \code{httr::upload_file("/path/2/file/rules.nrul")}.}
 
 \item{patience}{If a web service call fails, it is repeated a further n times, with n being the value of patience.
 Must be set to a value between 0 and 3.}
@@ -43,12 +50,13 @@ derived using \link{runBASwebservice_g2pForPronunciation}). \strong{This functio
 connection.}
 }
 \seealso{
-Other BAS webservice functions: \code{\link{runBASwebservice_all}},
-  \code{\link{runBASwebservice_chunker}},
-  \code{\link{runBASwebservice_g2pForPronunciation}},
-  \code{\link{runBASwebservice_g2pForTokenization}},
-  \code{\link{runBASwebservice_maus}},
-  \code{\link{runBASwebservice_minni}},
-  \code{\link{runBASwebservice_pho2sylSegmental}}
+Other BAS webservice functions: 
+\code{\link{runBASwebservice_all}()},
+\code{\link{runBASwebservice_chunker}()},
+\code{\link{runBASwebservice_g2pForPronunciation}()},
+\code{\link{runBASwebservice_g2pForTokenization}()},
+\code{\link{runBASwebservice_maus}()},
+\code{\link{runBASwebservice_minni}()},
+\code{\link{runBASwebservice_pho2sylSegmental}()}
 }
 \concept{BAS webservice functions}

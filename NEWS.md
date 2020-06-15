@@ -1,8 +1,31 @@
+# emuR 2.1.0
+
+## new features / performance tweaks / improvements
+
+- implemented `write_bundleList()` and `read_bundleList()` functions
+- new `bundleListName` `serve()` parameter implemented
+- added warning to `serve()` when either bundleComments or bundleFinishedEditing is set to true and no bundleListName was set (closes \#268)
+- implemented `onTheFlyFunction` parameter for `get_trackdata()` which allows users to implement their own functions (input: path to wav file; output tibble/data.frame that has a column called `"frame_time"`)
+- converting factors into characters in `get_trackdata()` and `normalize_length()` (closes \#224 and \#223) 
+- `add_perspective()` now sets `"restrictions"` -> `"showPerspectivesSidebar"` to `true` to make the side bar visible
+- `normalize_length()` now doesn't throw tibble 3.0.0 warnings any more
+- `query()` RegEx operators `=~` now using SQLites native support (wasn't available in earlier versions)
+- replaced RCurl with httr dep
+- moved some dependencies to `Suggests` field in DESCRIPTION file
+- removed vignette stubs
+
+## bug fixes
+
+- try catching rounding errors of sample rate and start time in `get_trackdata()`
+
+
 # emuR 2.0.4
 
 ## new features / performance tweaks / improvements
 
 - `export_seglistToTxtCollection()` now zero pads file names (should fix #219)
+- implemented `write_bundleList()` and `read_bundleList()` functions
+- new `bundleListName` `serve()` parameter implemented
 
 ## bug fixes
 

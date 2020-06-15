@@ -33,6 +33,19 @@ test_that("Load example database ae", {
   expect_that(dbConfig[['name']],
               is_equivalent_to('ae'))
   
+  test_that("sessionPattern and bundlePattern work ",{
+    # sequence as seglist
+    sl1 = query(ae, "Phonetic == n", bundlePattern = "msajc003")
+    
+    expect_equal(unique(sl1$bundle), "msajc003")
+    
+    sl2 = query(ae, "Phonetic == n")
+    sl3 = query(ae, "Phonetic == n", sessionPattern = "0000")
+    
+    expect_true(all(sl2$bundle == sl3$bundle))
+    
+  })
+  
   test_that("Query labels",{
     # sequence as seglist
     sl1 = query(ae,"[Text == more -> Text == customers]",
@@ -377,16 +390,16 @@ test_that("Load example database ae", {
     expect_equal(attributes(sl)$query, qs)
     sl = query(ae, "[Phonetic == m]")
     expect_equal(nrow(sl), 7)
-    expect_equal(attr(sl, "query"), "[Phonetic == m]")
+    expect_equal(attr(sl, "query"), NULL)
     sl = query(ae, "[Phonetic == m | n]")
     expect_equal(nrow(sl), 19)
     sl = query(ae, "[Phonetic != m | n]")
     expect_equal(nrow(sl), 234)
     sl = query(ae, "[Syllable =~ .*]")
     expect_equal(nrow(sl), 83)
-    sl = query(ae, "[Text =~ am.*]")
+    sl = suppressWarnings(query(ae, "[Text =~ am.*]"))
     expect_equal(nrow(sl), 1)
-    sl = query(ae, "[Text !~ am.*]")
+    sl = suppressWarnings(query(ae, "[Text !~ am.*]"))
     expect_equal(nrow(sl), 53)
     
     # SEQQ
@@ -452,9 +465,9 @@ test_that("Load example database ae", {
     expect_equal(sl$labels, c("S", "S", "S"))
     sl = query(ae, "[[Phoneme == p ^ Syllable =~ .*] ^ #Word =~.*]")
     expect_equal(sl$labels, c("C", "C", "C"))
-    sl = query(ae, "[[Phoneme == p ^ Syllable =~.*] ^ Text =~ emphasized | tempting]")
+    sl = suppressWarnings(query(ae, "[[Phoneme == p ^ Syllable =~.*] ^ Text =~ emphasized | tempting]"))
     expect_equal(sl$labels, c("p", "p"))
-    sl = query(ae, "[[Phoneme == p ^ Syllable =~.*] ^ #Text =~ emphasized | tempting]")
+    sl = suppressWarnings(query(ae, "[[Phoneme == p ^ Syllable =~.*] ^ #Text =~ emphasized | tempting]"))
     expect_equal(sl$labels, c("emphasized", "tempting"))
     
     # Position
@@ -542,7 +555,7 @@ test_that("Load example database ae", {
     qs = "[Text =~ .* ^ #Tone == L* | L+H*]"
     sl = query(ae, qs)
     expect_equal(nrow(sl), 2)
-    expect_equal(attr(sl, "query"), qs)
+    expect_equal(attr(sl, "query"), NULL) # used to be qs but not with tibble
     sl = query(ae, 
                "[Tone =~.* ^ [End(Word, Syllable) == 1 ^ Num(Word, Syllable) == 2]]")
     expect_equal(nrow(sl), 1)
@@ -600,3 +613,5 @@ test_that("Load example database ae", {
   ae = NULL
   unlink(.test_emu_ae_db_dir, recursive = T)
 })
+
+

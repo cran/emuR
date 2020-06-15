@@ -4,11 +4,19 @@
 \alias{runBASwebservice_chunker}
 \title{Creates a chunk segmentation using the webservice Chunker.}
 \usage{
-runBASwebservice_chunker(handle, canoAttributeDefinitionName, language,
-  chunkAttributeDefinitionName = "TRN", rootLevel = NULL,
-  orthoAttributeDefinitionName = NULL, params = list(force = "rescue"),
-  perspective = "default", patience = 0, resume = FALSE,
-  verbose = TRUE)
+runBASwebservice_chunker(
+  handle,
+  canoAttributeDefinitionName,
+  language,
+  chunkAttributeDefinitionName = "TRN",
+  rootLevel = NULL,
+  orthoAttributeDefinitionName = NULL,
+  params = list(force = "rescue"),
+  perspective = "default",
+  patience = 0,
+  resume = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{handle}{emuDB handle}
@@ -32,7 +40,7 @@ Must be paired with the canonical pronunciation attributes in canoAttributeDefin
 ensure that these parameters are compatible with the webservice API
 (see \url{https://clarin.phonetik.uni-muenchen.de/BASWebServices/services/help}).
 Some options accepted by the API (e.g. output format) cannot be set when calling a webservice from within emuR,
-and will be overridden.}
+and will be overridden. If file parameters are used please wrap the file path in \code{httr::upload_file("/path/2/file/rules.nrul")}.}
 
 \item{perspective}{the webApp perspective that the new level will be added to.
 If NULL, the new level is not added to any perspectives.}
@@ -64,12 +72,13 @@ params=list(force="false"). To skip the normal chunking mode and go directly int
 mode, use params=list(force="true").
 }
 \seealso{
-Other BAS webservice functions: \code{\link{runBASwebservice_all}},
-  \code{\link{runBASwebservice_g2pForPronunciation}},
-  \code{\link{runBASwebservice_g2pForTokenization}},
-  \code{\link{runBASwebservice_maus}},
-  \code{\link{runBASwebservice_minni}},
-  \code{\link{runBASwebservice_pho2sylCanonical}},
-  \code{\link{runBASwebservice_pho2sylSegmental}}
+Other BAS webservice functions: 
+\code{\link{runBASwebservice_all}()},
+\code{\link{runBASwebservice_g2pForPronunciation}()},
+\code{\link{runBASwebservice_g2pForTokenization}()},
+\code{\link{runBASwebservice_maus}()},
+\code{\link{runBASwebservice_minni}()},
+\code{\link{runBASwebservice_pho2sylCanonical}()},
+\code{\link{runBASwebservice_pho2sylSegmental}()}
 }
 \concept{BAS webservice functions}
