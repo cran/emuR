@@ -92,6 +92,8 @@ export_TextGridCollection <- function(emuDBhandle,
                paste0(allAttrNames[i], "=~ .*"), 
                resultType = "emuRsegs", # still uses old emuRsegs obj
                timeRefSegmentLevel = timeRefSegmentLevel,
+               sessionPattern = sessionPattern,
+               bundlePattern = bundlePattern,
                verbose = FALSE)
     slAll = dplyr::bind_rows(slAll, sl)
   }
@@ -278,9 +280,9 @@ export_TextGridCollection <- function(emuDBhandle,
                               paste0("            mark = \"", slTier$labels, "\" "))))
         
       }
+      
       write(tierItems, tgPath, append=TRUE)
     }
-    
     # increase pb
     if(verbose){
       utils::setTxtProgressBar(pb, i)

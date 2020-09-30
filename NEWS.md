@@ -1,3 +1,20 @@
+# emuR 2.1.1
+
+## new features / performance tweaks / improvements
+
+- `load_emuDB()` performance bump due to SQLite transaction improvement + using prep. statements 
+- `create_itemsInLevel()` now supports items of type SEGMENT
+- added deprecated/not recommended texts to \code{eplot()}, \code{dplot()} and \code{dur()} help pages (fixes \#234)
+
+## bug fixes
+
+- implemented first version of `delete_itemsInLevel()`
+- `requery_seq()` now returns correct attribute label vs. the level attribute
+- fixed `In rbind(names(params), unlist(params, recursive = F)): number of columns of result is not a multiple of vector length (arg 1)` warning in `runBASwebservice_maus()` with `httr::upload_file()`
+- added missing `()` to `return` statement
+- no emuDBcache needed for `rename_emuDB()`
+
+
 # emuR 2.1.0
 
 ## new features / performance tweaks / improvements

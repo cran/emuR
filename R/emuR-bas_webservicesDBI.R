@@ -173,7 +173,7 @@ bas_run_maus_dbi <- function(handle,
             # suppress differing length warning
             linked_trn_items = suppressWarnings(requery_hier(
               handle,
-              linked_kan_items,
+              linked_kan_items %>% tidyr::drop_na(labels),
               chunkLevel,
               calcTimes = T,
               collapse = T
@@ -2502,6 +2502,12 @@ bas_paste_description <-
     if (!is.null(source))
     {
       description = paste0(description, "from '", source, "' ")
+    }
+    
+    if(!is.null(params$RULESET)){
+      # fix dual entry in RULESET which is caused by file
+      # file upload
+      params$RULESET = params$RULESET$path
     }
     description =
       paste0(
