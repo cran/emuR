@@ -122,7 +122,7 @@ serve <- function(emuDBhandle,
   }
   
   bundlesDf = allBundlesDf
-  
+    
   if(!is.null(bundleListName)){
     if(!is.null(seglist)){
       stop("both seglist & bundleListName can't be set at the same time!")
@@ -172,7 +172,7 @@ serve <- function(emuDBhandle,
         mediaFilePath = file.path(emuDBhandle$basePath, 
                                   paste0(queryStr$session, session.suffix), 
                                   paste0(queryStr$bundle, bundle.dir.suffix),
-                                  paste0(queryStr$bundle, ".", DBconfig$mediafileExtension))
+                                  paste0(queryStr$bundle, ".", queryStr$fileExtension))
         
         audioFile = file(mediaFilePath, "rb")
         audioFileData = readBin(audioFile, 
@@ -451,13 +451,21 @@ serve <- function(emuDBhandle,
                                   ' of session ',
                                   bundleSess))
         }
-        
+        if(rstudioapi::isAvailable()){
+          translateFunction = rstudioapi::translateLocalUrl
+        } else {
+          translateFunction = paste0
+        }
         mediaFile = list(encoding = "GETURL", 
-                         data = paste0(rstudioapi::translateLocalUrl(paste0("http://", ws$request$HTTP_HOST)), 
+                         data = paste0(translateFunction(paste0("http://", ws$request$HTTP_HOST)), 
                                        "?session=", 
                                        utils::URLencode(bundleSess, reserved = T),
                                        "&bundle=", 
-                                       utils::URLencode(bundleName, reserved = T)))
+                                       utils::URLencode(bundleName, reserved = T),
+                                       "&fileExtension=",
+                                       utils::URLencode(DBconfig$mediafileExtension, reserved = T)))
+        # print(mediaFile)
+        
         if(is.null(err)){
           ssffTracksInUse = get_ssffTracksUsedByDBconfig(DBconfig)
           ssffTrackNmsInUse = c()
@@ -536,7 +544,8 @@ serve <- function(emuDBhandle,
         responseBundleJSON = jsonlite::toJSON(responseBundle,
                                               auto_unbox = TRUE,
                                               force = TRUE,
-                                              pretty = TRUE)
+                                              pretty = FALSE)
+        # print(mediaFile)
         result = ws$send(responseBundleJSON)
         
         if(is.null(err) & debugLevel >= 2){
@@ -629,6 +638,7 @@ serve <- function(emuDBhandle,
             
             #### DBI ###
             # remove
+            DBI::dbBegin(emuDBhandle$connection)
             remove_bundleDBI(emuDBhandle, 
                              sessionName = bundleSession, 
                              name = bundleName)
@@ -652,6 +662,8 @@ serve <- function(emuDBhandle,
                                     sessionName = bundleSession, 
                                     bundleName = bundleName)
             
+            DBI::dbCommit(emuDBhandle$connection)
+            
             # update bundlesDf and store as bundleList
             if(!is.null(bundleListName)){
               bl = read_bundleList(emuDBhandle, bundleListName)
@@ -659,10 +671,10 @@ serve <- function(emuDBhandle,
               bl[bl$session == bundleSession & 
                    bl$name == bundleName,]$comment = jr[['data']][['comment']]
               bl[bl$session == bundleSession & 
-                          bl$name == bundleName,]$finishedEditing = jr[['data']][['finishedEditing']]
+                   bl$name == bundleName,]$finishedEditing = jr[['data']][['finishedEditing']]
               
               write_bundleList(emuDBhandle, bundleListName, bl)
-
+              
             }
           }
         }
@@ -736,11 +748,10 @@ serve <- function(emuDBhandle,
     if(useViewer & rstudioapi::isAvailable()){
       webApp_path = getOption("emuR.emuWebApp.dir")
       # TODO: can this be emulated? git clone --depth 1 -b gh-pages https://github.com/IPS-LMU/EMU-webApp
-      #unlink(webApp_path, recursive = T)
+      # unlink(webApp_path, recursive = T)
       if(!dir.exists(webApp_path)){
         
-        dir.create(webApp_path)
-        # for devel 
+        # for development
         # file.copy(from = "~/Developer/EMU-webApp/dist/",
         #           to = tempdir(),
         #           recursive = T)
@@ -748,17 +759,34 @@ serve <- function(emuDBhandle,
         # file.rename(from = file.path(tempdir(), "dist"),
         #             to = webApp_path)
         
-        git2r::clone("https://github.com/IPS-LMU/EMU-webApp",
-                     local_path = webApp_path,
-                     branch = "gh-pages")
+        resp = httr::GET("https://github.com/IPS-LMU/EMU-webApp/releases/latest")
+        redirect_url_split = stringr::str_split(resp$url, "/")
+        tag = redirect_url_split[[1]][length(redirect_url_split[[1]])]
+        zip_download_url = paste0("https://github.com/IPS-LMU/EMU-webApp/archive/refs/tags/", tag, ".zip")
+        zip_path_local = paste0(webApp_path, ".zip")
+        httr::GET(zip_download_url, 
+                  httr::write_disk(zip_path_local, overwrite=TRUE))
+        
+        utils::unzip(zipfile = zip_path_local, # this creates a dir like EMU-webApp-1.x.x in tempdir()
+                     exdir = tempdir(), 
+                     overwrite = T)
+        unziped_path_local = file.path(tempdir(), 
+                                       paste0("EMU-webApp-",stringr::str_remove(tag, "v")))
+        file.rename(from = file.path(unziped_path_local, "dist"), 
+                    to = webApp_path)
+        
+        # clean up
+        unlink(zip_path_local)
+        unlink(unziped_path_local, recursive = T)
       }
       
       # replace <base href> tag because rstudio changes this 
       # in the web version and Angular needs it to be set
-      if(rstudioapi::translateLocalUrl(paste0("http://localhost:", port, "/")) == paste0("http://localhost:", port, "/")){
-        base_path = "/"
-      } else {
-        base_path = paste0("/", rstudioapi::translateLocalUrl(paste0("http://localhost:", port, "/")))
+      base_path = "/"
+      if(rstudioapi::isAvailable()){
+        if(rstudioapi::translateLocalUrl(paste0("http://localhost:", port, "/")) != paste0("http://localhost:", port, "/")){
+          base_path = paste0("/", rstudioapi::translateLocalUrl(paste0("http://localhost:", port, "/")))
+        }
       }
       
       index_html = readr::read_file(file.path(webApp_path, "index.html"))
@@ -772,7 +800,7 @@ serve <- function(emuDBhandle,
       
       
       readr::write_file(x = index_html_new, 
-                        path = file.path(webApp_path, "index.html"))
+                        file = file.path(webApp_path, "index.html"))
       
       if (!is.null(viewer)){
         # host in viewer
@@ -781,8 +809,8 @@ serve <- function(emuDBhandle,
                       "/?autoConnect=true",
                       "&serverUrl=", 
                       stringr::str_replace(rstudioapi::translateLocalUrl(paste0("http://127.0.0.1:", port), absolute = TRUE),
-                                                                         "http", 
-                                                                         "ws")))
+                                           "http", 
+                                           "ws")))
       }else{
         # host in browser
         utils::browseURL(paste0("http://127.0.0.1:", 

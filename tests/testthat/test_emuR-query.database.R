@@ -272,10 +272,10 @@ test_that("Load example database ae", {
     expect_that(nrow(r4), equals(1))
     expect_that(r4[1, 'start_item_id'], equals(122))
     
-    r5=query(ae,
-             "Phoneme == p & Start(Word, Phoneme) == 0",
-             bundlePattern = '.*7',
-             resultType = NULL)
+    r5 = query(ae,
+               "Phoneme == p & Start(Word, Phoneme) == 0",
+               bundlePattern = '.*7',
+               resultType = NULL)
     
     expect_that(nrow(r5), equals(1))
     expect_that(r5[1, 'start_item_id'], equals(136))
@@ -285,35 +285,28 @@ test_that("Load example database ae", {
   
   test_that("Query using End function",{
     r1 = query(ae,
-               "Phoneme == n & End(Word, Phoneme) == 1",
-               resultType = NULL)
+               "Phoneme == n & End(Word, Phoneme) == 1")
     
     expect_that(nrow(r1), equals(2))
-    expect_that(r1[1, 'start_item_id'], equals(103))
-    expect_that(r1[2, 'start_item_id'], equals(158))
+    expect_that(r1[1,]$start_item_id, equals(103))
+    expect_that(r1[2,]$start_item_id, equals(158))
     
   })
   
   test_that("Query using Num function",{
     
     # query words with exactly four phonemes
-    r = query(ae,"Num(Word, Phoneme) = 4",
-              resultType = NULL) 
+    r = query(ae,"Num(Word, Phoneme) = 4")
     expect_that(nrow(r), equals(6))
     
-    # Test for GitHub Issue #41
+    # Test for GitHub Issue #41 
     # Num() function returns no values if level of first parameter is sublevel of second parameter.
-    r = query(ae, 
-              "Num(Phonetic, Phoneme) == 1")
-    expect_that(nrow(r), equals(247))
-    r = query(ae,
-              "Num(Phonetic, Phoneme) > 1")
-    expect_that(nrow(r), equals(6))
-    r = query(ae,
-              "Num(Phonetic, Phoneme) >= 1")
-    # 247 + 6 = 253
-    expect_that(nrow(r), equals(253))
-    
+    # not this now produces an error as the legacy behaviour 
+    # mentioned in #41 is not consistent with anything 
+    # and makes no sense!
+    # Hence, decided to brake with backward compat. here...
+    expect_error(query(ae, 
+              "Num(Phonetic, Phoneme) == 1"), regexp = "Second level/attribute name")
     
   })
   
@@ -483,6 +476,8 @@ test_that("Load example database ae", {
     expect_equal(nrow(sl), nWord)
     sl = query(ae, "[Medial(Word, Syllable) == 1]")
     expect_equal(nrow(sl), 9)
+    sl = query(ae, "[Medial(Word, Syllable) == 0]")
+    expect_equal(nrow(sl), 73)
     # Position and Boolean &
     sl = query(ae, "[Phoneme == m & Start(Word, Phoneme) == 1]") # word initial m's
     expect_equal(nrow(sl), 2)
@@ -563,17 +558,41 @@ test_that("Load example database ae", {
                "[[[Phoneme =~ .* ^ Phonetic == H] ^ Start(Word, Syllable) == 1] ^ Accent == S]")
     expect_equal(nrow(sl), 10)
     sl  = query (ae ,
-                 "[[[Phonetic = n -> Phonetic =z] -> Phonetic = S ] ^ [Text = friends -> Text = she]]")
+                 "[[[Phonetic = n -> Phonetic = z] -> Phonetic = S ] ^ [Text = friends -> Text = she]]")
     expect_equal(sl$labels, "n->z->S")
     sl = query(ae, "[Utterance =~ .* ^ Phonetic == @]", 
                verbose = F)
     expect_equal(nrow(sl), 7)
     expect_equal(sl$labels[1], "")
+    
+    sl = query(ae, "[Text == she ^ [Phonetic == S -> Phonetic == i:]]")
+    expect_equal(sl$labels, "she")
+
+    sl = query(ae, "[[Phonetic == S -> Phonetic == i:] ^ Text == she]")
+    expect_equal(sl$labels, "S->i:")
+
+    # a few more for -> + ^ queries
+    # overlap start -> empty as not dominated
+    sl = query(ae, "[[Phonetic == z -> Phonetic == S] ^ Text == she]")
+    expect_equal(nrow(sl), 0)
+
+    sl = query(ae, "[Text == she ^ [Phonetic == z -> Phonetic == S]]")
+    expect_equal(nrow(sl), 0)
+    
+    # overlap end -> empty as not dominated    
+    sl = query(ae, "[[Phonetic == i: -> Phonetic == w] ^ Text == she]")
+    expect_equal(nrow(sl), 0)
+
+    sl = query(ae, "[Text == she ^ [Phonetic == i: -> Phonetic == w]]")
+    expect_equal(nrow(sl), 0)
+    
+    sl = query(ae, "[Tone =~ .* ^ [[Text == amongst -> Text == her] -> Text == friends]]")
+    expect_equal(nrow(sl), 2)
   })
   
   # 
   test_that("timeRefSegmentLevel works correctly",{
-    skip_on_cran()
+    # skip_on_cran()
     sl = query(ae, 
                "[Syllable == W]")
     sl = query(ae, 
@@ -592,6 +611,19 @@ test_that("Load example database ae", {
     query(ae, 
           "[Syllable == W]", 
           timeRefSegmentLevel = "Phonetic2")
+    
+    # clean up
+    remove_linkDefinition(ae, 
+                          superlevelName = "Phoneme",
+                          sublevelName = "Phonetic2",
+                          force = T,
+                          verbose = F)
+    
+        
+    remove_levelDefinition(ae, 
+                           name = "Phonetic2",
+                           force = T, 
+                           verbose = F)
   })
   
   # 
@@ -600,6 +632,11 @@ test_that("Load example database ae", {
     sl = query(ae, 
                "[Syllable == W]", 
                calcTimes = F)
+  
+    expect_true(all(is.na(sl$start)))
+    expect_true(all(is.na(sl$end)))
+    expect_true(all(is.na(sl$sample_start)))
+    expect_true(all(is.na(sl$sample_end)))
   })
   
   test_that("correct times are calculated for Intonational",{
@@ -608,6 +645,29 @@ test_that("Load example database ae", {
     all(round(sl$start, 3) == round(c(256.925, 571.925, 379.525, 425.375, 299.975, 513.925, 475.775), 3))
     all(round(sl$end, 3) == round(c(2604.425, 2753.975, 2692.325, 3456.825, 2469.525, 2554.175, 2794.925), 3))
   })
+  
+  test_that("correct times are calculated for sequence dom. queries",{
+    skip_on_cran()
+    sl = query(ae, 
+               "[[Phonetic == N -> Phonetic == s] -> Phonetic == t]", 
+               verbose = F)
+    expect_equal(sl$sample_start, 8534)
+    expect_equal(sl$sample_end, 11933)
+    # move up one level
+    sl = query(ae, 
+               "[[Phoneme == N -> Phoneme == s] -> Phoneme == t]",
+               verbose = F)
+    expect_equal(sl$sample_start, 8534)
+    expect_equal(sl$sample_end, 13483)
+    # even further up the hierarchy
+    sl = query(ae,
+               "[Text == more -> Text == customers]",
+               verbose = F)
+    expect_equal(sl$sample_start, 31574)
+    expect_equal(sl$sample_end, 47355)
+    
+  })
+  
   # clean up (also disconnect)
   DBI::dbDisconnect(ae$connection)
   ae = NULL
