@@ -72,13 +72,22 @@ import_mediaFiles<-function(emuDBhandle,
   }else{
     pattern = paste0('.*[.]', dbCfg[['mediafileExtension']],'$')
   }
+  if(!dir.exists(dir)){
+    stop(dir, " doesn't exist!")
+  }
+  
   mfList = list.files(dir, pattern = pattern)
-  if(length(mfList) > 0){
+  if(length(mfList) == 0){
+    stop("no media files found in ", dir)
+  } else {
     # create session dir and session list object if required
     sessDir = file.path(emuDBhandle$basePath, 
                         paste0(targetSessionName, session.suffix))
     if(!file.exists(sessDir)){
-      dir.create(sessDir)
+      created = dir.create(sessDir)
+      if(!created){
+        stop("Couldn't create ", sessDir)
+      }
     }
     
     qSessSql = paste0("SELECT * ",
@@ -108,7 +117,10 @@ import_mediaFiles<-function(emuDBhandle,
     bundleName = sub('[.][^.]*$','',mf)
     
     bundleDir=file.path(sessDir,paste0(bundleName, bundle.dir.suffix))
-    dir.create(bundleDir)
+    created = dir.create(bundleDir)
+    if(!created){
+      stop("Couldn't create ", bundleDir)
+    }
     newMediaFileFullPath = file.path(bundleDir,mf)
     file.copy(from = mfFullPath, to = newMediaFileFullPath)
     
@@ -189,7 +201,11 @@ import_mediaFiles<-function(emuDBhandle,
 ##' 
 ##' @param emuDBhandle emuDB handle as returned by \code{\link{load_emuDB}}
 ##' @param dir directory containing files to be added
-##' @param fileExtension file extension of files to be added
+##' @param fileExtension file extension of files to be added. If no . (dot) is found 
+##' in this string (e.g. "zcr") then the bundle name matching is performed by removing 
+##' \code{paste0(".", fileExtension)} from the files ("/path/to/msajc003.zcr" will become "msajc003") 
+##' and the according bundle name will be searched. If a . (dot) if found within this string 
+##' (e.g. "_annot.json") then the entire string is remove without prepending a . (dot) ("/path/to/msajc003_annot.json" will then become "msajc003")
 ##' @param targetSessionName name of sessions containing 
 ##' bundles that the files will be added to
 ##' @export
@@ -220,12 +236,12 @@ add_files <- function(emuDBhandle,
                       targetSessionName = '0000'){
   
   check_emuDBhandle(emuDBhandle)
-  bndls = list_bundles(emuDBhandle, session = targetSessionName)
+  bndls = list_bundles(emuDBhandle, 
+                       sessionPattern = paste0("^", targetSessionName))
   
   if(nrow(bndls) == 0){
     stop("No bundles found in session! Make sure to specify an existing session that contains bundles!")
   }
-  
   
   sourcePaths = list.files(dir, 
                            pattern = paste0(fileExtension, '$'), 
@@ -241,7 +257,15 @@ add_files <- function(emuDBhandle,
   
   # copy files
   for (i in 1:length(sourcePaths)){
-    cbn = basename(sub(pattern = "(.*)\\..*$", replacement = "\\1", sourcePaths[i]))
+    # if fileExtension doesn't contains . -> split at .
+    if(!stringr::str_detect(fileExtension, pattern = "\\.")){
+      cbn = basename(stringr::str_remove(sourcePaths[i], 
+                                         paste0("\\.", fileExtension, "$")))
+    } else {
+      # remove from back
+      cbn = basename(stringr::str_remove(sourcePaths[i], 
+                                         paste0(fileExtension, "$")))
+    }
     cbndl = bndls[bndls$name == cbn, ]
     # check that only one bundle folder
     if(nrow(cbndl) != 1){

@@ -1,3 +1,25 @@
+# emuR 2.3.0
+
+## new features / performance tweaks / improvements
+
+- added explicit checks for all `dir.create()` (closes #49)
+- checking dir parameter in `import_mediaFiles()` (closes #108)
+- `add_files()` now works with strings like `_annot.json` as `fileExtension` (closes #246)
+- now prechecking user defined options in `.onLoad()` (closes #240)
+- added new `sessionPattern` and `bundlePattern` args to `list_bundles()` and `list_sessions()` (closes #201)
+- better output for warning in `get_trackdata()` regarding heterogeneous sampling rates (closes #189) 
+- using `cli` package to improve output of `summary(emuDBhandle)`
+- slight performance increase in EQL by avoiding full table scans due to REGEXP
+- checking for repeating sequences in `normalize_length()` (closes #211)
+- added explicit error message when bad column name is used in DBconfig (closes #212)
+- removing linkDefinition on error if it was added be4 (closes #226)
+
+## bug fixes
+
+- fixed bug in requery workflows like: `sl = query(ae, "[Phonetic== V]"); requery_hier(ae, sl[1:2,], level = "Text")`
+- added missing loading of DBconfig to `write_bundleList()` (fixes #248)
+- fixed bad handeling of dir paths containgin RegExp chars in  `convert_TextGridCollection()` (fixes #207)
+
 # emuR 2.2.0
 
 ## new features / performance tweaks / improvements

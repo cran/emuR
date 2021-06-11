@@ -67,7 +67,6 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle,
                                           calcTimes = TRUE, 
                                           preserveParentLength = FALSE, # only set T by requery_hier
                                           verbose){
-  
   itemsTableName = "items"
   labelsTableName ="labels"
   projectionItemsN = 0 
@@ -289,7 +288,6 @@ convert_queryResultToEmuRsegs <- function(emuDBhandle,
         }
         lnwt = segLvlNms[1] # level name with time
       }
-      
       # get children and collapse 
       query_hierarchyWalk(emuDBhandle, 
                           startItemsTableSuffix = "root", 

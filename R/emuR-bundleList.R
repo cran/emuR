@@ -34,7 +34,8 @@ read_bundleList <- function(emuDBhandle,
 ##' \code{bundleList} parameter will be ignored and a bundleList will be created by
 ##' collapsing the segments as timeAnchors into the \code{_bundleList.json}
 ##' @param updateDBconfig if set to TRUE (the default) DBconfig will be updated 
-##' with the fields       
+##' with the fields   
+##' @param verbose be verbose    
 ##' \itemize{
 ##'  \item \code{"bundleComments": true}
 ##'  \item \code{"bundleFinishedEditing": true}
@@ -45,7 +46,8 @@ write_bundleList <- function(emuDBhandle,
                              name, 
                              bundleList, 
                              seglist, 
-                             updateDBconfig = T){
+                             updateDBconfig = T,
+                             verbose = T){
   
   if(missing(name)){
     stop("name parameter must be given")
@@ -54,9 +56,16 @@ write_bundleList <- function(emuDBhandle,
   bl_dir_path = file.path(emuDBhandle$basePath, "bundleLists")
   
   if(!dir.exists(bl_dir_path)){
-    print(paste0("INFO: No bundleList dir found in emuDB (path: ", bl_dir_path, ")! Creating directory..."))
-    dir.create(bl_dir_path)
+    if(verbose){
+      print(paste0("INFO: No bundleList dir found in emuDB (path: ", bl_dir_path, ")! Creating directory..."))
+    }
+    created = dir.create(bl_dir_path)
+    if(!created){
+      stop("Couldn't create ", bl_dir_path)
+    }
   }
+  
+  DBconfig = load_DBconfig(emuDBhandle)
   
   bl_path = file.path(bl_dir_path, paste0(name, "_bundleList.json"))
   

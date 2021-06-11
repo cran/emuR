@@ -1077,6 +1077,7 @@ query_databaseEqlCONJQ <- function(emuDBhandle,
   resultAttribute = NULL
   projection = FALSE
   useSubsets = FALSE
+  
   # parse through all terms of and (&) operation
   while(p >= 0){
     # find ampersand '&' char
@@ -1241,6 +1242,8 @@ query_hierarchyWalk <- function(emuDBhandle,
   if(preserveStartItemsRowLength){
     joinType = "LEFT JOIN"
     
+    selectString = "SELECT " # carefull but this is needed to not : UNION ALL doesn't check for duplicates
+    
     groupByString = paste0("GROUP BY irit.rowid, ", # using irit.rowid to preserve duplicates (requery only)
                            " irit.db_uuid, ", 
                            " irit.session, ",
@@ -1251,6 +1254,8 @@ query_hierarchyWalk <- function(emuDBhandle,
     orderByString = "ORDER BY irit.rowid" # don't reorder if left joining to perserve NA/NULL row placement
   }else{
     joinType = "INNER JOIN"
+    
+    selectString = "SELECT DISTINCT " # distinct because UNION ALL doesn't check for duplicates
     
     groupByString = paste0("GROUP BY cte_hier.db_uuid, ",
                            " cte_hier.session, ", 
@@ -1290,21 +1295,21 @@ query_hierarchyWalk <- function(emuDBhandle,
                                                 " ON ch.db_uuid = l.db_uuid ",
                                                 "    AND ch.session = l.session ",
                                                 "    AND ch.bundle = l.bundle ",
+                                                sqlStr_firstItemTableLinkId,
                                                 "    AND l.session REGEXP '", sessionPattern, "' ", # limit to session RegEx
                                                 "    AND l.bundle REGEXP '", bundlePattern, "' ", # limit to bundle RegEx
-                                                sqlStr_firstItemTableLinkId,
                                                 " INNER JOIN items AS i ",
                                                 " ON l.db_uuid = i.db_uuid ",
                                                 "    AND l.session = i.session ",
                                                 "    AND l.bundle = i.bundle ",
-                                                "    AND i.session REGEXP '", sessionPattern, "' ", # limit to session RegEx
-                                                "    AND i.bundle REGEXP '", bundlePattern, "' ", # limit to bundle RegEx
                                                 sqlStr_secondItemTableLinkId,
                                                 sqlStr_checkIfOnPath, # check that on path (if str is set)
+                                                "    AND i.session REGEXP '", sessionPattern, "' ", # limit to session RegEx
+                                                "    AND i.bundle REGEXP '", bundlePattern, "' ", # limit to bundle RegEx
                                                 ") ",
                                                 "INSERT INTO lr_exp_res_tmp ",
-                                                # "SELECT * FROM cte_hier",
-                                                "SELECT DISTINCT ", # distinct because UNION ALL doesn't check for duplicates
+                                                # "SELECT * FROM cte_hier ",
+                                                selectString,
                                                 " irit.db_uuid, ",
                                                 " irit.session, ",
                                                 " irit.bundle, ",
@@ -1329,7 +1334,6 @@ query_hierarchyWalk <- function(emuDBhandle,
                                                 groupByString,
                                                 orderByString,
                                                 ""))
-  
   # View(DBI::dbReadTable(emuDBhandle$connection, paste0("lr_exp_res_tmp")))
   
   # calculate and update missing r_seq_start_id & r_seq_end_id
@@ -1382,8 +1386,6 @@ query_hierarchyWalk <- function(emuDBhandle,
                                                 "AND lr_exp_res_tmp.r_level = joined.level ",
                                                 "AND lr_exp_res_tmp.r_seq_end_seq_idx = joined.seq_idx ",
                                                 ""))
-  
-  
 }
 
 
