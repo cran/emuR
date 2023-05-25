@@ -16,7 +16,7 @@ create_spectrogram_image_as_raster(
   dynRangeInDB = 70,
   audioChannel = 1,
   preEmphasisFilterFactor = 0.97,
-  invert = F
+  invert = FALSE
 )
 }
 \arguments{
@@ -52,7 +52,7 @@ are:
 \item{dynRangeInDB}{dynamic range in DB of spectrogram}
 
 \item{audioChannel}{channel of audio file to draw spectrogram of (only
-applicable when using multi-chnanel audio files)}
+applicable when using multi-channel audio files)}
 
 \item{preEmphasisFilterFactor}{used in time domain for amplifying high-freqs}
 

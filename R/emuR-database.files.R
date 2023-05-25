@@ -140,7 +140,7 @@ import_mediaFiles<-function(emuDBhandle,
     }
     
     # write to file
-    annotJSONchar = jsonlite::toJSON(b, auto_unbox = T, pretty = T)
+    annotJSONchar = jsonlite::toJSON(b, auto_unbox = TRUE, pretty = TRUE)
     newAnnotFileFullPath = file.path(bundleDir, 
                                      paste0(bundleName, bundle.annotation.suffix, ".json"))
     writeLines(annotJSONchar, newAnnotFileFullPath, useBytes = TRUE)
@@ -244,8 +244,8 @@ add_files <- function(emuDBhandle,
   }
   
   sourcePaths = list.files(dir, 
-                           pattern = paste0(fileExtension, '$'), 
-                           full.names = T)
+                           pattern = paste0("\\.",fileExtension, '$'), 
+                           full.names = TRUE)
   
   destDirs = file.path(emuDBhandle$basePath, 
                        paste0(bndls$session, '_ses'), 
@@ -269,7 +269,11 @@ add_files <- function(emuDBhandle,
     cbndl = bndls[bndls$name == cbn, ]
     # check that only one bundle folder
     if(nrow(cbndl) != 1){
-      stop(paste0("more or less than one bundle found that matches the base name of the file '", sourcePaths[i], "'"))
+      if(nrow(cbndl) == 0){
+        stop(paste0("no bundle found that matches the base name (",cbn,") of the file '", sourcePaths[i], "'"))
+      } else {
+        stop(paste0("more than one bundle found (found = ",nrow(cbndl),") that matches the base name (",cbn,") of the file '", sourcePaths[i], "'"))
+      }
     }
     
     destDir = file.path(emuDBhandle$basePath, paste0(cbndl$session, '_ses'), paste0(cbndl$name, '_bndl'))
@@ -313,10 +317,10 @@ list_files <- function(emuDBhandle,
   check_emuDBhandle(emuDBhandle)
   
   fileList = list.files(path = file.path(emuDBhandle$basePath),
-                        recursive = T,
+                        recursive = TRUE,
                         pattern = paste0(".*[.]", fileExtension, "$")) %>%
     tibble::enframe(name = NULL) %>%
-    tidyr::separate(col = .data$value,
+    tidyr::separate(col = "value",
                     into = c("session", "bundle", "file"),
                     sep = .Platform$file.sep,
                     extra = "drop",

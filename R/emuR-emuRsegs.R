@@ -68,7 +68,7 @@ make.emuRsegs <- function(dbName, seglist, query, type)
 }
 
 ##' Sort emuRsegs segment list by session, bundle and sample_start 
-##' @param x object to print
+##' @param x object to sort
 ##' @param decreasing NOT IMPLEMENTED!
 ##' @param ... additional params
 ##' @export
@@ -77,7 +77,7 @@ make.emuRsegs <- function(dbName, seglist, query, type)
   
   old_atts = attributes(x)
   
-  sl_df_sorted = dplyr::arrange_(x, "session", "bundle", "sample_start")
+  sl_df_sorted = dplyr::arrange(x, .data$session, .data$bundle, .data$sample_start)
   
   attributes(sl_df_sorted) = old_atts
   

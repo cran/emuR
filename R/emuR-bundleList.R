@@ -19,7 +19,7 @@ read_bundleList <- function(emuDBhandle,
   bl_path = file.path(bl_dir_path, 
                       paste0(name, "_bundleList.json"))
   
-  return(tibble::as_tibble(jsonlite::read_json(bl_path, simplifyVector = T)))
+  return(tibble::as_tibble(jsonlite::read_json(bl_path, simplifyVector = TRUE)))
   
 }
 
@@ -46,8 +46,8 @@ write_bundleList <- function(emuDBhandle,
                              name, 
                              bundleList, 
                              seglist, 
-                             updateDBconfig = T,
-                             verbose = T){
+                             updateDBconfig = TRUE,
+                             verbose = TRUE){
   
   if(missing(name)){
     stop("name parameter must be given")
@@ -81,8 +81,8 @@ write_bundleList <- function(emuDBhandle,
   if(missing(seglist)){
     
     bundleList %>% 
-      dplyr::select(.data$session, 
-                    .data$name, 
+      dplyr::select("session",
+                    "name",
                     dplyr::contains("comment"), 
                     dplyr::contains("finishedEditing")) -> bundleList
     
@@ -94,7 +94,7 @@ write_bundleList <- function(emuDBhandle,
       bundleList$finishedEditing = FALSE
     }
     
-    jsonlite::write_json(bundleList, bl_path, pretty = T)
+    jsonlite::write_json(bundleList, bl_path, pretty = TRUE)
   } else {
     if(!missing(bundleList)){
       warning("'bundleList' parameter is ignored as 'seglist' parameter is set")
@@ -102,7 +102,7 @@ write_bundleList <- function(emuDBhandle,
     
     dataWithTimeAnchors = list()
     distinctBundles = seglist %>% 
-      dplyr::select(.data$session, .data$bundle) %>% 
+      dplyr::select("session", "bundle") %>%
       dplyr::distinct()
     
     for(i in 1:nrow(distinctBundles)){

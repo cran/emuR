@@ -117,7 +117,7 @@ serve <- function(emuDBhandle,
     check_tibbleForServe(seglist)
     tmp = data.frame(session = seglist$session, 
                      bundle = seglist$bundle, 
-                     stringsAsFactors = F)
+                     stringsAsFactors = FALSE)
     allBundlesDf = unique(tmp)
   }
   
@@ -200,7 +200,7 @@ serve <- function(emuDBhandle,
         #print(path)
         status = 200L
         # only allow requests to / -> mapped to getOption("emuR.emuWebApp.dir")
-        if (T) { # TODO: check if correct path
+        if (TRUE) { # TODO: check if correct path
           path = file.path(getOption("emuR.emuWebApp.dir"), path)
         } else {
           # reject all other requests
@@ -223,7 +223,7 @@ serve <- function(emuDBhandle,
             # this should currently never be reached! 
             d = file.info(list.files(path, all.files = TRUE, 
                                      full.names = TRUE))
-            title = utils::URLencode(path,reserved = T)
+            title = utils::URLencode(path,reserved = TRUE)
             c("<!DOCTYPE html>", 
               "<html>", 
               "<head>", 
@@ -323,7 +323,7 @@ serve <- function(emuDBhandle,
           for( jrNm in jrNms){
             value = jr[[jrNm]]
             cat("param: ", jrNm)
-            if(class(value) == 'character'){
+            if(inherits(value, 'character')){
               cat(": ", jr[[jrNm]])
             }
             cat("\n")
@@ -443,7 +443,7 @@ serve <- function(emuDBhandle,
                                                 paste0(bundleName, bundle.annotation.suffix, '.json')))
         
         b = jsonlite::fromJSON(annotFilePath, 
-                               simplifyVector = F)
+                               simplifyVector = FALSE)
         if(is.null(b)){
           # error
           err = simpleError(paste('Could not load bundle ',
@@ -459,11 +459,11 @@ serve <- function(emuDBhandle,
         mediaFile = list(encoding = "GETURL", 
                          data = paste0(translateFunction(paste0("http://", ws$request$HTTP_HOST)), 
                                        "?session=", 
-                                       utils::URLencode(bundleSess, reserved = T),
+                                       utils::URLencode(bundleSess, reserved = TRUE),
                                        "&bundle=", 
-                                       utils::URLencode(bundleName, reserved = T),
+                                       utils::URLencode(bundleName, reserved = TRUE),
                                        "&fileExtension=",
-                                       utils::URLencode(DBconfig$mediafileExtension, reserved = T)))
+                                       utils::URLencode(DBconfig$mediafileExtension, reserved = TRUE)))
         # print(mediaFile)
         
         if(is.null(err)){
@@ -574,6 +574,7 @@ serve <- function(emuDBhandle,
         # warnings as errors
         warnOptionSave = getOption('warn')
         options('warn' = 2)
+        on.exit(options(warn = warnOptionSave))
         responseBundle = NULL
         
         # check if cached version of bundle is available
@@ -698,8 +699,6 @@ serve <- function(emuDBhandle,
                                               pretty = TRUE)
         # send response
         result = ws$send(responseBundleJSON)
-        # restore warn level
-        options(warn = warnOptionSave)
         
         # reset error
         err = NULL
@@ -748,13 +747,13 @@ serve <- function(emuDBhandle,
     if(useViewer & rstudioapi::isAvailable()){
       webApp_path = getOption("emuR.emuWebApp.dir")
       # TODO: can this be emulated? git clone --depth 1 -b gh-pages https://github.com/IPS-LMU/EMU-webApp
-      # unlink(webApp_path, recursive = T)
+      # unlink(webApp_path, recursive = TRUE)
       if(!dir.exists(webApp_path)){
         
         # for development
         # file.copy(from = "~/Developer/EMU-webApp/dist/",
         #           to = tempdir(),
-        #           recursive = T)
+        #           recursive = TRUE)
         # 
         # file.rename(from = file.path(tempdir(), "dist"),
         #             to = webApp_path)
@@ -769,7 +768,7 @@ serve <- function(emuDBhandle,
         
         utils::unzip(zipfile = zip_path_local, # this creates a dir like EMU-webApp-1.x.x in tempdir()
                      exdir = tempdir(), 
-                     overwrite = T)
+                     overwrite = TRUE)
         unziped_path_local = file.path(tempdir(), 
                                        paste0("EMU-webApp-",stringr::str_remove(tag, "v")))
         file.rename(from = file.path(unziped_path_local, "dist"), 
@@ -777,7 +776,7 @@ serve <- function(emuDBhandle,
         
         # clean up
         unlink(zip_path_local)
-        unlink(unziped_path_local, recursive = T)
+        unlink(unziped_path_local, recursive = TRUE)
       }
       
       # replace <base href> tag because rstudio changes this 
@@ -896,7 +895,7 @@ fileinfo_table = function (info) {
   i = !is.na(d)
   x1 = paste(basename(rownames(info)), ifelse(d & i, "/", ""), 
              sep = "")
-  x1 = utils::URLencode(x1, reserved = T)
+  x1 = utils::URLencode(x1, reserved = TRUE)
   x1[i] = sprintf("<a href=\"%s\">%s</a>", x1[i], x1[i])
   x2 = paste(format(info$size, scientific = FALSE, big.mark = ","), 
              "B")

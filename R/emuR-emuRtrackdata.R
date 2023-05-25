@@ -210,7 +210,7 @@ create_emuRtrackdata <- function(sl, td){
     for (name in additional_cols){
       # y = dplyr::pull(eRtd, name)
       y = eRtd[[name]]
-      if(class(y) != "character"){
+      if(!inherits(y, "character")){
         eRtd.normtemp[,name] = approx(eRtd$times_norm, y, n = N)$y
       }else{
         eRtd.normtemp[,name]  = y[1] # use first element to fill up vector (R's recycling)
@@ -278,7 +278,7 @@ create_emuRtrackdata <- function(sl, td){
 ##' frequency values from 0-nyquist frequency that match T1-TN (can be quite useful for spectral data)
 ##' @return long form trackdata tibble object
 ##' @export
-convert_wideToLong <- function(td, calcFreqs = F){
+convert_wideToLong <- function(td, calcFreqs = FALSE){
   
   # get col idx values of tracks (T1-TN)
   tracks_colIdx = grep(pattern = "^T[0-9]+$", names(td))
@@ -287,12 +287,12 @@ convert_wideToLong <- function(td, calcFreqs = F){
     tidyr::gather(key = "track_name", 
                   value = "track_value", 
                   min(tracks_colIdx):max(tracks_colIdx), 
-                  convert = T) %>% 
+                  convert = TRUE) %>% 
     dplyr::mutate(freq = as.numeric(substring(.data$track_name, 2))) %>% 
     dplyr::group_by(.data$sl_rowIdx)  %>%
-    dplyr::arrange(.data$freq, .by_group = T)
+    dplyr::arrange(.data$freq, .by_group = TRUE)
   
-  # calc freq if calcFreqs = F otherwise drop column
+  # calc freq if calcFreqs = FALSE otherwise drop column
   if(calcFreqs) {
     tracks_long = tracks_long %>% 
       dplyr::mutate(freq = rep(seq(0, 
@@ -301,7 +301,7 @@ convert_wideToLong <- function(td, calcFreqs = F){
                                each = dplyr::n() / length(tracks_colIdx)))
   } else{
     tracks_long = tracks_long %>%
-      dplyr::select(-.data$freq) 
+      dplyr::select(-"freq")
   } 
   
   return(dplyr::ungroup(tracks_long))

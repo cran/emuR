@@ -10,7 +10,7 @@
 ##' of labels corresponding to the rows of \code{data}.
 ##' 
 ##' The Mahalanobis distance between a data point and a class is the Euclidean
-##' distance between the point and the class mean devided by the covariance
+##' distance between the point and the class mean divided by the covariance
 ##' matrix for the class.  This means that classes with large covariances will
 ##' attract data points from a larger area than those with small covariances.
 ##' 
@@ -25,7 +25,7 @@
 "mahal" <- function(data, train)
 {
   #   if (emu.options("deprecated.warnings")) # commented out because glabal vars don't exist any more
-  cat("mahal is deprecated, use classify with metric=\"mahal\"\n")
+  warning("mahal is deprecated, use classify with metric=\"mahal\"\n")
   classify( data, train, metric="mahal" )
 }
 
@@ -47,7 +47,7 @@
 "bayes.lab" <- function(data, train)
 {
   #if (emu.options("deprecated.warnings")) # commented out because glabal vars don't exist any more
-  cat("bayes.lab is deprecated, use classify with metric=\"bayes\"\n")
+  warning("bayes.lab is deprecated, use classify with metric=\"bayes\"\n")
   classify( data, train, metric="bayes" )
 }
 
@@ -69,7 +69,7 @@
 "bayes.dist" <- function(data, train, labels=NULL)
 {
   #if (emu.options("deprecated.warnings")) # commented out because glabal vars don't exist any more
-  cat("bayes.dist is deprecated, use distance with metric=\"bayes\"\n")
+  warning("bayes.dist is deprecated, use distance with metric=\"bayes\"\n")
   distance( data, train, labels, metric="bayes")
 }
 
@@ -318,7 +318,8 @@ bayesplot <- function(data, train, N = 10, ellipse = FALSE,
     k <- k + 1
   }
   if(ellipse && !is.null(labs) ) {
-    graphics::par(new = TRUE)
+    oldpar = graphics::par(new = TRUE)
+    on.exit(graphics::par(oldpar))
     eplot(data, labs, xlim = rx, ylim = ry, colour=colour, ...)
   }
 }

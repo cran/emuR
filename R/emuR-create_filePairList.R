@@ -21,26 +21,28 @@ create_filePairList <- function(ext1Path2rootDir, ext2Path2rootDir, ext1, ext2){
   
   # ext1Path2rootDir is valid path
   if(!dir.exists(ext1Path2rootDir)){
-    stop('ext1Path2rootDir does not exist!')
+    stop(paste0('ext1Path2rootDir does not exist: ',
+                ext1Path2rootDir))
   }
   
   # ext2Path2rootDir is valid path
   if(!dir.exists(ext2Path2rootDir)){
-    stop('ext2Path2rootDir does not exist!')
+    stop(paste0('ext2Path2rootDir does not exist: ',
+                ext2Path2rootDir))
   }
   
   
   # get all ext1 file paths
   allExt1FilePaths = list.files(ext1Path2rootDir, 
                                 pattern = paste(ext1, "$", sep = ""), 
-                                recursive = T, 
-                                full.names = T)
+                                recursive = TRUE,
+                                full.names = TRUE)
   
   # get all ext2 file paths
   allExt2FilePaths = list.files(ext2Path2rootDir, 
                                 pattern = paste(ext2, "$", sep = ""), 
-                                recursive = T, 
-                                full.names = T)
+                                recursive = TRUE,
+                                full.names = TRUE)
   
   # check more ext1 found than ext2
   if(length(allExt1FilePaths) > length(allExt2FilePaths)){

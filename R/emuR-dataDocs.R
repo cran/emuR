@@ -182,9 +182,9 @@ NULL
 ##' 
 ##' A track list is created via the \code{\link{get_trackdata}} function.
 ##' 
-##' @format A object with \$index, \$ftime and \$data
+##' @format A object with $index, $ftime and $data
 ##' 
-##' index: a two columned matrix with the range of the \$data rows that belong
+##' index: a two columned matrix with the range of the $data rows that belong
 ##' to the segment ftime: a two columned matrix with the times marks of the
 ##' segment data: a vector with the rms data
 ##' @seealso \code{\link{demo.vowels.fm}} \code{\link{segmentlist}}
@@ -206,9 +206,9 @@ NULL
 ##' 
 ##' A track list is created via the \code{\link{get_trackdata}} function.
 ##' 
-##' @format An object with \$index, \$ftime and \$data
+##' @format An object with $index, $ftime and $data
 ##' 
-##' index: a two columned matrix with the range of the \$data rows that belong
+##' index: a two columned matrix with the range of the $data rows that belong
 ##' to the segment ftime: a two columned matrix with the times marks of the
 ##' segment data: a one columned matrix with the F0 values
 ##' @seealso \code{\link{demo.all.rms}} \code{\link{segmentlist}}
@@ -230,7 +230,7 @@ NULL
 ##' 
 ##' A track list is created via the \code{\link{get_trackdata}} function.
 ##' 
-##' @format index: a two columned matrix with the range of the \$data rows that
+##' @format index: a two columned matrix with the range of the $data rows that
 ##' belong to the segment ftime: a two columned matrix with the times marks of
 ##' the segment data: a three columned matrix with the formant values of the
 ##' first three formants for each segment
@@ -270,9 +270,9 @@ NULL
 #' 
 #' A track list is created via the \code{\link{get_trackdata}} function.
 #' 
-#' @format An object with \$index, \$ftime and \$data
+#' @format An object with $index, $ftime and $data
 #' 
-#' index: a two columned matrix with the range of the \$data rows that belong
+#' index: a two columned matrix with the range of the $data rows that belong
 #' to the segment ftime: a two columned matrix with the times marks of the
 #' segment data: a one columned matrix with the F0 values
 #' @seealso \code{\link{demo.all.rms}} \code{\link{segmentlist}}
@@ -290,7 +290,7 @@ NULL
 #' 
 #' A track list is created via the \code{\link{get_trackdata}} function.
 #' 
-#' @format index: a two columned matrix with the range of the \$data rows that
+#' @format index: a two columned matrix with the range of the $data rows that
 #' belong to the segment ftime: a two columned matrix with the times marks of
 #' the segment data: a three columned matrix with the formant values of the
 #' first three formants for each segment
@@ -332,7 +332,7 @@ NULL
 
 
 
-##' Segment list of dipththongs, two speakers one male, one female , Standard
+##' Segment list of diphthongs, two speakers one male, one female , Standard
 ##' North German, read speech from database kielread
 ##' 
 ##' An EMU dataset
@@ -710,7 +710,7 @@ NULL
 ##' 
 ##' @docType data
 ##' @keywords datasets
-##' @format vector of phoenme labels
+##' @format vector of phoneme labels
 ##' @name vowlax.left
 NULL
 
@@ -741,7 +741,7 @@ NULL
 ##' 
 ##' @docType data
 ##' @keywords datasets
-##' @format vector of phoenme labels
+##' @format vector of phoneme labels
 ##' @name vowlax.right
 NULL
 

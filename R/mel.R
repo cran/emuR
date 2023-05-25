@@ -18,8 +18,8 @@
 ##' dimensions as data.
 ##' @author Jonathan Harrington
 ##' @seealso \code{\link{bark}}, \code{\link{plot.spectral}}
-##' @references Traunmueller, H. (1990) \"Analytical expressions for the
-##' tonotopic sensory scale\" J. Acoust. Soc. Am. 88: 97-100.
+##' @references Traunmueller, H. (1990) "Analytical expressions for the
+##' tonotopic sensory scale" J. Acoust. Soc. Am. 88: 97-100.
 ##' @keywords math
 ##' @examples
 ##' 
@@ -36,7 +36,7 @@
 ##'         mel(vec)
 ##'         
 ##' 
-##'         # convert the \$data values in a trackdata object to mel
+##'         # convert the $data values in a trackdata object to mel
 ##'         # create a new track data object
 ##' 
 ##'         t1 <- dip.fdat
@@ -51,7 +51,7 @@
 ##' # that it is proportional to the mel scale.
 ##' 
 ##' w = mel(e.dft)
-##' par(mfrow=c(1,2))
+##' oldpar = par(mfrow=c(1,2))
 ##' plot(w, type="l")
 ##' 
 ##' 
@@ -62,6 +62,8 @@
 ##' 
 ##' # the latter has a greater concentration of values
 ##' # in a higher frequency range.
+##' 
+##' par(oldpar)
 ##' 
 ##' @export mel
 "mel" <- function(a)

@@ -62,7 +62,7 @@ update_cache <- function(emuDBhandle, verbose = TRUE){
   numberOfRowsAffected = DBI::dbExecute(emuDBhandle$connection, 
                                         paste0("DELETE FROM emu_db WHERE uuid != '", emuDBhandle$UUID, "'"))
   if(numberOfRowsAffected != 0){
-    cat(paste0("INFO: Found and deleted ",
+    warning(paste0("INFO: Found and deleted ",
                numberOfRowsAffected, 
                " elements in emuDBcache of emuDB with other UUID \n"))
   }
@@ -86,7 +86,7 @@ update_cache <- function(emuDBhandle, verbose = TRUE){
                                   name = bundles$name, 
                                   md5_annot_json = file_md5sums, 
                                   row.names = NULL, 
-                                  stringsAsFactors = F)
+                                  stringsAsFactors = FALSE)
   cache_sesBndlMd5DF = DBI::dbGetQuery(emuDBhandle$connection, 
                                        paste0("SELECT session, name, md5_annot_json FROM bundle"))
   

@@ -189,7 +189,8 @@
                                              itemsToCreate,
                                              by = c("session", 
                                                     "bundle", 
-                                                    "level"))
+                                                    "level"),
+                                             relationship = "many-to-many")
     
     items_exist_in_levels = items_exist_in_levels[!is.na(items_exist_in_levels$db_uuid.y),]
     
@@ -218,7 +219,7 @@
     
     items_sorted = items_to_sort %>% 
       dplyr::group_by(.data$session, .data$bundle, .data$level) %>% 
-      dplyr::arrange(.data$sample_point, .by_group = T) %>%
+      dplyr::arrange(.data$sample_point, .by_group = TRUE) %>%
       dplyr::mutate(start_item_seq_idx = dplyr::row_number())
     
     itemsToCreate = items_sorted %>% 
@@ -253,12 +254,12 @@
     
     itemsToCreate %>% 
       dplyr::group_by(.data$session, .data$bundle, .data$level) %>% 
-      dplyr::arrange(.data$session, .data$bundle, .data$level, .data$sample_start, .group_by = T) %>% 
+      dplyr::arrange(.data$session, .data$bundle, .data$level, .data$sample_start, .group_by = TRUE) %>% 
       dplyr::mutate(sample_end = dplyr::lead(.data$sample_start) - 1) -> itemsToCreate
     
     # test if no duplicate sample_start values exists
     itemsToCreate %>% 
-      dplyr::select(.data$session, .data$bundle, .data$level, .data$sample_start) %>%
+      dplyr::select("session", "bundle", "level", "sample_start") %>%
       dplyr::distinct() -> distinct_sample_start_rows
     
     if(nrow(distinct_sample_start_rows) != nrow(itemsToCreate)){
@@ -546,7 +547,7 @@ delete_itemsInLevel = function (emuDBhandle,
                                 rewriteAllAnnots = TRUE,
                                 verbose = TRUE) {
   
-  input_key <- readline(prompt = "Currently no checks are performed so use at own risk! Do you wish to continue anyway (y/N)?")
+  input_key <- readline(prompt = "Currently no checks are performed so use at own risk! Do you wish to continue anyway (y/N)? ")
   if(input_key != "y") return()
   
   if(any((itemsToDelete$end_item_id - itemsToDelete$end_item_id) != 0)){
@@ -681,7 +682,7 @@ create_links = function(emuDBhandle,
                         rewriteAllAnnots = TRUE,
                         verbose = TRUE) {
   
-  input_key <- readline(prompt = "Currently no checks are performed so use at own risk! Do you wish to continue anyway (y/N)?")
+  input_key <- readline(prompt = "Currently no checks are performed so use at own risk! Do you wish to continue anyway (y/N)? ")
   if(input_key != "y") return()
   
   # todo check if items are all present in database

@@ -32,12 +32,12 @@ load_dbConfigFromEmuTemplate = function(tplPath,
     tpl = try(readr::read_lines(tplPath, 
                                 readr::locale(encoding = encoding)))
   }
-  if(class(tpl) == "try-error") {
+  if(inherits(tpl, "try-error")) {
     stop("read tpl: cannot read from file ", tplPath)
   }
   # check if file (not directory)
   tplFInfo = try(file.info(tplPath))
-  if(class(tplFInfo) == "try-error" | is.null(tplFInfo)) {
+  if(inherits(tplFInfo, "try-error") | is.null(tplFInfo)) {
     stop("check template file: cannot get file info: ", tplPath)
   }
   if(tplFInfo[['isdir']]){
@@ -278,11 +278,11 @@ load_dbConfigFromEmuTemplate = function(tplPath,
     }
     if(n == 'samples'){
       if(e != 'wav'){
-        cat("WARNING: Media file type with extension ", e, " are not supported by the EMU-webApp.\n")
+        warning("WARNING: Media file type with extension ", e, " are not supported by the EMU-webApp.\n")
       }
       if(e == 'ssd'){
-        cat("INFO: Converting 'ssd' media files to wav! Note that all attr(ssd,'startTime') values that vary from 0 will be normalized to 0.\n")
-        cat("INFO: 'ssd' files will still be copied into each bundle but not added as an ssffTrackDefinition.\n")
+        warning("WARNING: Converting 'ssd' media files to wav! Note that all attr(ssd,'startTime') values that vary from 0 will be normalized to 0.\n")
+        warning("WARNING: 'ssd' files will still be copied into each bundle but not added as an ssffTrackDefinition.\n")
       }
       mediafileExtension = e
       mediafileBasePathPattern = tr[['basePath']]

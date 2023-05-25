@@ -12,8 +12,8 @@ bark(f, inv = FALSE, ...)
 \arguments{
 \item{f}{A vector or matrix of data or a spectral object.}
 
-\item{inv}{A single element logical vector. If F, data are converted from
-Hertz to Bark, if T, data are converted from Bark to Hertz. (Does not apply
+\item{inv}{A single element logical vector. If FALSE, data are converted from
+Hertz to Bark, if TRUE, data are converted from Bark to Hertz. (Does not apply
 if 'data' is an oject of class 'spectral'.}
 
 \item{\dots}{for generic only}
@@ -77,7 +77,7 @@ are removed in the case of spectral objects.
 
 
 
-        # convert the \$data values in a trackdata object to Bark
+        # convert the $data values in a trackdata object to Bark
 
         # create a new track data object
 
@@ -103,7 +103,7 @@ are removed in the case of spectral objects.
 
 w = bark(e.dft)
 
-par(mfrow=c(1,2))
+oldpar = par(mfrow=c(1,2))
 
 plot(w, type="l")
 
@@ -119,7 +119,7 @@ plot(e.dft, freq=bark(trackfreq(e.dft)))
 
 # in a higher frequency range.
 
-
+par(oldpar)
 
 
 }

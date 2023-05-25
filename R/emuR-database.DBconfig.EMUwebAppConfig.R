@@ -85,13 +85,13 @@ list_perspectives <- function(emuDBhandle){
   df = data.frame(name = character(),
                   signalCanvasesOrder = character(),
                   levelCanvasesOrder = character(),
-                  stringsAsFactors = F)
+                  stringsAsFactors = FALSE)
   
   for(p in DBconfig$EMUwebAppConfig$perspectives){
     df = rbind(df , data.frame(name = p$name,
                                signalCanvasesOrder = paste(p$signalCanvases$order, collapse = "; "),
                                levelCanvasesOrder = paste(p$levelCanvases$order, collapse = "; "),
-                               stringsAsFactors = F))
+                               stringsAsFactors = FALSE))
   }
   
   return(df)
@@ -238,7 +238,7 @@ get_signalCanvasesOrder <- function(emuDBhandle,
 ##'                                perspectiveName = "default")
 ##' 
 ##' # reverse the level canvases order of ae emuDB
-##' set_levelCanvasesOrder(emuDBhandle = ae
+##' set_levelCanvasesOrder(emuDBhandle = ae,
 ##'                        perspectiveName = "default",
 ##'                        order = rev(order))
 ##'                        

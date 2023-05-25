@@ -23,7 +23,7 @@
 ##' @param ... graphical options \link{par}
 ##' @return A list containing regression diagnostics of the function lm() that
 ##' can be accessed with summary() and the estimated locus frequency in
-##' \$locus. A plot of values in the onset x target plane with superimposed
+##' $locus. A plot of values in the onset x target plane with superimposed
 ##' locus equation and line onset=target.
 ##' @author Jonathan Harrington
 ##' @keywords math
@@ -63,7 +63,7 @@
   # labels.vow: optional vowel labels for plotting
   # xlim, ylim: optional range for x and y-axes
   # xlab, ylab: optional label for axes
-  # plot: if T, produces a plot of  target x  onset
+  # plot: if TRUE, produces a plot of  target x  onset
   # with a superimposed regression line through
   # the scatter with superimposed line target = onset
   # returns: statistical results of the fitting

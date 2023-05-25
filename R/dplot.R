@@ -24,12 +24,12 @@
 ##' averaged
 ##' @param xlim A vector of two numeric values specifying the x-axis range
 ##' @param ylim A vector of two numeric values specifying the y-axis range
-##' @param lty A single element logical vector. Defaults to F.  If TRUE, plot
+##' @param lty A single element logical vector. Defaults to FALSE.  If TRUE, plot
 ##' each label type in a different linetype
 ##' @param normalise If TRUE, the data for each segment is linearly time
 ##' normalised so that all observations have the same length. The number of
 ##' points used in the linear time normalisation is control by the argument n.
-##' @param colour A single element logical vector. Defaults to T to plot each
+##' @param colour A single element logical vector. Defaults to TRUE to plot each
 ##' label type in a different colour
 ##' @param lwd A code passed to the lwd argument in plotting functions. 'lwd'
 ##' can be either a single element numeric vector, or its length must be equal
@@ -45,9 +45,9 @@
 ##' the inside of the plot frame at the given location. Partial argument
 ##' matching is used. Or a logical vector: legend = FALSE suppresses legend
 ##' plotting. legend = TRUE plots it at the default, legend = "topright"
-##' @param axes A single element logical vector. Defaults to T to plot the axes
+##' @param axes A single element logical vector. Defaults to TRUE to plot the axes
 ##' @param type The default line type. Default to "l" for a line plot
-##' @param n A single element numeric vector. Only used if normalise=T. The
+##' @param n A single element numeric vector. Only used if normalise=TRUE. The
 ##' number of data points used to linearly time normalise each track
 ##' @param ... graphical options \link{par}
 ##' @return NULL
@@ -113,21 +113,22 @@
                      lwd = NULL, pch=NULL, legend = "topright", 
                      axes = TRUE, type="l", n = 20, ...) 
 {
-  
+  oldpar = graphics::par(no.readonly=TRUE)
+  on.exit(graphics::par(oldpar))
   
   if(prop)
   {
     if(length(offset) != 1)
-      stop("Specify only one offset time when prop=T")
+      stop("Specify only one offset time when prop=TRUE")
     else if ((offset < 0) | (offset > 1)) 
-      stop("offset must be between 0 and 1 when prop=T")
+      stop("offset must be between 0 and 1 when prop=TRUE")
     
     
   }
   
   else
     if(nrow(x) != length(offset))
-      stop("nrow(x) and length(offset) must be the same when prop=F")
+      stop("nrow(x) and length(offset) must be the same when prop=FALSE")
   
   pout <- NULL
   if (is.matrix(x$data)) {
@@ -187,6 +188,9 @@
                           lty = FALSE, colour = TRUE, lwd = NULL, 
                           pch=NULL, legend = "topright",  type="l", ...) 
 {
+  oldpar = graphics::par(no.readonly=TRUE)
+  on.exit(graphics::par(oldpar))
+
   ovec <- as.list(NULL)
   samrate <- 1000/((x$ftime[1, 2] - x$ftime[1, 
                                             1])/(x$index[1, 2] - x$index[1, 1]))
@@ -323,6 +327,9 @@
                           ylim = NULL,  lty = FALSE, type = "l", colour = TRUE, 
                           lwd = NULL, pch = NULL, legend = "topright",  n = 20) 
 {
+  oldpar = graphics::par(no.readonly=TRUE)
+  on.exit(graphics::par(oldpar))
+
   ovec <- NULL
   if (is.null(ylim)) 
     ylim <- range(x$data)

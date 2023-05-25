@@ -24,18 +24,18 @@ array that is the output of palate()}
 only. Note: this argument should only be used if epgdata is temporally
 contiguous, i.e. the entire trackdata object contains palatograms at
 successive multiple times of the EPG sampling frequency. (as in
-coutts.epg\$ftime). Defaults to NULL, in which case palatograms are plotted
+coutts.epg$ftime). Defaults to NULL, in which case palatograms are plotted
 for all times available in epgdata.}
 
-\item{numbering}{Either "times" (default), or logical T, or a character
+\item{numbering}{Either "times" (default), or logical TRUE, or a character
 vector of the same length as the number of segments in epgdata.  In the
 default case, the times at which the palatograms occur are printed above
-the palatograms. If logical T, then the palatograms are numbered 1, 2, ...
+the palatograms. If logical TRUE, then the palatograms are numbered 1, 2, ...
 number of segments and this value is printed above the palatograms. If a
 character vector, then this must be the same length as the number of
 segments in epgdata.}
 
-\item{gridlines}{if T (default) grid lines over the palatogram are drawn.}
+\item{gridlines}{if TRUE (default) grid lines over the palatogram are drawn.}
 
 \item{mfrow}{By default, the function tries to work out a sensible number
 of rows and columns for plotting the palatograms. Otherwise, this can be
@@ -53,7 +53,7 @@ default in the R plot() function is c(5, 4, 4, 2) + 0.1.}
 should be plotted.  Note: this argument should only be used if epgdata is
 temporally contiguous, i.e. the entire trackdata object contains
 palatograms at successive multiple times of the EPG sampling frequency. (as
-in coutts.epg\$ftime). Defaults to NULL (plot all time values).}
+in coutts.epg$ftime). Defaults to NULL (plot all time values).}
 }
 \description{
 Function to plot palatograms from EPG compressed objects or from a

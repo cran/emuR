@@ -72,10 +72,12 @@ convert_BPFCollection <- function(sourceDir,
   targetDir = suppressWarnings(normalizePath(targetDir))
   basePath = file.path(targetDir, paste0(dbName, emuDB.suffix))
   
-  res = try(suppressWarnings(dir.create(targetDir)))
-  if(class(res) == "try-error")
-  {
-    stop("Could not create target directory ", targetDir)
+  if (!dir.exists(targetDir)) {
+    res = try(suppressWarnings(dir.create(targetDir)))
+    if (res == FALSE || inherits(res, "try-error"))
+    {
+      stop("Could not create target directory ", targetDir)
+    }
   }
   
   # ---------------------------------------------------------------------------
@@ -303,7 +305,7 @@ convert_BPFCollection <- function(sourceDir,
   # ---------------------------------------------------------------------------
   
   res = try(dir.create(basePath))
-  if(class(res) == "try-error")
+  if (res == FALSE || inherits(res, "try-error"))
   {
     stop("Could not create directory ", basePath)
   }
@@ -386,7 +388,7 @@ copy_bpfMediaFiles <- function(basePath,
     # -------------------------------------------------------------------------
     
     res = try(file.copy(mediaFiles[[idx]], targetDir))
-    if(class(res) == "try-error")
+    if (res == FALSE || inherits(res, "try-error"))
     {
       stop("Could not copy media file from ", mediaFiles[[idx]], " to ", targetDir)
     }
@@ -503,7 +505,7 @@ check_bpfArgumentWithoutLevelClasses <- function(sourceDir,
   
   if(is.null(refLevel) && verbose)
   {
-    ans = readline("WARNING: No reference level has been declared. EMU database will be built without any symbolic links. Do you wish to continue? (y/n)")
+    ans = readline("WARNING: No reference level has been declared. EMU database will be built without any symbolic links. Do you wish to continue? (y/n) ")
     if(!ans == "y")
     {
       stop("BPF converter interrupted.")
@@ -1277,7 +1279,7 @@ make_bpfDbSkeleton <- function(emuDBhandle)
   {
     session = paste0(sessions[idx,], session.suffix)
     res = try(dir.create(file.path(emuDBhandle$basePath, session)))
-    if(class(res) == "try-error")
+    if (res == FALSE || inherits(res, "try-error"))
     {
       stop("Could not create session directory ", file.path(emuDBhandle$basePath, session))
     }
@@ -1293,7 +1295,7 @@ make_bpfDbSkeleton <- function(emuDBhandle)
     bundle = paste0(bundles[jdx,1], bundle.dir.suffix)
     session = paste0(bundles[jdx,2], session.suffix)
     res = try(dir.create(file.path(emuDBhandle$basePath, session, bundle)))
-    if(class(res) == "try-error")
+    if (res == FALSE || inherits(res, "try-error"))
     {
       stop("Could not create bundle directory ", file.path(emuDBhandle$basePath, session, bundle))
     }

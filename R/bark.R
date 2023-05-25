@@ -30,8 +30,8 @@
 ##' 
 ##' @aliases bark bark.trackdata bark.spectral bark.default
 ##' @param f A vector or matrix of data or a spectral object.
-##' @param inv A single element logical vector. If F, data are converted from
-##' Hertz to Bark, if T, data are converted from Bark to Hertz. (Does not apply
+##' @param inv A single element logical vector. If FALSE, data are converted from
+##' Hertz to Bark, if TRUE, data are converted from Bark to Hertz. (Does not apply
 ##' if 'data' is an oject of class 'spectral'.
 ##' @param \dots for generic only
 ##' @return
@@ -72,7 +72,7 @@
 ##' 
 ##' 
 ##' 
-##'         # convert the \$data values in a trackdata object to Bark
+##'         # convert the $data values in a trackdata object to Bark
 ##' 
 ##'         # create a new track data object
 ##' 
@@ -98,7 +98,7 @@
 ##' 
 ##' w = bark(e.dft)
 ##' 
-##' par(mfrow=c(1,2))
+##' oldpar = par(mfrow=c(1,2))
 ##' 
 ##' plot(w, type="l")
 ##' 
@@ -114,7 +114,7 @@
 ##' 
 ##' # in a higher frequency range.
 ##' 
-##' 
+##' par(oldpar)
 ##' 
 ##' 
 ##' @export bark

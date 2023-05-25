@@ -9,9 +9,9 @@
 ##' data (see \code{\link{dsmooth}}) or differentiate it (see
 ##' \code{\link{ddiff}}).
 ##' 
-##' Trackdata is made up of three components: a matrix of data \code{\$data}, a
-##' matrix of indexes (\code{\$index}) and a matrix of segment times
-##' (\code{\$ftime}).  The indexes contain the start and end rows for each
+##' Trackdata is made up of three components: a matrix of data \code{$data}, a
+##' matrix of indexes (\code{$index}) and a matrix of segment times
+##' (\code{$ftime}).  The indexes contain the start and end rows for each
 ##' segment in the trackdata, the time matrix contains the start and end times
 ##' of each data segment.
 ##' 
@@ -25,7 +25,7 @@
 ##' 
 ##' @param trackdata An Emu trackdata object
 ##' @param fun A function taking a matrix of data and a vector of times and
-##' returning a list with components \code{\$data} and \code{\$ftime}.
+##' returning a list with components \code{$data} and \code{$ftime}.
 ##' @param \dots Additional arguments to be passed to \code{fun}
 ##' @return An Emu trackdata object with components: \item{data}{A matrix of
 ##' data with all segments concatenated by row.} \item{index}{A two column
@@ -68,7 +68,7 @@
   
   if( version$major >= 5  && oldClass(trackdata)!="trackdata") {
     stop("argument to dapply is not of class trackdata.")
-  } else if(class(trackdata)!="trackdata")
+  } else if(!inherits(trackdata, "trackdata"))
     stop("argument to dapply is not of class trackdata.")
   
   

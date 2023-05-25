@@ -56,23 +56,23 @@ around the circle}
 
 \item{splot}{Now redundant}
 
-\item{numplot}{Logical. If T (defaults), the digital points around the
+\item{numplot}{Logical. If TRUE (defaults), the digital points around the
 circle are numbered}
 
-\item{axes}{Logical. If T, plot axes.}
+\item{axes}{Logical. If TRUE, plot axes.}
 
-\item{incircle}{Logical. If T, plot an the angle between digital points in
+\item{incircle}{Logical. If TRUE, plot an the angle between digital points in
 the circle.}
 
-\item{arrow}{Logical. If T, plot an arrow on incircle showing the direction
+\item{arrow}{Logical. If TRUE, plot an arrow on incircle showing the direction
 of movement.}
 
 \item{linetype}{Specify a linetype. Same function as lty in plot}
 
-\item{textplot}{A list containing \$radius, \$textin, \$pivals for plotting
-text at specified angles and radii on the circle. \$radius: a vector of
-amplitudes of the radii at which the text is to be plotted; \$textin: a
-vector of character labels to be plotted; \$pivals: the angle, in radians
+\item{textplot}{A list containing $radius, $textin, $pivals for plotting
+text at specified angles and radii on the circle. $radius: a vector of
+amplitudes of the radii at which the text is to be plotted; $textin: a
+vector of character labels to be plotted; $pivals: the angle, in radians
 relative to zero radians (top of the circle) at which the text is to be
 plotted. Defaults to NULL}
 
@@ -83,7 +83,7 @@ corresponds to the top of the circle)}
 \item{ylab}{Specify a y-axis label.}
 
 \item{super}{Superimpose a part solid circle and corresponding sinusoid.
-This needs to be a list containing \$first and \$last, which are values
+This needs to be a list containing $first and $last, which are values
 between 0 and 2*pi defining the beginning and ending of the part circle
 which is to be superimposed}
 

@@ -4,7 +4,7 @@
 ##' of attribute definitions belonging to annotation items, in an emuDB that 
 ##' match the provided \code{origLabels} character vector which the 
 ##' corresponding labels provided by the \code{newLabels} character vector. 
-##' The indicies of the label vectors provided are used to match the labels 
+##' The indices of the label vectors provided are used to match the labels
 ##' (i.e. \code{origLabels[i]} will be replaced by \code{newLabels[i]}).
 ##' 
 ##' 
@@ -51,7 +51,7 @@ replace_itemLabels <- function(emuDBhandle,
                 paste0(get_allAttributeNames(emuDBhandle), collapse = "; ")))
   }
   
-  if(class(origLabels) != "character" | class(newLabels) != "character" | length(origLabels) != length(newLabels)){
+  if((!inherits(origLabels, "character")) | (!inherits(newLabels, "character")) | length(origLabels) != length(newLabels)){
     stop("origLabels and newLabels have to be a character vector of the same length!")  
   }
   
@@ -349,7 +349,7 @@ duplicate_level <- function(emuDBhandle,
                                        type = attrDefs[i,]$type, 
                                        rewriteAllAnnots = FALSE, 
                                        verbose = verbose, 
-                                       insertLabels = F)
+                                       insertLabels = FALSE)
     }
     # copy legalLabels
     ll = get_legalLabels(emuDBhandle, levelName, attrDefs[i,]$name)
@@ -498,19 +498,18 @@ append_itemsToLevel = function(emuDBhandle,
                                labels,
                                sessionPattern = ".*",
                                bundlePattern = ".*",
-                               verbose = T) {
+                               verbose = TRUE) {
   ##
   ## Check pre-conditions
   ##
   levelDefinition = get_levelDefinition(emuDBhandle, levelName)
   
   if (is.null(levelDefinition)) {
-    print("Error: The given level does not exist ")
-    return(invisible(NULL))
+    stop("Error: The given level does not exist ")
   }
   
   if (length(labels) != length(levelDefinition$attributeDefinitions)) {
-    print (
+    stop (
       paste0(
         "Error: The number of labels (",
         length(labels),
@@ -521,8 +520,6 @@ append_itemsToLevel = function(emuDBhandle,
         ")"
       )
     )
-    
-    return(invisible(NULL))
   }
   
   

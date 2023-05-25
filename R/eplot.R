@@ -25,7 +25,7 @@
 ##' plotted for each data point
 ##' @param doellipse If TRUE, ellipses are drawn on the plot. If FALSE, no
 ##' ellipses are drawn and, if 'dopoints' is also FALSE, 'centroids' is set to
-##' T
+##' TRUE
 ##' @param centroid One label for each ellipse is drawn
 ##' @param axes If TRUE axes are drawn on the plot.
 ##' @param xlim A vector of two numeric values giving the range of the x-axis.
@@ -88,6 +88,9 @@
                      doellipse = TRUE, centroid = FALSE,  axes = TRUE, 
                      xlim, ylim, col = TRUE, lty = FALSE,  lwd = NULL, ...) 
 {
+  oldpar = graphics::par(no.readonly=TRUE)
+  on.exit(graphics::par(oldpar))
+
   ocall <- match.call()
   if (is.null(nsdev)) 
     nsdev <- sqrt(qchisq(prob, 2))
@@ -131,7 +134,7 @@
                                                         c(2, 1)))
     }
     else {
-      cat("Too few x points for label ", j, " will plot a point or a line\n")
+      warning("Too few x points for label ", j, " will plot a point or a line\n")
       m1 <- mean(mat[, 1])
       m2 <- mean(mat[, 2])
       e <- mat
@@ -308,7 +311,9 @@
   graphics::plot( points, type="b", pch=" ", axes=FALSE, xlab="", ylab="" )
   graphics::text( points, order, axes=FALSE, , xlab="", ylab="" )
   
-  graphics::par(col = 1)
+  oldpar = graphics::par(col = 1)
+  on.exit(graphics::par(oldpar))
+
   graphics::box()
   if(axes) {
     if(formant) {

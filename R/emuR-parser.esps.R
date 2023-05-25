@@ -43,8 +43,8 @@ parse_espsLabelFile <- function(labFilePath = NULL,
   }else{
     lc = try(readr::read_lines(fileToRead,readr::locale(encoding = encoding)))
   }
-  if(class(lc) == "try-error") {
-    stop("read.TextGrid: cannot read from file ", fileToRead)
+  if(inherits(lc, "try-error")) {
+    stop("read.esps: cannot read from file ", fileToRead)
   }
   
   for(line in lc){

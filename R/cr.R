@@ -26,12 +26,12 @@
 ##' expon[j]\eqn{\mbox{\textasciicircum}}{^}(c(0:(N - 1) * A cos (2 * pi * k/N
 ##' * (0:(N-1))). For example, a decaying sinusoid is produced with
 ##' cr(expon=-0.9). Defaults to NULL (i.e. to expon = 1).
-##' @param plotf A single-valued logical vector. If T (default), the sinusoid
+##' @param plotf A single-valued logical vector. If TRUE (default), the sinusoid
 ##' is plotted.
 ##' @param ylim A two-valued numeric vector for specifying the y-axis range.
 ##' @param xlim A two-valued numeric vector for specifying the y-axis range.
-##' @param values If T, then the values of the sinusoid are listed. Defaults to
-##' F.
+##' @param values If TRUE, then the values of the sinusoid are listed. Defaults to
+##' FALSE.
 ##' @param xlab A character vector for plotting the x-axis title.
 ##' @param ylab A character vector for plotting the y-axis title.
 ##' @param type A character vector for specifying the line type (see par)
@@ -118,29 +118,23 @@
   if(dopoints) type <- "l"
   if(!is.null(duration)) {
     if(is.null(samfreq)) {
-      print("must supply a sampling frequency if duration supplied"
-      )
-      stop()
+      stop("must supply a sampling frequency if duration supplied")
     }
     N <- round((samfreq * duration)/1000)
   }
   if(!is.null(bw)) {
     if(is.null(samfreq)) {
-      print("must supply a sampling frequency if bandwidth supplied"
-      )
-      stop()
+      stop("must supply a sampling frequency if bandwidth supplied")
     }
     expon <- exp( - rad(bw/2, samfreq = samfreq))
   }
   if(!is.null(samfreq) & is.numeric(samfreq))
     k <- (k * N)/samfreq
   if(max(k) > N) {
-    print("number of k must be less than N")
-    stop()
+    stop("number of k must be less than N")
   }
   if(any((p > pi) | (p <  - pi))) {
-    print("p must be within plus or minus pi")
-    stop()
+    stop("p must be within plus or minus pi")
   }
   
   mat <- rep(0, N)
@@ -203,18 +197,18 @@
 ##' around the circle
 ##' @param cplot Now redundant
 ##' @param splot Now redundant
-##' @param numplot Logical. If T (defaults), the digital points around the
+##' @param numplot Logical. If TRUE (defaults), the digital points around the
 ##' circle are numbered
-##' @param axes Logical. If T, plot axes.
-##' @param incircle Logical. If T, plot an the angle between digital points in
+##' @param axes Logical. If TRUE, plot axes.
+##' @param incircle Logical. If TRUE, plot an the angle between digital points in
 ##' the circle.
-##' @param arrow Logical. If T, plot an arrow on incircle showing the direction
+##' @param arrow Logical. If TRUE, plot an arrow on incircle showing the direction
 ##' of movement.
 ##' @param linetype Specify a linetype. Same function as lty in plot
-##' @param textplot A list containing \$radius, \$textin, \$pivals for plotting
-##' text at specified angles and radii on the circle. \$radius: a vector of
-##' amplitudes of the radii at which the text is to be plotted; \$textin: a
-##' vector of character labels to be plotted; \$pivals: the angle, in radians
+##' @param textplot A list containing $radius, $textin, $pivals for plotting
+##' text at specified angles and radii on the circle. $radius: a vector of
+##' amplitudes of the radii at which the text is to be plotted; $textin: a
+##' vector of character labels to be plotted; $pivals: the angle, in radians
 ##' relative to zero radians (top of the circle) at which the text is to be
 ##' plotted. Defaults to NULL
 ##' @param lineplot Plot lines from the centre of the circle to the
@@ -222,7 +216,7 @@
 ##' corresponds to the top of the circle)
 ##' @param ylab Specify a y-axis label.
 ##' @param super Superimpose a part solid circle and corresponding sinusoid.
-##' This needs to be a list containing \$first and \$last, which are values
+##' This needs to be a list containing $first and $last, which are values
 ##' between 0 and 2*pi defining the beginning and ending of the part circle
 ##' which is to be superimposed
 ##' @param xaxlab Now redundant
@@ -256,6 +250,8 @@
                      ylab = "Amplitude", super = NULL, xaxlab = NULL, type = "b", 
                      xlab = "Time (number of points)", fconst = 3.5/3.1, pointconst = 1.2)
 {
+  oldpar = graphics::par(no.readonly=TRUE)
+  on.exit(graphics::par(oldpar))
   
   if(A < -2 | A > 2)
     stop("choose A to be between plus or minus 2")
@@ -299,7 +295,8 @@
     sinpoints <- Ax *  - sin(theta) - plotshift
     cospoints <- Ay * cos(theta)
     xvals <- seq(0, figsize/2, length = N)
-    graphics::par(new = TRUE)
+    oldpar = graphics::par(new = TRUE)
+    on.exit(graphics::par(oldpar))
     graphics::plot(xvals[first:last], cospoints[first:last], type = "l", xlim = c( - 
                                                                            pin[1]/2, pin[1]/2), ylim = c( - pin[2]/2, pin[2]/2), axes = FALSE, 
          ylab = "", xlab = "", col = col, lwd = lwd)
@@ -326,12 +323,12 @@
   ## figsize in area. 8 corresponds to 4 (width) x 2 (height) inches
   ## npoints: no. of points used to plot the circle
   ## col: colour. defaults to 1
-  ## cplot: do you want to plot both the circle ? default is T
-  ## numplot: plot the numbers on the circle? default is T
-  ## splot: do you want to plot the sinusoid? default is T
-  ## plot the axes? defaults to T
+  ## cplot: do you want to plot both the circle ? default is TRUE
+  ## numplot: plot the numbers on the circle? default is TRUE
+  ## splot: do you want to plot the sinusoid? default is TRUE
+  ## plot the axes? defaults to TRUE
   ## incircle: plot the inner circle showing the angle between points?
-  ## arrow: plot an arrow on the part inner circle? defaults to T
+  ## arrow: plot an arrow on the part inner circle? defaults to TRUE
   ## linetype: linetype for plotting the sinusoid. Defaults to a solid line
   ## textplot: a list containing $radius, $textin, $pivals
   ## for plotting text at specified angles and radii on
@@ -356,12 +353,10 @@
   ## postscript using setps(h=4, w=4)
   ## pointconst: the radius of numbers around the circle
   if(k > N) {
-    print("number of k must be less than N")
-    stop()
+    stop("number of k must be less than N")
   }
   if(p > pi | p <  - pi) {
-    print("p must be within plus or minus pi")
-    stop()
+    stop("p must be within plus or minus pi")
   }
   ## different scale factors for x and y to frob aspect ratio
   Ay <- (A * figsize)/8
