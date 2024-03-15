@@ -7,24 +7,24 @@
 delete_itemsInLevel(
   emuDBhandle,
   itemsToDelete,
+  sayYes = FALSE,
   rewriteAllAnnots = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{emuDBhandle}{emuDB handle as returned by \code{\link{load_emuDB}}}
+\item{emuDBhandle}{emuDB handle as returned by \link{load_emuDB}}
 
-\item{itemsToDelete}{A data frame with the columns
+\item{itemsToDelete}{A data frame with the columns:
 \itemize{
-\item \code{session},
-\item \code{bundle},
-\item \code{level},
-\item \code{start_item_seq_idx} (\code{start_item_seq_idx} is used instead of e.g.
-\code{seq_idx} so that the result of a \code{\link{query}} call can be used directly.
-}
-*None* of the columns should be factors.
-\code{sequenceIndex} must be numeric (natural-valued), all other columns must
-be of type character.}
+\item \code{session} (character)
+\item \code{bundle} (character)
+\item \code{start_item_id} (numeric)
+}}
+
+\item{sayYes}{When you call this function, it warns you about problems it
+may create. You can skip that question if you set the \code{sayYes} parameter to
+TRUE. This is useful when you want to use the function non-interactively.}
 
 \item{rewriteAllAnnots}{should changes be written to file system (_annot.json
 files) (intended for expert use only)}
@@ -32,5 +32,32 @@ files) (intended for expert use only)}
 \item{verbose}{if set to \code{TRUE}, more status messages are printed}
 }
 \description{
-Allows to delete annotation items programmatically.
+Delete annotation items programmatically. You have to pass in a
+data frame, called \code{itemsToDelete}, describing these items. The required
+columns are described below.
+
+This function belongs to emuR’s CRUD family of functions, which let the user
+manipulate items programmatically:
+\itemize{
+\item Create items (\link{create_itemsInLevel})
+\item Read items (\link{query})
+\item Update items (\link{update_itemsInLevel})
+\item Delete items (\link{delete_itemsInLevel}))
+}
+}
+\details{
+This function deletes annotation items from existing levels. Your input data
+frame \code{itemsToDelete} must describe the items by specifying the columns
+\code{session}, \code{bundle}, and \code{start_item_id}.
+
+Be careful with this function: You can use it to create problematic situations,
+for example gaps in the annotation levels, and the function currently has
+no checks to prevent this. Instead, you need to explicitly confirm that you
+are aware of this, either by setting \code{sayYes} to \code{TRUE} or by interactively
+responding yes to the prompt this function presents.
+
+A major use case for this function is to obtain a segment list using \link{query},
+possibly modify the segment list and feed it to this function. That is why
+the column \code{start_item_id} is not called \code{item_id}: segment lists include
+the former column name, not the latter.
 }
